@@ -1,0 +1,603 @@
+<div class="landing" [class.dark]="darkMode()">
+
+  <!-- ============================================================
+  NAVBAR
+  ============================================================ -->
+  <nav class="nav" [class.nav--scrolled]="scrolled()">
+    <div class="nav__inner">
+
+      <a routerLink="/" class="nav__logo">
+        <img src="/images/logo_agrocycle.png" alt="AgroCycle" height="32">
+        <span>AgroCycle</span>
+      </a>
+
+      <ul class="nav__links">
+        <li><a href="#problema"  (click)="cerrarMenu()">El problema</a></li>
+        <li><a href="#solucion"  (click)="cerrarMenu()">Solución</a></li>
+        <li><a href="#resultados"(click)="cerrarMenu()">Resultados</a></li>
+        <li><a href="#acerca"    (click)="cerrarMenu()">El proyecto</a></li>
+      </ul>
+
+      <div class="nav__acciones">
+        <button class="nav__dark" (click)="toggleDark()" aria-label="Modo oscuro">
+          @if (darkMode()) {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+            </svg>
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          }
+        </button>
+        <a routerLink="/auth/login" class="nav__btn-login">Iniciar sesión</a>
+        <a routerLink="/auth/registro" class="nav__btn-reg">Registrarse</a>
+        <button class="nav__hamburger" (click)="toggleMenu()">
+          <span [class.open]="menuAbierto()"></span>
+          <span [class.open]="menuAbierto()"></span>
+          <span [class.open]="menuAbierto()"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile menu -->
+    @if (menuAbierto()) {
+      <div class="nav__mobile">
+        <a href="#problema"   (click)="cerrarMenu()">El problema</a>
+        <a href="#solucion"   (click)="cerrarMenu()">Solución</a>
+        <a href="#resultados" (click)="cerrarMenu()">Resultados</a>
+        <a href="#acerca"     (click)="cerrarMenu()">El proyecto</a>
+        <hr>
+        <a routerLink="/auth/login"    (click)="cerrarMenu()" class="mobile-login">Iniciar sesión</a>
+        <a routerLink="/auth/registro" (click)="cerrarMenu()" class="mobile-reg">Registrarse</a>
+      </div>
+    }
+  </nav>
+
+  <!-- ============================================================
+  HERO
+  ============================================================ -->
+  <section class="hero">
+    <div class="hero__bg">
+      <img src="/images/hero-agrocycle.jpg"
+           alt="Campos de maíz en el bosque seco del sur del Ecuador"
+           class="hero__img">
+      <div class="hero__overlay"></div>
+    </div>
+
+    <div class="hero__contenido">
+
+      <!-- Izquierda -->
+      <div class="hero__texto">
+        <div class="hero__pill">
+          <span class="hero__pill-dot"></span>
+          Sistema activo — Temporada Maíz 2026-2027
+        </div>
+
+        <h1 class="hero__titulo">
+          Cada quintal cuenta.<br>
+          <span class="hero__titulo-acento">Ahora puedes predecirlos.</span>
+        </h1>
+
+        <p class="hero__desc">
+          AgroCycle es el primer sistema de estimación de producción agrícola
+          para el bosque seco del sur del Ecuador. Combina datos climáticos reales,
+          balance hídrico FAO-56 y modelos matemáticos para anticipar tu cosecha
+          semanas antes de que ocurra.
+        </p>
+
+        <div class="hero__btns">
+          <a href="#solucion" class="hero__btn-prim">
+            Ver cómo funciona
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="#resultados" class="hero__btn-sec">
+            Resultados reales
+          </a>
+        </div>
+
+        <div class="hero__stats">
+          <div class="hero__stat">
+            <span class="hero__stat-val">FAO-33</span>
+            <span class="hero__stat-label">Modelo matemático</span>
+          </div>
+          <div class="hero__stat-sep"></div>
+          <div class="hero__stat">
+            <span class="hero__stat-val">151</span>
+            <span class="hero__stat-label">Días de datos reales</span>
+          </div>
+          <div class="hero__stat-sep"></div>
+          <div class="hero__stat">
+            <span class="hero__stat-val">±8%</span>
+            <span class="hero__stat-label">Margen de error</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Derecha — card de estimación -->
+      <div class="hero__card">
+        <div class="hero__card-header">
+          <div class="hero__card-dot"></div>
+          <span>Estimación activa — Parcela Choza</span>
+          <span class="hero__card-vivo">EN VIVO</span>
+        </div>
+
+        <div class="hero__card-main">
+          <p class="hero__card-valor">71.24 <span>qq/ha</span></p>
+          <p class="hero__card-rango">Rango estimado: 65.54 — 76.94 qq/ha</p>
+          <div class="hero__card-barra-wrap">
+            <div class="hero__card-barra">
+              <div class="hero__card-barra-fill" style="width:89%"></div>
+            </div>
+            <div class="hero__card-barra-labels">
+              <span>Potencial mínimo</span>
+              <span>89% del potencial</span>
+              <span>Potencial máximo</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__card-grid">
+          <div class="hero__card-item azul">
+            <p class="hero__card-item-label">Humedad del suelo</p>
+            <p class="hero__card-item-val">95.5 <span>% Ks</span></p>
+            <p class="hero__card-item-sub">Condiciones óptimas</p>
+          </div>
+          <div class="hero__card-item verde">
+            <p class="hero__card-item-label">Producción estimada</p>
+            <p class="hero__card-item-val">71.24 <span>qq/ha</span></p>
+            <p class="hero__card-item-sub">+8% vs temporada anterior</p>
+          </div>
+          <div class="hero__card-item dorado">
+            <p class="hero__card-item-label">Días desde siembra</p>
+            <p class="hero__card-item-val">227 <span>DDS</span></p>
+            <p class="hero__card-item-sub">Etapa: Cosecha</p>
+          </div>
+          <div class="hero__card-item tierra">
+            <p class="hero__card-item-label">Superficie monitoreada</p>
+            <p class="hero__card-item-val">0.67 <span>ha</span></p>
+            <p class="hero__card-item-sub">Parcela Choza activa</p>
+          </div>
+        </div>
+
+        <div class="hero__card-footer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          Calculado con modelo FAO-33 · Open-Meteo API · Balance hídrico FAO-56
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hero__scroll">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12l7 7 7-7"/>
+      </svg>
+      <span>Descubre cómo funciona</span>
+    </div>
+  </section>
+
+  <!-- ============================================================
+  PROBLEMA
+  ============================================================ -->
+  <section class="seccion" id="problema">
+    <div class="container">
+
+      <div class="seccion-header centrado">
+        <span class="eyebrow">El contexto</span>
+        <h2 class="seccion-titulo">
+          Sembrar en el bosque seco<br>
+          <span class="acento-tierra">sin información es apostar.</span>
+        </h2>
+        <p class="seccion-desc">
+          El bosque seco del sur del Ecuador es uno de los ecosistemas más vulnerables
+          al cambio climático en América Latina. Los agricultores familiares que dependen
+          de una sola temporada de lluvias necesitan más que experiencia para sobrevivir.
+        </p>
+      </div>
+
+      <!-- Imagen panorámica -->
+      <div class="problema-imagen">
+        <img src="/images/problema-sequia.jpg"
+             alt="Bosque seco ecuatoriano en sequía"
+             loading="lazy">
+        <div class="problema-imagen-tag">
+          Bosque Seco del Sur del Ecuador — Provincia de Loja
+        </div>
+      </div>
+
+      <!-- Cards del problema -->
+      <div class="problema-grid">
+        @for (p of problemas; track p.titulo) {
+          <div class="problema-card">
+            <div class="problema-card__icono">
+              @if (p.icono === 'clima') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+                  <line x1="11" y1="13" x2="11" y2="17"/>
+                  <line x1="8" y1="13" x2="8" y2="17"/>
+                  <line x1="14" y1="13" x2="14" y2="17"/>
+                </svg>
+              }
+              @if (p.icono === 'datos') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6"  y1="20" x2="6"  y2="14"/>
+                </svg>
+              }
+              @if (p.icono === 'perdida') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              }
+            </div>
+            <h3>{{ p.titulo }}</h3>
+            <p>{{ p.descripcion }}</p>
+          </div>
+        }
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+  SOLUCIÓN
+  ============================================================ -->
+  <section class="seccion seccion--oscura" id="solucion">
+    <div class="container">
+
+      <div class="seccion-header centrado">
+        <span class="eyebrow eyebrow--claro">La solución</span>
+        <h2 class="seccion-titulo claro">
+          Tecnología al servicio<br>del agricultor familiar.
+        </h2>
+        <p class="seccion-desc claro">
+          AgroCycle integra fuentes de datos científicas con una interfaz
+          diseñada para ser usada en campo, sin tecnicismos.
+        </p>
+      </div>
+
+      <div class="solucion-lista">
+        @for (s of soluciones; track s.num) {
+          <div class="solucion-item">
+            <div class="solucion-item__num solucion-item__num--{{ s.color }}">
+              {{ s.num }}
+            </div>
+            <div class="solucion-item__body">
+              <h3>{{ s.titulo }}</h3>
+              <p>{{ s.desc }}</p>
+              <div class="solucion-item__tags">
+                @for (tag of s.tags; track tag) {
+                  <span class="tag-tech">{{ tag }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+  RESULTADOS REALES
+  ============================================================ -->
+  <section class="seccion" id="resultados">
+    <div class="container">
+
+      <div class="seccion-header centrado">
+        <span class="eyebrow">Resultados reales</span>
+        <h2 class="seccion-titulo">
+          Datos validados en campo.<br>
+          <span class="acento-verde">No simulaciones.</span>
+        </h2>
+        <p class="seccion-desc">
+          Todos los datos provienen de la Finca Ramos en Bramaderos, Guachanama,
+          Paltas, Loja — zona de bosque seco real con agricultor real.
+        </p>
+      </div>
+
+      <div class="metricas-grid">
+        @for (m of metricas; track m.desc) {
+          <div class="metrica-card metrica-card--{{ m.color }}">
+            <p class="metrica-card__val">
+              {{ m.valor }}
+              <span>{{ m.unidad }}</span>
+            </p>
+            <p class="metrica-card__desc">{{ m.desc }}</p>
+            <p class="metrica-card__sub">{{ m.sub }}</p>
+          </div>
+        }
+      </div>
+
+      <!-- Contexto de validación -->
+      <div class="validacion-banner">
+        <div class="validacion-banner__icono">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div>
+          <p class="validacion-banner__titulo">
+            Validación en temporada real 2026-2027
+          </p>
+          <p class="validacion-banner__desc">
+            Los resultados mostrados corresponden a la Parcela Choza (0.67 ha)
+            en Bramaderos, monitoreada desde diciembre 2025. La validación
+            comparativa se realizará en mayo 2027 con los datos de cosecha real.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+  ACERCA DEL PROYECTO — sección nueva con historia real
+  ============================================================ -->
+  <section class="seccion seccion--tierra" id="acerca">
+    <div class="container">
+
+      <div class="seccion-header centrado">
+        <span class="eyebrow eyebrow--claro">El proyecto</span>
+        <h2 class="seccion-titulo claro">
+          Nació en el bosque seco.<br>
+          Para el bosque seco.
+        </h2>
+      </div>
+
+      <div class="acerca-grid">
+
+        <!-- Historia -->
+        <div class="acerca-historia">
+          <div class="acerca-historia__bloque">
+            <span class="acerca-historia__anio">2024</span>
+            <div>
+              <h4>La problemática real</h4>
+              <p>
+                El proyecto nace de una necesidad concreta: los agricultores
+                familiares del bosque seco del sur del Ecuador toman decisiones
+                críticas de siembra y riego sin acceso a datos técnicos. Un año
+                de sequía o una mala estimación puede significar doce meses sin
+                ingresos para una familia entera.
+              </p>
+            </div>
+          </div>
+
+          <div class="acerca-historia__bloque">
+            <span class="acerca-historia__anio">2025</span>
+            <div>
+              <h4>El primer agricultor real</h4>
+              <p>
+                AgroCycle comenzó su validación con un agricultor real:
+                la Finca Ramos en Bramaderos, Guachanama, Paltas, Loja.
+                Parcela Choza — 0.67 hectáreas a 828 metros sobre el nivel
+                del mar, con pendiente del 10% y orientación este.
+                Datos reales desde diciembre 2025.
+              </p>
+            </div>
+          </div>
+
+          <div class="acerca-historia__bloque">
+            <span class="acerca-historia__anio">2026</span>
+            <div>
+              <h4>Validación científica en curso</h4>
+              <p>
+                La temporada 2026-2027 es la primera validación formal del
+                modelo FAO-33 adaptado al bosque seco ecuatoriano. En mayo
+                de 2027 se compararán las estimaciones con la cosecha real
+                para medir la precisión del sistema y publicar los resultados.
+              </p>
+            </div>
+          </div>
+
+          <div class="acerca-historia__bloque">
+            <span class="acerca-historia__anio">2027</span>
+            <div>
+              <h4>Escalamiento regional</h4>
+              <p>
+                El objetivo es replicar el modelo en las zonas de bosque seco
+                de Paltas, Celica, Espíndola y Sozoranga — comunidades con
+                características agronómicas similares y sin acceso a sistemas
+                de soporte técnico agrícola formal.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info del proyecto -->
+        <div class="acerca-info">
+
+          <div class="acerca-info__card">
+            <h4>Sobre el sistema</h4>
+            <div class="acerca-info__kv">
+              <span>Institución</span>
+              <span>Universidad Nacional de Loja</span>
+            </div>
+            <div class="acerca-info__kv">
+              <span>Programa</span>
+              <span>Ingeniería en Software</span>
+            </div>
+            <div class="acerca-info__kv">
+              <span>Zona objetivo</span>
+              <span>Bosque seco, sur del Ecuador</span>
+            </div>
+            <div class="acerca-info__kv">
+              <span>Cultivo</span>
+              <span>Maíz (Zea mays)</span>
+            </div>
+            <div class="acerca-info__kv">
+              <span>Modelo predictivo</span>
+              <span>FAO-33 · FAO-56</span>
+            </div>
+            <div class="acerca-info__kv">
+              <span>Datos climáticos</span>
+              <span>Open-Meteo · NASA SRTM</span>
+            </div>
+          </div>
+
+          <div class="acerca-info__card">
+            <h4>Postulación activa</h4>
+            <p class="acerca-info__desc">
+              AgroCycle fue presentado al
+              <strong>Global Innovation Challenge 2026</strong>
+              (Social Shifters) en la categoría de innovación agrícola
+              para comunidades vulnerables del Ecuador.
+            </p>
+            <div class="acerca-info__premio">
+              <span class="acerca-info__premio-val">USD 15,000</span>
+              <span class="acerca-info__premio-label">
+                Premio no reembolsable disponible
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+  PARA QUIÉN ES
+  ============================================================ -->
+  <section class="seccion" id="audiencia">
+    <div class="container">
+
+      <div class="seccion-header centrado">
+        <span class="eyebrow">¿Para quién es AgroCycle?</span>
+        <h2 class="seccion-titulo">
+          Diseñado para tres roles.<br>
+          <span class="acento-verde">Un solo ecosistema.</span>
+        </h2>
+      </div>
+
+      <div class="audiencia-grid">
+        @for (a of audiencia; track a.rol) {
+          <div class="audiencia-card audiencia-card--{{ a.color }}">
+            <div class="audiencia-card__header">
+              <h3>{{ a.rol }}</h3>
+            </div>
+            <p class="audiencia-card__desc">{{ a.desc }}</p>
+            <ul class="audiencia-card__lista">
+              @for (item of a.items; track item) {
+                <li>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  {{ item }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+  CTA FINAL
+  ============================================================ -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta__inner">
+        <h2>
+          Empieza a conocer tu cosecha<br>
+          <span>antes de que ocurra.</span>
+        </h2>
+        <p>
+          Regístrate gratis y conecta tu primera finca en menos de 5 minutos.
+          Sin tarjeta de crédito. Sin tecnicismos.
+        </p>
+        <div class="cta__btns">
+          <a routerLink="/auth/registro" class="cta__btn-prim">
+            Crear cuenta gratuita
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a routerLink="/auth/login" class="cta__btn-sec">
+            Ya tengo cuenta
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+  FOOTER
+  ============================================================ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+
+        <div class="footer__marca">
+          <img src="/images/logo_agrocycle.png" alt="AgroCycle" height="28">
+          <span>AgroCycle</span>
+          <p>
+            Sistema de estimación de producción agrícola<br>
+            para el bosque seco del sur del Ecuador.
+          </p>
+        </div>
+
+        <div class="footer__links">
+          <p class="footer__links-titulo">Sistema</p>
+          <a href="#problema">El problema</a>
+          <a href="#solucion">La solución</a>
+          <a href="#resultados">Resultados</a>
+          <a href="#acerca">El proyecto</a>
+        </div>
+
+        <div class="footer__links">
+          <p class="footer__links-titulo">Acceso</p>
+          <a routerLink="/auth/login">Iniciar sesión</a>
+          <a routerLink="/auth/registro">Registrarse</a>
+        </div>
+
+        <div class="footer__info">
+          <p>Universidad Nacional de Loja</p>
+          <p>Ingeniería en Computacion · 2024-2027</p>
+          <p>Bramaderos, Guachanama, Paltas, Loja</p>
+          <p>Ecuador</p>
+        </div>
+
+      </div>
+
+      <div class="footer__copy">
+        <p>
+          © {{ anoActual }} AgroCycle · Desarrollado por
+          Cesar Daniel Ramos Merchán · UNL
+        </p>
+        <p>
+          Datos validados en campo real · Temporada 2026-2027
+        </p>
+      </div>
+    </div>
+  </footer>
+
+</div>

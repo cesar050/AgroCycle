@@ -1,0 +1,130 @@
+<div class="rep-page">
+
+  <div class="rep-header">
+    <div>
+      <h1>Reportes y documentos</h1>
+      <p>Descarga la ficha técnica de tu temporada en PDF</p>
+    </div>
+    @if (temporadas().length > 1) {
+      <select class="input rep-select"
+              [value]="temporadaId()"
+              (change)="cambiarTemporada($any($event.target).value)">
+        @for (t of temporadas(); track t.id) {
+          <option [value]="t.id">{{ t.nombre }}</option>
+        }
+      </select>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="rep-error">{{ error() }}</div>
+  }
+
+  @if (cargando()) {
+    <div class="skeleton" style="height:200px;border-radius:8px"></div>
+  }
+
+  @if (!cargando()) {
+
+    <div class="rep-grid">
+
+      <!-- Ficha técnica -->
+      <div class="rep-card">
+        <div class="rep-card__icono">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <div class="rep-card__info">
+          <h3>Ficha técnica de la temporada</h3>
+          <p>
+            Documento PDF completo con datos agroclimáticos,
+            estimación de producción FAO-33, balance hídrico FAO-56
+            y resumen financiero de la temporada.
+          </p>
+          <ul class="rep-card__lista">
+            <li>Datos de la finca y parcela</li>
+            <li>Balance hídrico Ks por etapa fenológica</li>
+            <li>Estimación de producción</li>
+            <li>Resumen de actividades</li>
+            <li>Estado financiero de la temporada</li>
+          </ul>
+        </div>
+        <div class="rep-card__accion">
+          <p class="rep-card__temporada">
+            {{ temporadaActual?.nombre || '—' }}
+          </p>
+          <button
+            class="btn btn--primario"
+            [disabled]="descargando() === 'ficha' || !tpId()"
+            (click)="descargarFicha()">
+            @if (descargando() === 'ficha') {
+              <span class="spinner-sm"></span>
+              Generando PDF...
+            } @else {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Descargar PDF
+            }
+          </button>
+          @if (!tpId()) {
+            <p class="rep-card__aviso">
+              Vincula una parcela a la temporada para generar el reporte.
+            </p>
+          }
+        </div>
+      </div>
+
+      <!-- Próximos reportes (v2) -->
+      <div class="rep-card rep-card--pronto">
+        <div class="rep-card__icono">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </div>
+        <div class="rep-card__info">
+          <h3>Comparativo de temporadas</h3>
+          <p>
+            Análisis comparativo entre temporadas con
+            evolución de rendimiento y rentabilidad.
+          </p>
+        </div>
+        <div class="rep-card__accion">
+          <span class="tag tag--gris">Próximamente</span>
+        </div>
+      </div>
+
+      <div class="rep-card rep-card--pronto">
+        <div class="rep-card__icono">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+          </svg>
+        </div>
+        <div class="rep-card__info">
+          <h3>Reporte climático de la parcela</h3>
+          <p>
+            Resumen climático histórico con precipitaciones,
+            temperaturas y balance hídrico mensual.
+          </p>
+        </div>
+        <div class="rep-card__accion">
+          <span class="tag tag--gris">Próximamente</span>
+        </div>
+      </div>
+
+    </div>
+  }
+</div>

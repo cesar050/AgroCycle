@@ -1,0 +1,377 @@
+// ================================================================
+// AGROCYCLE SPATIAL DESIGN SYSTEM
+// Clean Agricultural Spatial UI
+// ================================================================
+@use 'sass:color';
+
+// ----------------------------------------------------------------
+// TIPOGRAFÍA
+// ----------------------------------------------------------------
+$font-sans:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+$font-display: 'Inter', sans-serif;
+$font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+// ----------------------------------------------------------------
+// PALETA — exactamente como las imágenes de referencia
+// ----------------------------------------------------------------
+
+// Verdes principales
+$verde-primario:   #2E7D32;   // verde agrícola profundo — sidebar activo
+$verde-acento:     #43A047;   // verde medio — hover, badges
+$verde-suave:      #E8F5E9;   // verde muy claro — fondos activos
+$verde-borde:      #C8E6C9;   // borde verde suave
+
+// Neutros base
+$blanco:           #FFFFFF;
+$fondo-app:        #F8F9FA;   // fondo general de la app
+$fondo-sidebar:    #FFFFFF;   // sidebar blanco
+$superficie:       #FFFFFF;   // cards y paneles
+$borde-suave:      #E9ECEF;   // bordes generales
+$borde-input:      #DEE2E6;
+
+// Texto
+$texto-primario:   #212529;
+$texto-secundario: #6C757D;
+$texto-terciario:  #ADB5BD;
+$texto-disabled:   #CED4DA;
+
+// Acentos semánticos
+$azul-info:        #1976D2;
+$azul-suave:       #E3F2FD;
+$naranja-warning:  #F57C00;
+$naranja-suave:    #FFF3E0;
+$rojo-danger:      #D32F2F;
+$rojo-suave:       #FFEBEE;
+$verde-success:    #388E3C;
+$verde-success-bg: #E8F5E9;
+
+// ----------------------------------------------------------------
+// ESPACIADO — sistema de 4px
+// ----------------------------------------------------------------
+$s1:  4px;
+$s2:  8px;
+$s3:  12px;
+$s4:  16px;
+$s5:  20px;
+$s6:  24px;
+$s8:  32px;
+$s10: 40px;
+$s12: 48px;
+$s16: 64px;
+
+// ----------------------------------------------------------------
+// BORDES
+// ----------------------------------------------------------------
+$radius-xs:   4px;
+$radius-sm:   6px;
+$radius-md:   8px;
+$radius-lg:   12px;
+$radius-xl:   16px;
+$radius-full: 9999px;
+
+// ----------------------------------------------------------------
+// SOMBRAS — muy sutiles como en las referencias
+// ----------------------------------------------------------------
+$shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
+$shadow-sm:  0 1px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+$shadow-md:  0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+$shadow-lg:  0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+
+// ----------------------------------------------------------------
+// TRANSICIONES
+// ----------------------------------------------------------------
+$t-fast:   all 0.15s ease;
+$t-base:   all 0.2s ease;
+$t-slow:   all 0.3s ease;
+
+// ----------------------------------------------------------------
+// BREAKPOINTS
+// ----------------------------------------------------------------
+$bp-md:  768px;
+$bp-lg:  1024px;
+$bp-xl:  1280px;
+$bp-2xl: 1440px;
+
+@mixin mobile  { @media (max-width: #{$bp-md - 1}) { @content; } }
+@mixin tablet  { @media (min-width: #{$bp-md}) and (max-width: #{$bp-lg - 1}) { @content; } }
+@mixin desktop { @media (min-width: #{$bp-lg}) { @content; } }
+
+// ----------------------------------------------------------------
+// RESET
+// ----------------------------------------------------------------
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: $font-sans;
+  font-size: 14px;
+  line-height: 1.5;
+  color: $texto-primario;
+  background: $fondo-app;
+}
+
+a { text-decoration: none; color: inherit; }
+button { font-family: $font-sans; cursor: pointer; }
+input, select, textarea { font-family: $font-sans; }
+
+img { display: block; max-width: 100%; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: $borde-suave;
+  border-radius: $radius-full;
+  &:hover { background: $texto-terciario; }
+}
+
+:focus-visible {
+  outline: 2px solid $verde-acento;
+  outline-offset: 2px;
+  border-radius: $radius-xs;
+}
+
+::selection {
+  background: $verde-suave;
+  color: $verde-primario;
+}
+
+// ----------------------------------------------------------------
+// DARK MODE — variables CSS
+// ----------------------------------------------------------------
+:root {
+  --bg-app:       #{$fondo-app};
+  --bg-surface:   #{$superficie};
+  --bg-sidebar:   #{$fondo-sidebar};
+  --border:       #{$borde-suave};
+  --text-primary: #{$texto-primario};
+  --text-sec:     #{$texto-secundario};
+  --text-ter:     #{$texto-terciario};
+  --verde:        #{$verde-primario};
+  --verde-soft:   #{$verde-suave};
+}
+
+.dark {
+  --bg-app:       #0F1117;
+  --bg-surface:   #1A1D27;
+  --bg-sidebar:   #111318;
+  --border:       #2D3039;
+  --text-primary: #F1F3F5;
+  --text-sec:     #9CA3AF;
+  --text-ter:     #6B7280;
+  --verde:        #4CAF50;
+  --verde-soft:   #1A2E1B;
+}
+
+// ----------------------------------------------------------------
+// UTILIDADES GLOBALES
+// ----------------------------------------------------------------
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.font-mono { font-family: $font-mono; }
+
+// Tags/badges semánticos — usados en toda la app
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: $s1;
+  padding: 2px $s2;
+  border-radius: $radius-full;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+
+  &--verde   { background: $verde-suave;    color: $verde-primario; }
+  &--naranja { background: $naranja-suave;  color: $naranja-warning; }
+  &--rojo    { background: $rojo-suave;     color: $rojo-danger; }
+  &--azul    { background: $azul-suave;     color: $azul-info; }
+  &--gris    { background: $fondo-app;      color: $texto-secundario;
+               border: 1px solid $borde-suave; }
+}
+
+// Punto de estado
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: $radius-full;
+  flex-shrink: 0;
+  &--verde   { background: $verde-success; }
+  &--naranja { background: $naranja-warning; }
+  &--rojo    { background: $rojo-danger; }
+  &--gris    { background: $texto-terciario; }
+}
+
+// Botones globales
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $s2;
+  padding: 7px $s4;
+  border-radius: $radius-sm;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: $t-fast;
+  white-space: nowrap;
+  cursor: pointer;
+  line-height: 1;
+
+  &--primario {
+    background: $verde-primario;
+    color: #fff;
+    &:hover { background: color.adjust($verde-primario, $lightness: -5%); }
+  }
+
+  &--secundario {
+    background: #fff;
+    color: $texto-primario;
+    border-color: $borde-suave;
+    &:hover { background: $fondo-app; border-color: $borde-input; }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $texto-secundario;
+    &:hover { background: $fondo-app; color: $texto-primario; }
+  }
+
+  &--peligro {
+    background: $rojo-suave;
+    color: $rojo-danger;
+    border-color: color.adjust($rojo-suave, $lightness: -5%);
+    &:hover { background: color.adjust($rojo-suave, $lightness: -5%); }
+  }
+
+  &--sm {
+    padding: 5px $s3;
+    font-size: 12px;
+  }
+
+  &--lg {
+    padding: 10px $s6;
+    font-size: 14px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Inputs globales
+.input {
+  width: 100%;
+  padding: 7px $s3;
+  border: 1px solid $borde-input;
+  border-radius: $radius-sm;
+  font-size: 13px;
+  font-family: $font-sans;
+  color: $texto-primario;
+  background: #fff;
+  transition: $t-fast;
+  outline: none;
+
+  &::placeholder { color: $texto-terciario; }
+
+  &:focus {
+    border-color: $verde-acento;
+    box-shadow: 0 0 0 3px rgba($verde-acento, 0.12);
+  }
+}
+
+// Divider
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: $s4 0;
+}
+
+// Animaciones
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade  { animation: fadeIn 0.2s ease; }
+.animate-slide { animation: slideUp 0.2s ease; }
+
+// Skeleton loading
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    var(--bg-app) 50%,
+    var(--border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: $radius-sm;
+}
+// ----------------------------------------------------------------
+// ALIAS DE COMPATIBILIDAD
+// Nombres usados en componentes antiguos → variables reales
+// ----------------------------------------------------------------
+
+// Espaciado
+$space-xs:  $s1;
+$space-sm:  $s2;
+$space-md:  $s4;
+$space-lg:  $s6;
+$space-xl:  $s8;
+$space-2xl: $s12;
+$space-3xl: $s16;
+
+// Colores — mapeados a la paleta verde/neutra actual
+$verde-accion:    $verde-acento;
+$verde-medio:     $verde-acento;
+$verde-profundo:  $verde-primario;
+
+$crema:           $fondo-app;
+$negro:           $texto-primario;
+$borde:           $borde-suave;
+$texto-principal: $texto-primario;
+
+$font-body: $font-sans;
+
+$transition-fast: $t-fast;
+$transition-base: $t-base;
+
+// Tonos "tierra" y "dorado" — no existían en la paleta verde original,
+// se aproximan con tonos cálidos coherentes
+$tierra-naranja: #C67C3E;
+$tierra-claro:   #E8D4C0;
+$dorado-cosecha: #D4A017;
+$dorado-claro:   #F5E6C8;
+$azul-agua:      $azul-info;
+$azul-claro:     $azul-suave;
+
+// Modo oscuro — placeholders, ajustar si tienes paleta dark definida
+$dm-fondo:      #1A1D1F;
+$dm-tarjeta:    #24282B;
+$dm-borde:      #33383B;
+$dm-texto:      #F1F3F5;
+$dm-texto-sec:  #ADB5BD;

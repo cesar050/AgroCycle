@@ -1,0 +1,38 @@
+@use 'sass:color';
+@use '../../../../../../styles' as *;
+@use '../nuevo-lote/nuevo-lote.component.scss';
+
+.toggle-field {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 7px $s3;
+  font-size: 13px;
+  font-family: $font-sans;
+  font-weight: 500;
+  color: var(--text-sec);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: $t-fast;
+
+  &.activo {
+    background: $verde-suave;
+    color: $verde-primario;
+    font-weight: 700;
+  }
+
+  &:not(.activo):hover { background: var(--bg-app); }
+}
+
+.leyenda-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}

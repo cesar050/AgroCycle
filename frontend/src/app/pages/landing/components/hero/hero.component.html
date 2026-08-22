@@ -1,0 +1,132 @@
+<section class="hero">
+  <!-- Fondo con imagen -->
+  <div class="hero__bg">
+    <img
+      src="/images/hero-agrocycle.jpg"
+      alt="Campos de maíz en el bosque seco del sur del Ecuador"
+      class="hero__bg-img">
+    <div class="hero__overlay"></div>
+  </div>
+
+  <div class="container hero__content">
+
+    <!-- Columna izquierda — texto -->
+    <div class="hero__text">
+      <div class="hero__badge">
+        <span class="hero__badge-dot"></span>
+        Sistema activo — Temporada Maíz 2026-2027
+      </div>
+
+      <h1 class="hero__titulo">
+        Cada quintal cuenta.<br>
+        <span class="hero__titulo-acento">Ahora puedes predecirlos.</span>
+      </h1>
+
+      <p class="hero__descripcion">
+        AgroCycle es el primer sistema de estimación de producción agrícola
+        para el bosque seco del sur del Ecuador. Combina datos climáticos reales,
+        balance hídrico FAO-56 y modelos matemáticos para anticipar tu cosecha
+        semanas antes de que ocurra.
+      </p>
+
+      <div class="hero__acciones">
+        <a href="#solucion" class="hero__btn-primario">
+          Ver cómo funciona
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+        <a href="#metricas" class="hero__btn-secundario">
+          Resultados reales
+        </a>
+      </div>
+
+      <!-- Indicadores de confianza -->
+      <div class="hero__trust">
+        <div class="hero__trust-item">
+          <span class="hero__trust-num">FAO-33</span>
+          <span class="hero__trust-label">Modelo matemático</span>
+        </div>
+        <div class="hero__trust-divider"></div>
+        <div class="hero__trust-item">
+          <span class="hero__trust-num">151</span>
+          <span class="hero__trust-label">Días de datos reales</span>
+        </div>
+        <div class="hero__trust-divider"></div>
+        <div class="hero__trust-item">
+          <span class="hero__trust-num">±8%</span>
+          <span class="hero__trust-label">Margen de error</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna derecha — dashboard demo -->
+    <div class="hero__demo">
+      <!-- Tarjeta principal con el número grande -->
+      <div class="hero__demo-principal">
+        <div class="hero__demo-header">
+          <div class="hero__demo-dot verde"></div>
+          <span>Estimación activa — Parcela Choza</span>
+          <div class="hero__demo-badge">EN VIVO</div>
+        </div>
+
+        <div class="hero__demo-numero">
+          <span class="hero__demo-valor font-mono">
+            {{ valorAnimado() | number:'1.2-2' }}
+          </span>
+          <span class="hero__demo-unidad">qq/ha</span>
+        </div>
+
+        <div class="hero__demo-rango">
+          Rango estimado: 65.54 — 76.94 qq/ha
+        </div>
+
+        <div class="hero__demo-barra">
+          <div class="hero__demo-barra-fill" style="width: 89%"></div>
+        </div>
+        <div class="hero__demo-barra-labels">
+          <span>Potencial mínimo</span>
+          <span>89% del potencial</span>
+          <span>Potencial máximo</span>
+        </div>
+      </div>
+
+      <!-- Grid de métricas -->
+      <div class="hero__demo-metricas">
+        @for (metrica of metricas; track metrica.etiqueta) {
+          <div class="hero__demo-card" [class]="'card-' + metrica.color">
+            <div class="hero__demo-card-top">
+              <span class="hero__demo-card-label">{{ metrica.etiqueta }}</span>
+            </div>
+            <div class="hero__demo-card-valor">
+              <span class="font-mono">{{ metrica.valor }}</span>
+              <span class="hero__demo-card-unidad">{{ metrica.unidad }}</span>
+            </div>
+            <div class="hero__demo-card-tendencia">
+              {{ metrica.tendencia }}
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Algoritmo badge -->
+      <div class="hero__demo-algoritmo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        Calculado con modelo FAO-33 · Open-Meteo API · Balance hídrico FAO-56
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="hero__scroll">
+    <div class="hero__scroll-mouse">
+      <div class="hero__scroll-dot"></div>
+    </div>
+    <span>Descubre cómo funciona</span>
+  </div>
+</section>

@@ -1,0 +1,132 @@
+@use 'sass:color';
+@use '../../../../../../styles' as *;
+@use '../../../../agricultor/mapa/pages/nueva-finca/nueva-finca.component.scss';
+
+.nf-content--single {
+  grid-template-columns: 1fr !important;
+  max-width: 720px;
+}
+
+.form-grid--3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+
+  @include mobile  { grid-template-columns: 1fr !important; }
+  @include tablet  { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+.form-section__sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-sec);
+  margin-left: $s2;
+}
+
+.input-con-boton {
+  display: flex;
+  gap: $s2;
+
+  .input { flex: 1; }
+}
+
+// Parcelas
+.parcelas-hint {
+  display: flex;
+  align-items: center;
+  gap: $s2;
+  padding: $s4;
+  font-size: 12px;
+  color: var(--text-sec);
+
+  svg { color: $azul-info; flex-shrink: 0; }
+}
+
+.link-inline {
+  color: $verde-acento;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: $s1;
+
+  &:hover { text-decoration: underline; }
+}
+
+.parcelas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: $s3;
+  padding: $s4;
+}
+
+.parcela-card {
+  display: flex;
+  align-items: flex-start;
+  gap: $s3;
+  padding: $s3;
+  background: var(--bg-app);
+  border: 1.5px solid var(--border);
+  border-radius: $radius-sm;
+  cursor: pointer;
+  text-align: left;
+  transition: $t-fast;
+  width: 100%;
+
+  &:hover {
+    border-color: $verde-acento;
+    background: $verde-suave;
+  }
+
+  &.seleccionada {
+    border-color: $verde-primario;
+    background: $verde-suave;
+
+    .parcela-card__nombre { color: $verde-primario; }
+  }
+
+  &__check {
+    width: 18px;
+    height: 18px;
+    border-radius: $radius-xs;
+    border: 1.5px solid var(--border);
+    background: var(--bg-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: $t-fast;
+    color: $verde-primario;
+
+    .seleccionada & {
+      background: $verde-primario;
+      border-color: $verde-primario;
+      color: #fff;
+    }
+  }
+
+  &__info {}
+
+  &__nombre {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+    transition: $t-fast;
+  }
+
+  &__meta {
+    font-size: 10px;
+    color: var(--text-ter);
+    font-family: $font-mono;
+  }
+}
+
+.parcelas-resumen {
+  display: flex;
+  align-items: center;
+  gap: $s2;
+  padding: $s2 $s4 $s3;
+  font-size: 12px;
+  font-weight: 600;
+  color: $verde-primario;
+
+  svg { color: $verde-primario; }
+}

@@ -1,0 +1,401 @@
+<div class="cli-page">
+
+  <!-- Header -->
+  <div class="cli-header">
+    <div>
+      <h1>Clima y agua</h1>
+      <p>
+        Datos climáticos e indicadores hídricos —
+        <strong>{{ parcelaNombre() || 'Cargando...' }}</strong>
+      </p>
+    </div>
+    <div class="cli-header__actions">
+      <!-- Selector de parcela -->
+      @if (parcelas().length > 1) {
+        <select class="input cli-select"
+                [value]="parcelaId()"
+                (change)="seleccionarParcela(
+                  $any($event.target).value,
+                  $any($event.target).options[$any($event.target).selectedIndex].text
+                )">
+          @for (p of parcelas(); track p.id) {
+            <option [value]="p.id">{{ p.nombre }}</option>
+          }
+        </select>
+      }
+
+      <button
+        class="btn btn--secundario btn--sm"
+        [disabled]="descargando() || !parcelaId()"
+        (click)="descargarDatosHistoricos()">
+        @if (descargando()) {
+          <span class="spinner-sm-dark"></span>
+          Descargando...
+        } @else {
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+          </svg>
+          Actualizar datos
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="cli-skeleton">
+      <div class="skeleton" style="height:80px;border-radius:8px"></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="skeleton" style="height:90px;border-radius:8px"></div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (!cargando()) {
+
+    <!-- Alertas -->
+    @if (alertas().length > 0) {
+      <div class="cli-alertas">
+        @for (a of alertas().slice(0,2); track $index) {
+          <div class="cli-alerta"
+               [class]="'cli-alerta--' + (a.urgencia || 'baja')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>{{ a.mensaje || a.descripcion }}</span>
+            <span class="tag" [class]="colorAlerta(a.urgencia)">
+              {{ a.urgencia || 'info' }}
+            </span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Métricas resumen -->
+    @if (resumenClima()) {
+      <div class="cli-metricas">
+        <div class="cli-metrica">
+          <p class="cli-metrica__label">Precipitación acumulada</p>
+          <p class="cli-metrica__val font-mono">
+            {{ resumenClima().resumen?.precipitacion?.total_mm || '—' }}
+            <span>mm</span>
+          </p>
+          <p class="cli-metrica__sub">
+            Promedio:
+            {{ resumenClima().resumen?.precipitacion?.promedio_mm || '—' }}
+            mm/día
+          </p>
+        </div>
+        <div class="cli-metrica">
+          <p class="cli-metrica__label">Temperatura promedio</p>
+          <p class="cli-metrica__val font-mono">
+            {{ resumenClima().resumen?.temperatura?.promedio_c || '—' }}
+            <span>°C</span>
+          </p>
+          <p class="cli-metrica__sub">
+            Máx: {{ resumenClima().resumen?.temperatura?.maxima_c || '—' }}
+            · Mín: {{ resumenClima().resumen?.temperatura?.minima_c || '—' }}
+          </p>
+        </div>
+        <div class="cli-metrica">
+          <p class="cli-metrica__label">Humedad promedio</p>
+          <p class="cli-metrica__val font-mono">
+            {{ resumenClima().resumen?.humedad_promedio || '—' }}
+            <span>%</span>
+          </p>
+          <p class="cli-metrica__sub">Humedad relativa del aire</p>
+        </div>
+        <div class="cli-metrica">
+          <p class="cli-metrica__label">ET₀ acumulada</p>
+          <p class="cli-metrica__val font-mono">
+            {{ resumenClima().resumen?.et0_total_mm || '—' }}
+            <span>mm</span>
+          </p>
+          <p class="cli-metrica__sub">
+            Días con lluvia:
+            {{ resumenClima().resumen?.dias_con_lluvia || 0 }}
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Tabs -->
+    <div class="cli-tabs">
+      <button class="cli-tab"
+              [class.activo]="tabActiva() === 'resumen'"
+              (click)="tabActiva.set('resumen')">
+        Gráfica climática
+      </button>
+      <button class="cli-tab"
+              [class.activo]="tabActiva() === 'historial'"
+              (click)="tabActiva.set('historial')">
+        Historial
+      </button>
+      <button class="cli-tab"
+              [class.activo]="tabActiva() === 'forecast'"
+              (click)="tabActiva.set('forecast')">
+        Pronóstico 7 días
+      </button>
+      <button class="cli-tab"
+              [class.activo]="tabActiva() === 'manual'"
+              (click)="tabActiva.set('manual')">
+        Registrar dato
+      </button>
+    </div>
+
+    <!-- Tab: Gráfica -->
+    @if (tabActiva() === 'resumen') {
+      <div class="cli-card">
+        <div class="cli-card__header">
+          <h3>Precipitación y temperatura — últimos 15 días</h3>
+          <p>Datos históricos Open-Meteo · NASA ERA5</p>
+        </div>
+        @if (historial().length > 0) {
+          <div class="cli-grafica">
+            <canvas #graficaRef></canvas>
+          </div>
+        } @else {
+          <div class="cli-empty">
+            <p>Sin datos climáticos disponibles.</p>
+            <button class="btn btn--primario btn--sm"
+                    [disabled]="!parcelaId()"
+                    (click)="descargarDatosHistoricos()">
+              Descargar datos
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab: Historial -->
+    @if (tabActiva() === 'historial') {
+      <div class="cli-card">
+        <div class="cli-card__header">
+          <h3>Historial climático</h3>
+          @if (paginacion()) {
+            <span class="cli-pag-info">
+              {{ paginacion().total_registros }} registros ·
+              Página {{ paginacion().pagina_actual }}
+              de {{ paginacion().total_paginas }}
+            </span>
+          }
+        </div>
+
+        @if (historial().length === 0) {
+          <div class="cli-empty">
+            <p>Sin datos históricos.</p>
+            <button class="btn btn--primario btn--sm"
+                    [disabled]="!parcelaId()"
+                    (click)="descargarDatosHistoricos()">
+              Descargar datos históricos
+            </button>
+          </div>
+        } @else {
+          <div class="cli-tabla">
+            <div class="cli-tabla__header">
+              <span>Fecha</span>
+              <span>Lluvia (mm)</span>
+              <span>T. Máx (°C)</span>
+              <span>T. Mín (°C)</span>
+              <span>Humedad (%)</span>
+              <span>ET₀ (mm)</span>
+              <span>Fuente</span>
+            </div>
+            @for (d of historial(); track d.fecha) {
+              <div class="cli-tabla__row">
+                <span class="font-mono">{{ d.fecha }}</span>
+                <span class="font-mono azul">
+                  {{ d.precipitacion_mm | number:'1.1-1' }}
+                </span>
+                <span class="font-mono rojo">
+                  {{ d.temperatura_max_c | number:'1.1-1' }}
+                </span>
+                <span class="font-mono azul-oscuro">
+                  {{ d.temperatura_min_c | number:'1.1-1' }}
+                </span>
+                <span class="font-mono">
+                  {{ d.humedad_relativa_porcentaje | number:'1.0-0' }}
+                </span>
+                <span class="font-mono">
+                  {{ d.evapotranspiracion_mm | number:'1.2-2' }}
+                </span>
+                <span>
+                  <span class="tag tag--gris">{{ d.fuente }}</span>
+                </span>
+              </div>
+            }
+          </div>
+
+          <!-- Paginación -->
+          @if (paginacion()?.total_paginas > 1) {
+            <div class="cli-paginacion">
+              <button class="btn btn--ghost btn--sm"
+                      [disabled]="!paginacion().tiene_anterior"
+                      (click)="cargarHistorial(paginaActual() - 1)">
+                ← Anterior
+              </button>
+              <span class="cli-pag-num">
+                {{ paginaActual() }} / {{ paginacion().total_paginas }}
+              </span>
+              <button class="btn btn--ghost btn--sm"
+                      [disabled]="!paginacion().tiene_siguiente"
+                      (click)="cargarHistorial(paginaActual() + 1)">
+                Siguiente →
+              </button>
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <!-- Tab: Forecast -->
+    @if (tabActiva() === 'forecast') {
+      <div class="cli-card">
+        <div class="cli-card__header">
+          <h3>Pronóstico 7 días</h3>
+          <p>Open-Meteo Weather Forecast API</p>
+        </div>
+
+        @if (cargandoForecast()) {
+          <div class="cli-empty">
+            <div class="spinner-md"></div>
+            <p>Cargando pronóstico...</p>
+          </div>
+        } @else if (forecast().length === 0) {
+          <div class="cli-empty">
+            <p>Sin pronóstico disponible.</p>
+          </div>
+        } @else {
+          <div class="forecast-grid">
+            @for (d of forecast().slice(0,7); track d.fecha) {
+              <div class="forecast-dia">
+                <p class="forecast-dia__fecha">
+                  {{ d.fecha | slice:5 }}
+                </p>
+                <div class="forecast-dia__icono">
+                  <svg width="24" height="24" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="1.5">
+                    @if ((d.precipitacion_mm || 0) > 2) {
+                      <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+                      <line x1="8" y1="22" x2="8" y2="22"/>
+                      <line x1="12" y1="22" x2="12" y2="22"/>
+                      <line x1="16" y1="22" x2="16" y2="22"/>
+                    } @else {
+                      <circle cx="12" cy="12" r="5"/>
+                      <line x1="12" y1="1" x2="12" y2="3"/>
+                      <line x1="12" y1="21" x2="12" y2="23"/>
+                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                      <line x1="1" y1="12" x2="3" y2="12"/>
+                      <line x1="21" y1="12" x2="23" y2="12"/>
+                    }
+                  </svg>
+                </div>
+                <p class="forecast-dia__temp">
+                  <span class="rojo">
+                    {{ d.temperatura_max_c | number:'1.0-0' }}°
+                  </span>
+                  /
+                  <span class="azul-oscuro">
+                    {{ d.temperatura_min_c | number:'1.0-0' }}°
+                  </span>
+                </p>
+                <p class="forecast-dia__lluvia">
+                  {{ d.precipitacion_mm | number:'1.1-1' }} mm
+                </p>
+                <p class="forecast-dia__humedad">
+                  {{ d.humedad_relativa_porcentaje | number:'1.0-0' }}%
+                </p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab: Registro manual -->
+    @if (tabActiva() === 'manual') {
+      <div class="cli-card">
+        <div class="cli-card__header">
+          <h3>Registrar dato climático manual</h3>
+          <p>
+            Ingresa datos observados directamente en campo
+            cuando no hay cobertura de la API
+          </p>
+        </div>
+
+        @if (error()) {
+          <div class="cli-error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ error() }}
+          </div>
+        }
+
+        <div class="manual-form">
+          <div class="manual-grid">
+            <div class="form-field form-field--full">
+              <label>Fecha <span class="required">*</span></label>
+              <input type="date" class="input"
+                     [(ngModel)]="formManual.fecha">
+            </div>
+            <div class="form-field">
+              <label>Lluvia (mm)</label>
+              <input type="number" class="input"
+                     [(ngModel)]="formManual.precipitacion_mm"
+                     placeholder="0.0" min="0" step="0.1">
+            </div>
+            <div class="form-field">
+              <label>Temperatura máxima (°C)</label>
+              <input type="number" class="input"
+                     [(ngModel)]="formManual.temperatura_max_c"
+                     placeholder="Ej. 28.5">
+            </div>
+            <div class="form-field">
+              <label>Temperatura mínima (°C)</label>
+              <input type="number" class="input"
+                     [(ngModel)]="formManual.temperatura_min_c"
+                     placeholder="Ej. 18.0">
+            </div>
+            <div class="form-field">
+              <label>Humedad relativa (%)</label>
+              <input type="number" class="input"
+                     [(ngModel)]="formManual.humedad_relativa_porcentaje"
+                     placeholder="Ej. 75" min="0" max="100">
+            </div>
+            <div class="form-field">
+              <label>ET₀ estimada (mm)</label>
+              <input type="number" class="input"
+                     [(ngModel)]="formManual.evapotranspiracion_mm"
+                     placeholder="Ej. 3.5" min="0" step="0.1">
+            </div>
+          </div>
+
+          <div class="manual-footer">
+            <button
+              class="btn btn--primario"
+              [disabled]="guardandoManual()"
+              (click)="guardarEventoManual()">
+              @if (guardandoManual()) {
+                <span class="spinner-sm"></span>
+                Guardando...
+              } @else {
+                Guardar dato manual
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+</div>

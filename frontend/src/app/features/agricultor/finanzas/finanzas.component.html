@@ -1,0 +1,473 @@
+<div class="fin-page">
+
+  <!-- Header -->
+  <div class="fin-header">
+    <div>
+      <h1>Finanzas de la temporada</h1>
+      <p>Control de gastos, ingresos y rentabilidad</p>
+    </div>
+    <div class="fin-header__actions">
+      <select class="input fin-select"
+              [value]="temporadaId()"
+              (change)="cargarDatos($any($event.target).value)">
+        @for (t of temporadas(); track t.id) {
+          <option [value]="t.id">{{ t.nombre }}</option>
+        }
+      </select>
+      <button class="btn btn--primario" (click)="abrirFormCompra()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Registrar gasto
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="fin-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="fin-skeleton">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        @for (i of [1,2,3]; track i) {
+          <div class="skeleton" style="height:90px;border-radius:8px"></div>
+        }
+      </div>
+      <div class="skeleton" style="height:200px;border-radius:8px"></div>
+    </div>
+  }
+
+  @if (!cargando()) {
+
+    <!-- Métricas de rentabilidad -->
+    @if (rentabilidad()) {
+      <div class="fin-metricas">
+
+        <div class="fin-metrica">
+          <p class="fin-metrica__label">Total gastos</p>
+          <p class="fin-metrica__val naranja">
+            ${{ rentabilidad().gastos?.total | number:'1.2-2' }}
+          </p>
+          <p class="fin-metrica__sub">
+            {{ gastos().length }} compra(s) registrada(s)
+          </p>
+        </div>
+
+        <div class="fin-metrica">
+          <p class="fin-metrica__label">Ingresos por venta</p>
+          <p class="fin-metrica__val verde">
+            ${{ rentabilidad().ingresos?.total | number:'1.2-2' }}
+          </p>
+          <p class="fin-metrica__sub">
+            @if (rentabilidad().ingresos?.volumen_vendido_qq) {
+              {{ rentabilidad().ingresos.volumen_vendido_qq }} qq vendidos
+            } @else {
+              Sin ventas registradas
+            }
+          </p>
+        </div>
+
+        <div class="fin-metrica"
+             [class.fin-metrica--positivo]="gananciaPositiva"
+             [class.fin-metrica--negativo]="!gananciaPositiva">
+          <p class="fin-metrica__label">
+            {{ gananciaPositiva ? 'Ganancia neta' : 'Déficit' }}
+          </p>
+          <p class="fin-metrica__val"
+             [class.verde]="gananciaPositiva"
+             [class.rojo]="!gananciaPositiva">
+            ${{ rentabilidad().resultado?.ganancia_neta | number:'1.2-2' }}
+          </p>
+          <p class="fin-metrica__sub">
+            @if (rentabilidad().resultado?.costo_por_quintal) {
+              Costo/qq: ${{ rentabilidad().resultado.costo_por_quintal | number:'1.2-2' }}
+            } @else {
+              {{ gananciaPositiva ? 'Temporada rentable' : 'En déficit' }}
+            }
+          </p>
+        </div>
+
+      </div>
+    }
+
+    <!-- Tabs -->
+    <div class="fin-tabs">
+      <button class="fin-tab"
+              [class.activo]="tabActiva() === 'resumen'"
+              (click)="tabActiva.set('resumen')">
+        Resumen por categoría
+      </button>
+      <button class="fin-tab"
+              [class.activo]="tabActiva() === 'gastos'"
+              (click)="tabActiva.set('gastos')">
+        Detalle de gastos
+      </button>
+      <button class="fin-tab"
+              [class.activo]="tabActiva() === 'venta'"
+              (click)="tabActiva.set('venta')">
+        Registrar venta de cosecha
+      </button>
+    </div>
+
+    <!-- Tab: Resumen -->
+    @if (tabActiva() === 'resumen') {
+      <div class="fin-card">
+        <div class="fin-card__header">
+          <h3>Gastos por categoría</h3>
+        </div>
+
+        @if (rentabilidad()?.gastos) {
+          <div class="fin-tabla-resumen">
+
+            <div class="fin-tabla-resumen__row header">
+              <span>Categoría</span>
+              <span>Monto</span>
+              <span>% del total</span>
+            </div>
+
+            @for (cat of categorias; track cat.id) {
+              @if (rentabilidad().gastos[cat.id] > 0) {
+                <div class="fin-tabla-resumen__row">
+                  <div class="fin-cat-label">
+                    <span class="fin-cat-dot"
+                          [style.background]="colorCategoria(cat.id)">
+                    </span>
+                    <span>{{ cat.label }}</span>
+                  </div>
+                  <span class="font-mono">
+                    ${{ rentabilidad().gastos[cat.id] | number:'1.2-2' }}
+                  </span>
+                  <div class="fin-barra-wrap">
+                    <div class="fin-barra"
+                         [style.width.%]="(rentabilidad().gastos[cat.id] /
+                           rentabilidad().gastos.total) * 100"
+                         [style.background]="colorCategoria(cat.id)">
+                    </div>
+                    <span class="fin-barra-pct font-mono">
+                      {{ ((rentabilidad().gastos[cat.id] /
+                           rentabilidad().gastos.total) * 100) | number:'1.0-0' }}%
+                    </span>
+                  </div>
+                </div>
+              }
+            }
+
+            <div class="fin-tabla-resumen__row total">
+              <span>Total</span>
+              <span class="font-mono naranja">
+                ${{ rentabilidad().gastos?.total | number:'1.2-2' }}
+              </span>
+              <span>100%</span>
+            </div>
+
+          </div>
+        } @else {
+          <div class="fin-empty">
+            <p>Sin gastos registrados aún.</p>
+            <button class="btn btn--primario btn--sm"
+                    (click)="abrirFormCompra()">
+              Registrar primer gasto
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab: Detalle gastos -->
+    @if (tabActiva() === 'gastos') {
+      <div class="fin-card">
+        <div class="fin-card__header">
+          <h3>Detalle de compras y gastos</h3>
+          <button class="btn btn--secundario btn--sm"
+                  (click)="abrirFormCompra()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Agregar
+          </button>
+        </div>
+
+        @if (gastos().length === 0) {
+          <div class="fin-empty">
+            <p>Sin gastos registrados.</p>
+          </div>
+        } @else {
+          <div class="fin-tabla-gastos">
+            <div class="fin-tabla-gastos__header">
+              <span>Categoría</span>
+              <span>Producto</span>
+              <span>Fecha</span>
+              <span>Cantidad</span>
+              <span>Precio/u</span>
+              <span>Total</span>
+              <span></span>
+            </div>
+            @for (g of gastos(); track g.id) {
+              <div class="fin-tabla-gastos__row">
+                <div class="fin-cat-label">
+                  <span class="fin-cat-dot"
+                        [style.background]="colorCategoria(g.categoria)">
+                  </span>
+                  <span>{{ labelCategoria(g.categoria) }}</span>
+                </div>
+                <span class="fin-tabla-gastos__producto">
+                  {{ g.producto_personalizado || g.nombre_insumo || '—' }}
+                </span>
+                <span class="font-mono">{{ g.fecha_compra }}</span>
+                <span class="font-mono">
+                  {{ g.cantidad }} {{ g.unidad_medida }}
+                </span>
+                <span class="font-mono">
+                  ${{ g.precio_unitario | number:'1.2-2' }}
+                </span>
+                <span class="font-mono naranja-bold">
+                  ${{ g.costo_total | number:'1.2-2' }}
+                </span>
+                <div class="fin-acciones">
+                  <button
+                    class="btn btn--ghost btn--sm fin-btn-eliminar"
+                    (click)="confirmarEliminarCompra(g)">
+                    <svg width="12" height="12" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab: Registrar venta -->
+    @if (tabActiva() === 'venta') {
+      <div class="fin-card">
+        <div class="fin-card__header">
+          <h3>Registrar venta de cosecha</h3>
+          <p>Ingresa los datos de la venta para calcular la rentabilidad final</p>
+        </div>
+
+        <div class="venta-form">
+          <div class="venta-grid">
+
+            <div class="form-field">
+              <label>Producción real (quintales)
+                <span class="required">*</span>
+              </label>
+              <input type="number" class="input"
+                     [(ngModel)]="formVenta.produccion_real_qq"
+                     placeholder="Ej. 48.5" min="0" step="0.1">
+            </div>
+
+            <div class="form-field">
+              <label>Fecha de cosecha <span class="required">*</span></label>
+              <input type="date" class="input"
+                     [(ngModel)]="formVenta.fecha_cosecha">
+            </div>
+
+            <div class="form-field">
+              <label>Precio por quintal ($)
+                <span class="required">*</span>
+              </label>
+              <input type="number" class="input"
+                     [(ngModel)]="formVenta.precio_venta_qq"
+                     placeholder="Ej. 32.50" min="0" step="0.01">
+            </div>
+
+            <div class="form-field">
+              <label>Quintales vendidos
+                <span class="required">*</span>
+              </label>
+              <input type="number" class="input"
+                     [(ngModel)]="formVenta.volumen_vendido_qq"
+                     placeholder="Ej. 40.0" min="0" step="0.1">
+            </div>
+
+            <div class="form-field">
+              <label>Autoconsumo (quintales)</label>
+              <input type="number" class="input"
+                     [(ngModel)]="formVenta.produccion_autoconsumo_qq"
+                     placeholder="Ej. 8.5" min="0" step="0.1">
+            </div>
+
+            <!-- Preview de ingresos -->
+            @if (ingresosCalculados > 0) {
+              <div class="venta-preview">
+                <p class="venta-preview__label">Ingresos calculados</p>
+                <p class="venta-preview__val font-mono verde">
+                  ${{ ingresosCalculados | number:'1.2-2' }}
+                </p>
+                <p class="venta-preview__sub">
+                  {{ formVenta.volumen_vendido_qq }} qq ×
+                  ${{ formVenta.precio_venta_qq }}/qq
+                </p>
+              </div>
+            }
+
+          </div>
+
+          @if (!tpId()) {
+            <div class="venta-aviso">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              No se encontró una parcela vinculada a esta temporada.
+              Vincula una parcela primero.
+            </div>
+          }
+
+          <div class="venta-footer">
+            <button
+              class="btn btn--primario"
+              [disabled]="guardando() || !tpId()"
+              (click)="guardarVenta()">
+              @if (guardando()) {
+                <span class="spinner-sm"></span>
+                Guardando...
+              } @else {
+                Registrar venta
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+
+  <!-- Modal registrar compra -->
+  @if (mostrarForm()) {
+    <div class="modal-overlay" (click)="cerrarForm()">
+      <div class="modal" (click)="$event.stopPropagation()">
+
+        <div class="modal__header">
+          <h2>Registrar gasto / compra</h2>
+          <button class="modal__close" (click)="cerrarForm()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        @if (errorForm()) {
+          <div class="modal__error">{{ errorForm() }}</div>
+        }
+
+        <div class="modal__body">
+
+          <!-- Categorías como botones -->
+          <div class="form-field">
+            <label>Categoría <span class="required">*</span></label>
+            <div class="cat-grid">
+              @for (c of categorias; track c.id) {
+                <button
+                  class="cat-btn"
+                  [class.seleccionado]="formCompra.categoria === c.id"
+                  (click)="formCompra.categoria = c.id">
+                  <span class="cat-btn__dot"
+                        [style.background]="colorCategoria(c.id)"></span>
+                  {{ c.label }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="modal__grid">
+
+            <div class="form-field form-field--full">
+              <label>Producto / descripción</label>
+              <input type="text" class="input"
+                     [(ngModel)]="formCompra.producto_personalizado"
+                     placeholder="Ej. Urea 46%, Jornal recolección...">
+            </div>
+
+            <div class="form-field">
+              <label>Fecha <span class="required">*</span></label>
+              <input type="date" class="input"
+                     [(ngModel)]="formCompra.fecha_compra">
+            </div>
+
+            <div class="form-field">
+              <label>Proveedor</label>
+              <input type="text" class="input"
+                     [(ngModel)]="formCompra.proveedor"
+                     placeholder="Ej. Agroquímica Loja">
+            </div>
+
+            <div class="form-field">
+              <label>Cantidad</label>
+              <input type="number" class="input"
+                     [(ngModel)]="formCompra.cantidad"
+                     placeholder="Ej. 50" min="0">
+            </div>
+
+            <div class="form-field">
+              <label>Unidad</label>
+              <select class="input" [(ngModel)]="formCompra.unidad_medida">
+                @for (u of unidades; track u) {
+                  <option [value]="u">{{ u }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Precio unitario ($) <span class="required">*</span></label>
+              <input type="number" class="input"
+                     [(ngModel)]="formCompra.precio_unitario"
+                     placeholder="0.00" min="0" step="0.01">
+            </div>
+
+            <!-- Preview costo total -->
+            @if (costoCalculado > 0) {
+              <div class="costo-preview">
+                <span>Costo total:</span>
+                <span class="font-mono naranja-bold">
+                  ${{ costoCalculado | number:'1.2-2' }}
+                </span>
+              </div>
+            }
+
+          </div>
+        </div>
+
+        <div class="modal__footer">
+          <button class="btn btn--secundario" (click)="cerrarForm()">
+            Cancelar
+          </button>
+          <button class="btn btn--primario"
+                  [disabled]="guardando()"
+                  (click)="guardarCompra()">
+            @if (guardando()) {
+              <span class="spinner-sm"></span>
+              Guardando...
+            } @else {
+              Registrar gasto
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+</div>

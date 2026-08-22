@@ -1,0 +1,74 @@
+<nav class="navbar" [class.scrolled]="scrolled()" [class.dark]="darkMode()">
+  <div class="container navbar__inner">
+
+    <!-- Logo -->
+    <a class="navbar__logo" routerLink="/">
+      <img src="/images/logo_agrocycle.png" alt="AgroCycle" height="36">
+      <span class="navbar__logo-text">AgroCycle</span>
+    </a>
+
+    <!-- Links desktop -->
+    <ul class="navbar__links">
+      <li><a href="#problema">El problema</a></li>
+      <li><a href="#solucion">Solución</a></li>
+      <li><a href="#metricas">Resultados</a></li>
+      <li><a href="#proyecto">Proyecto</a></li>
+    </ul>
+
+    <!-- Acciones -->
+    <div class="navbar__actions">
+      <button
+        class="navbar__dark-toggle"
+        (click)="toggleDarkMode()"
+        [attr.aria-label]="darkMode() ? 'Modo claro' : 'Modo oscuro'">
+        @if (darkMode()) {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+          </svg>
+        } @else {
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        }
+      </button>
+
+      <a routerLink="/auth/login" class="btn-login">
+        Iniciar sesión
+      </a>
+
+      <a routerLink="/auth/registro" class="btn-primary">
+        Registrarse
+      </a>
+
+      <!-- Hamburger mobile -->
+      <button
+        class="navbar__hamburger"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="menuAbierto()"
+        aria-label="Menú">
+        <span [class.open]="menuAbierto()"></span>
+        <span [class.open]="menuAbierto()"></span>
+        <span [class.open]="menuAbierto()"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Menú mobile -->
+  @if (menuAbierto()) {
+    <div class="navbar__mobile">
+      <ul>
+        <li><a href="#problema" (click)="toggleMenu()">El problema</a></li>
+        <li><a href="#solucion" (click)="toggleMenu()">Solución</a></li>
+        <li><a href="#metricas" (click)="toggleMenu()">Resultados</a></li>
+        <li><a href="#proyecto" (click)="toggleMenu()">Proyecto</a></li>
+        <li><a href="#contacto" class="btn-primary" (click)="toggleMenu()">Solicitar acceso</a></li>
+      </ul>
+    </div>
+  }
+</nav>

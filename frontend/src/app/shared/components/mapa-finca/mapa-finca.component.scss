@@ -1,0 +1,227 @@
+@use 'sass:color';
+@use '../../../../styles' as *;
+
+.mf {
+  display: flex;
+  flex-direction: column;
+
+  // ---- Vacío ----
+  &__empty {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: $s3;
+    color: var(--text-ter);
+    p { font-size: 12px; }
+  }
+
+  // ---- Wrap SVG ----
+  &__wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #EDF2EC;
+  }
+
+  // ---- SVG ----
+  &__svg {
+    display: block;
+    user-select: none;
+
+    .txt-lote {
+      font-size: 9px;
+      font-weight: 700;
+      fill: #1A1A1A;
+      font-family: Inter, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      paint-order: stroke fill;
+      stroke: rgba(255,255,255,0.8);
+      stroke-width: 3px;
+    }
+
+    .txt-parcela {
+      font-size: 10px;
+      font-weight: 700;
+      fill: #fff;
+      font-family: Inter, sans-serif;
+      paint-order: stroke fill;
+      stroke: rgba(0,0,0,0.35);
+      stroke-width: 2.5px;
+    }
+
+    .txt-etapa {
+      font-size: 8px;
+      font-weight: 600;
+      fill: rgba(255,255,255,0.9);
+      font-family: Inter, sans-serif;
+      paint-order: stroke fill;
+      stroke: rgba(0,0,0,0.2);
+      stroke-width: 1.5px;
+    }
+
+    .txt-area {
+      font-size: 8px;
+      fill: rgba(255,255,255,0.8);
+      font-family: 'JetBrains Mono', monospace;
+      paint-order: stroke fill;
+      stroke: rgba(0,0,0,0.2);
+      stroke-width: 1.5px;
+    }
+  }
+
+  // ---- Controles zoom ----
+  &__controles {
+    position: absolute;
+    top: $s3;
+    left: $s3;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    z-index: 10;
+  }
+
+  &__ctrl {
+    width: 28px;
+    height: 28px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-sec);
+    transition: $t-fast;
+
+    &:first-child { border-radius: $radius-sm $radius-sm 0 0; }
+    &:last-child  { border-radius: 0 0 $radius-sm $radius-sm; }
+
+    &:hover {
+      background: var(--bg-app);
+      color: var(--text-primary);
+    }
+  }
+
+  // ---- Norte ----
+  &__norte {
+    position: absolute;
+    top: $s3;
+    right: $s3;
+    width: 28px;
+    height: 28px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-full;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-primary);
+    z-index: 10;
+  }
+
+  // ---- Tooltip ----
+  &__tooltip {
+    position: absolute;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    padding: $s3 $s4;
+    box-shadow: $shadow-md;
+    min-width: 170px;
+    max-width: 220px;
+    pointer-events: none;
+    z-index: 50;
+    animation: fadeIn 0.1s ease;
+  }
+
+  &__tooltip-titulo {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: $s2;
+    padding-bottom: $s2;
+    border-bottom: 1px solid var(--border);
+  }
+
+  &__tooltip-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px $s3;
+
+    span:nth-child(odd) {
+      font-size: 10px;
+      color: var(--text-ter);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    span:nth-child(even) {
+      font-size: 11px;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-family: $font-mono;
+    }
+  }
+
+  // ---- Leyenda ----
+  &__leyenda {
+    display: flex;
+    align-items: center;
+    gap: $s3;
+    padding: $s2 $s4;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+  }
+
+  &__leyenda-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-sec);
+  }
+
+  &__leyenda-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  &__leyenda-sep { flex: 1; }
+
+  &__leyenda-info {
+    font-size: 10px;
+    color: var(--text-ter);
+    font-family: $font-mono;
+  }
+}
+
+// En mapa-finca.component.scss dentro de &__svg
+.txt-pendiente {
+  font-size: 9px;
+  font-weight: 700;
+  fill: #fff;
+  font-family: Inter, sans-serif;
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,0.4);
+  stroke-width: 2px;
+}
+
+.txt-orientacion {
+  font-size: 8px;
+  fill: rgba(255,255,255,0.9);
+  font-family: Inter, sans-serif;
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,0.3);
+  stroke-width: 1.5px;
+  text-transform: capitalize;
+}

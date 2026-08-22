@@ -1,0 +1,133 @@
+<div class="obs-page">
+  <div class="obs-header">
+    <div>
+      <h1>Observaciones técnicas</h1>
+      <p>Registro de hallazgos durante visitas de campo</p>
+    </div>
+    <div class="obs-header__actions">
+      <select class="input obs-select"
+              [value]="temporadaId()"
+              (change)="cargarObservaciones($any($event.target).value)">
+        @for (t of temporadas(); track t.id) {
+          <option [value]="t.id">{{ t.nombre }}</option>
+        }
+      </select>
+      <button class="btn btn--primario" (click)="abrirForm()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva observación
+      </button>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="obs-skeleton">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton" style="height:80px;border-radius:8px"></div>
+      }
+    </div>
+  }
+
+  @if (!cargando() && observaciones().length === 0) {
+    <div class="obs-empty">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      <p>Sin observaciones en esta temporada.</p>
+      <button class="btn btn--primario btn--sm" (click)="abrirForm()">
+        Registrar primera observación
+      </button>
+    </div>
+  }
+
+  @if (!cargando() && observaciones().length > 0) {
+    <div class="obs-lista">
+      @for (o of observaciones(); track o.id) {
+        <div class="obs-item" [class]="'obs-item--' + (o.severidad || 'normal')">
+          <div class="obs-item__borde"></div>
+          <div class="obs-item__body">
+            <div class="obs-item__header">
+              <div class="obs-item__meta">
+                <span class="obs-item__tipo">{{ o.tipo || 'Observación' }}</span>
+                <span class="tag" [class]="colorSeveridad(o.severidad)">
+                  {{ o.severidad || 'normal' }}
+                </span>
+              </div>
+              <span class="obs-item__fecha font-mono">{{ o.fecha }}</span>
+            </div>
+            <p class="obs-item__desc">{{ o.descripcion }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Modal -->
+  @if (mostrarForm()) {
+    <div class="modal-overlay" (click)="cerrarForm()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal__header">
+          <h2>Nueva observación de campo</h2>
+          <button class="modal__close" (click)="cerrarForm()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        @if (errorForm()) {
+          <div class="modal__error">{{ errorForm() }}</div>
+        }
+        <div class="modal__body">
+          <div class="form-field">
+            <label>Tipo <span class="required">*</span></label>
+            <select class="input" [(ngModel)]="form.tipo">
+              <option value="">Seleccionar tipo...</option>
+              @for (t of tipos; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
+          <div class="modal__grid">
+            <div class="form-field">
+              <label>Fecha <span class="required">*</span></label>
+              <input type="date" class="input" [(ngModel)]="form.fecha">
+            </div>
+            <div class="form-field">
+              <label>Severidad</label>
+              <select class="input" [(ngModel)]="form.severidad">
+                @for (s of severidades; track s.id) {
+                  <option [value]="s.id">{{ s.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Descripción <span class="required">*</span></label>
+            <textarea class="input" [(ngModel)]="form.descripcion"
+                      rows="4"
+                      placeholder="Describe lo que observaste en campo...">
+            </textarea>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secundario" (click)="cerrarForm()">Cancelar</button>
+          <button class="btn btn--primario"
+                  [disabled]="guardando()" (click)="guardar()">
+            @if (guardando()) {
+              <span class="spinner-sm"></span> Guardando...
+            } @else {
+              Guardar observación
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

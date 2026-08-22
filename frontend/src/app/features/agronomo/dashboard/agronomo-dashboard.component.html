@@ -1,0 +1,176 @@
+<div class="agro-dash">
+
+  <!-- Título -->
+  <div class="agro-dash__header">
+    <div>
+      <p class="agro-dash__saludo">Buenos días, {{ nombreCorto }}</p>
+      <h1>Panel del Agrónomo</h1>
+      <p class="agro-dash__sub">
+        Seguimiento técnico de los cultivos bajo tu supervisión
+      </p>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="agro-dash__skeleton">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        @for (i of [1,2,3]; track i) {
+          <div class="skeleton" style="height:80px;border-radius:8px"></div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (!cargando()) {
+
+    <!-- Métricas -->
+    <div class="agro-metrics">
+      <div class="agro-metric">
+        <p class="agro-metric__label">Fincas supervisadas</p>
+        <p class="agro-metric__val">{{ totalFincas }}</p>
+        <p class="agro-metric__sub">
+          {{ temporadas().length }} temporada(s)
+        </p>
+      </div>
+      <div class="agro-metric">
+        <p class="agro-metric__label">Recomendaciones emitidas</p>
+        <p class="agro-metric__val">{{ recomendaciones().length }}</p>
+        <p class="agro-metric__sub">
+          {{ recomendaciones().filter(r => !r.leida).length }} sin leer
+        </p>
+      </div>
+      <div class="agro-metric">
+        <p class="agro-metric__label">Observaciones registradas</p>
+        <p class="agro-metric__val">{{ observaciones().length }}</p>
+        <p class="agro-metric__sub">Esta temporada</p>
+      </div>
+    </div>
+
+    <!-- Temporada activa -->
+    @if (temporadaActiva()) {
+      <div class="agro-card">
+        <div class="agro-card__header">
+          <h3>Temporada activa</h3>
+          <span class="tag tag--verde">Activa</span>
+        </div>
+        <div class="agro-card__body">
+          <div class="agro-kv">
+            <span class="agro-kv__k">Finca</span>
+            <span class="agro-kv__v">{{ temporadaActiva().finca }}</span>
+          </div>
+          <div class="agro-kv">
+            <span class="agro-kv__k">Cultivo</span>
+            <span class="agro-kv__v">{{ temporadaActiva().cultivo }}</span>
+          </div>
+          <div class="agro-kv">
+            <span class="agro-kv__k">Superficie</span>
+            <span class="agro-kv__v font-mono">
+              {{ temporadaActiva().produccion?.superficie_total_ha }} ha
+            </span>
+          </div>
+          <div class="agro-kv">
+            <span class="agro-kv__k">Inicio</span>
+            <span class="agro-kv__v font-mono">
+              {{ temporadaActiva().fechas?.inicio }}
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Acciones rápidas -->
+    <div class="agro-acciones">
+      <a routerLink="/agronomo/observaciones" class="agro-accion">
+        <div class="agro-accion__icono azul">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <p class="agro-accion__titulo">Registrar observación</p>
+          <p class="agro-accion__sub">Anota hallazgos técnicos de campo</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </a>
+
+      <a routerLink="/agronomo/recomendaciones" class="agro-accion">
+        <div class="agro-accion__icono verde">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="agro-accion__titulo">Nueva recomendación</p>
+          <p class="agro-accion__sub">Emite una recomendación técnica</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </a>
+
+      <a routerLink="/agronomo/evaluaciones" class="agro-accion">
+        <div class="agro-accion__icono naranja">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <div>
+          <p class="agro-accion__titulo">Registrar evaluación</p>
+          <p class="agro-accion__sub">Evaluación formal del estado del cultivo</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Últimas recomendaciones -->
+    @if (recomendaciones().length > 0) {
+      <div class="agro-card">
+        <div class="agro-card__header">
+          <h3>Últimas recomendaciones emitidas</h3>
+          <a routerLink="/agronomo/recomendaciones"
+             class="btn btn--ghost btn--sm">
+            Ver todas
+          </a>
+        </div>
+        @for (r of recomendaciones().slice(0,3); track r.id) {
+          <div class="agro-rec-item"
+               [class]="'agro-rec-item--' + (r.urgencia || 'baja')">
+            <div class="agro-rec-item__borde"></div>
+            <div class="agro-rec-item__body">
+              <div class="agro-rec-item__top">
+                <span class="agro-rec-item__tipo">
+                  {{ r.tipo || 'General' }}
+                </span>
+                <div class="agro-rec-item__meta">
+                  <span class="tag"
+                        [class]="r.urgencia === 'alta' ? 'tag--rojo' :
+                                 r.urgencia === 'media' ? 'tag--naranja' :
+                                 'tag--verde'">
+                    {{ r.urgencia }}
+                  </span>
+                  @if (r.leida) {
+                    <span class="tag tag--gris">Leída</span>
+                  }
+                </div>
+              </div>
+              <p class="agro-rec-item__desc">{{ r.descripcion }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  }
+</div>

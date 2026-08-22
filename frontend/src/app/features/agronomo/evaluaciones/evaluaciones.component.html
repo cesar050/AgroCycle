@@ -1,0 +1,150 @@
+<div class="ev-page">
+  <div class="ev-header">
+    <div>
+      <h1>Evaluaciones de campo</h1>
+      <p>Evaluaciones formales del estado del cultivo</p>
+    </div>
+    <div class="ev-header__actions">
+      <select class="input ev-select" [value]="temporadaId()"
+              (change)="cargar($any($event.target).value)">
+        @for (t of temporadas(); track t.id) {
+          <option [value]="t.id">{{ t.nombre }}</option>
+        }
+      </select>
+      <button class="btn btn--primario" (click)="abrirForm()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva evaluación
+      </button>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div style="display:flex;flex-direction:column;gap:12px">
+      @for (i of [1,2]; track i) {
+        <div class="skeleton" style="height:100px;border-radius:8px"></div>
+      }
+    </div>
+  }
+
+  @if (!cargando() && evaluaciones().length === 0) {
+    <div class="ev-empty">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5">
+        <path d="M9 11l3 3L22 4"/>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+      <p>Sin evaluaciones en esta temporada.</p>
+      <button class="btn btn--primario btn--sm" (click)="abrirForm()">
+        Registrar primera evaluación
+      </button>
+    </div>
+  }
+
+  @if (!cargando() && evaluaciones().length > 0) {
+    <div class="ev-lista">
+      @for (e of evaluaciones(); track e.id) {
+        <div class="ev-item">
+          <div class="ev-item__header">
+            <div class="ev-item__meta">
+              <span class="tag" [class]="colorEstado(e.estado_general)">
+                {{ e.estado_general }}
+              </span>
+              <span class="ev-item__fecha font-mono">{{ e.fecha }}</span>
+            </div>
+          </div>
+          <div class="ev-item__datos">
+            @if (e.humedad_suelo) {
+              <div class="ev-kv">
+                <span>Humedad suelo</span>
+                <span class="font-mono">{{ e.humedad_suelo }}%</span>
+              </div>
+            }
+            @if (e.temperatura_campo) {
+              <div class="ev-kv">
+                <span>Temperatura campo</span>
+                <span class="font-mono">{{ e.temperatura_campo }}°C</span>
+              </div>
+            }
+            @if (e.ndvi) {
+              <div class="ev-kv">
+                <span>NDVI</span>
+                <span class="font-mono">{{ e.ndvi }}</span>
+              </div>
+            }
+          </div>
+          @if (e.observaciones) {
+            <p class="ev-item__obs">{{ e.observaciones }}</p>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (mostrarForm()) {
+    <div class="modal-overlay" (click)="cerrarForm()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal__header">
+          <h2>Nueva evaluación de campo</h2>
+          <button class="modal__close" (click)="cerrarForm()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        @if (errorForm()) {
+          <div class="modal__error">{{ errorForm() }}</div>
+        }
+        <div class="modal__body">
+          <div class="modal__grid">
+            <div class="form-field">
+              <label>Fecha <span class="required">*</span></label>
+              <input type="date" class="input" [(ngModel)]="form.fecha">
+            </div>
+            <div class="form-field">
+              <label>Estado general <span class="required">*</span></label>
+              <select class="input" [(ngModel)]="form.estado_general">
+                @for (e of estados; track e.id) {
+                  <option [value]="e.id">{{ e.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Humedad del suelo (%)</label>
+              <input type="number" class="input" [(ngModel)]="form.humedad_suelo"
+                     placeholder="Ej. 68" min="0" max="100">
+            </div>
+            <div class="form-field">
+              <label>Temperatura en campo (°C)</label>
+              <input type="number" class="input" [(ngModel)]="form.temperatura_campo"
+                     placeholder="Ej. 28.4">
+            </div>
+            <div class="form-field">
+              <label>NDVI</label>
+              <input type="number" class="input" [(ngModel)]="form.ndvi"
+                     placeholder="0.00 – 1.00" min="0" max="1" step="0.01">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Observaciones</label>
+            <textarea class="input" [(ngModel)]="form.observaciones"
+                      rows="3" placeholder="Notas adicionales de la evaluación...">
+            </textarea>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secundario" (click)="cerrarForm()">Cancelar</button>
+          <button class="btn btn--primario" [disabled]="guardando()" (click)="guardar()">
+            @if (guardando()) { <span class="spinner-sm"></span> Guardando... }
+            @else { Registrar evaluación }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

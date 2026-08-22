@@ -1,0 +1,138 @@
+<div class="rec-page">
+
+  <div class="rec-header">
+    <div>
+      <h1>
+        Recomendaciones del agrónomo
+        @if (noLeidas > 0) {
+          <span class="rec-badge">{{ noLeidas }}</span>
+        }
+      </h1>
+      <p>Alertas y recomendaciones técnicas para tu cultivo</p>
+    </div>
+    @if (temporadas().length > 1) {
+      <select class="input rec-select"
+              [value]="temporadaId()"
+              (change)="cargarRecomendaciones($any($event.target).value)">
+        @for (t of temporadas(); track t.id) {
+          <option [value]="t.id">{{ t.nombre }}</option>
+        }
+      </select>
+    }
+  </div>
+
+  <!-- Filtros -->
+  <div class="rec-filtros">
+    <select class="input rec-select"
+            [value]="filtroUrgencia()"
+            (change)="filtroUrgencia.set($any($event.target).value)">
+      <option value="">Todas las urgencias</option>
+      <option value="alta">Alta</option>
+      <option value="media">Media</option>
+      <option value="baja">Baja</option>
+    </select>
+
+    <select class="input rec-select"
+            [value]="filtroLeida()"
+            (change)="filtroLeida.set($any($event.target).value)">
+      <option value="">Todas</option>
+      <option value="no_leida">Sin leer</option>
+      <option value="leida">Leídas</option>
+    </select>
+  </div>
+
+  @if (cargando()) {
+    <div class="rec-skeleton">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton" style="height:100px;border-radius:8px"></div>
+      }
+    </div>
+  }
+
+  @if (!cargando() && recomendacionesFiltradas.length === 0) {
+    <div class="rec-empty">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <h3>Sin recomendaciones</h3>
+      <p>
+        @if (noLeidas === 0) {
+          Tu agrónomo no ha registrado recomendaciones
+          para esta temporada aún.
+        } @else {
+          No hay recomendaciones que coincidan con los filtros.
+        }
+      </p>
+    </div>
+  }
+
+  @if (!cargando() && recomendacionesFiltradas.length > 0) {
+    <div class="rec-lista">
+      @for (r of recomendacionesFiltradas; track r.id) {
+        <div
+          class="rec-item"
+          [class.rec-item--no-leida]="!r.leida"
+          [style.border-left-color]="colorBorde(r.urgencia)">
+
+          <div class="rec-item__header">
+            <div class="rec-item__meta">
+              <span class="rec-item__tipo">{{ r.tipo || 'General' }}</span>
+              <span class="tag" [class]="colorUrgencia(r.urgencia)">
+                {{ r.urgencia }}
+              </span>
+              @if (!r.leida) {
+                <span class="rec-dot-nueva"></span>
+              }
+            </div>
+            <div class="rec-item__fecha-wrap">
+              <span class="rec-item__fecha font-mono">
+                {{ r.fecha_recomendacion || r.created_at | slice:0:10 }}
+              </span>
+              @if (!r.leida) {
+                <button
+                  class="btn btn--ghost btn--sm"
+                  (click)="marcarLeida(r.id)">
+                  Marcar como leída
+                </button>
+              }
+            </div>
+          </div>
+
+          <p class="rec-item__desc">{{ r.descripcion }}</p>
+
+          @if (r.accion_recomendada) {
+            <div class="rec-item__accion">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              <span>{{ r.accion_recomendada }}</span>
+            </div>
+          }
+
+          @if (r.fecha_limite) {
+            <div class="rec-item__limite">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Aplicar antes del {{ r.fecha_limite }}
+            </div>
+          }
+
+          @if (r.agronomo_nombre) {
+            <p class="rec-item__agronomo">
+              — {{ r.agronomo_nombre }}
+            </p>
+          }
+
+        </div>
+      }
+    </div>
+  }
+
+</div>

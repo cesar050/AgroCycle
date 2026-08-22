@@ -1,0 +1,124 @@
+services:
+
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: agrocycle_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - agrocycle_db_data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - agrocycle_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: agrocycle_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - agrocycle_redis_data:/data
+    networks:
+      - agrocycle_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agrocycle_backend
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ACCESS_TOKEN_EXPIRES: ${JWT_ACCESS_TOKEN_EXPIRES}
+      JWT_REFRESH_TOKEN_EXPIRES: ${JWT_REFRESH_TOKEN_EXPIRES}
+      FLASK_ENV: ${FLASK_ENV}
+      FLASK_DEBUG: ${FLASK_DEBUG}
+      SECRET_KEY: ${SECRET_KEY}
+      OPENMETEO_BASE_URL: ${OPENMETEO_BASE_URL}
+      OPENMETEO_ARCHIVE_URL: ${OPENMETEO_ARCHIVE_URL}
+      OPENTOPODATA_BASE_URL: ${OPENTOPODATA_BASE_URL}
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      ML_MODELS_PATH: ${ML_MODELS_PATH}
+      MAIL_SERVER: ${MAIL_SERVER}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USE_TLS: ${MAIL_USE_TLS}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_DEFAULT_SENDER: ${MAIL_DEFAULT_SENDER}
+      FRONTEND_URL: ${FRONTEND_URL}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - agrocycle_ml_models:/app/ml_models
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - agrocycle_network
+    command: flask run --host=0.0.0.0 --port=5000
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agrocycle_celery
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      ML_MODELS_PATH: ${ML_MODELS_PATH}
+      OPENMETEO_BASE_URL: ${OPENMETEO_BASE_URL}
+      OPENTOPODATA_BASE_URL: ${OPENTOPODATA_BASE_URL}
+      MAIL_SERVER: ${MAIL_SERVER}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USE_TLS: ${MAIL_USE_TLS}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_DEFAULT_SENDER: ${MAIL_DEFAULT_SENDER}
+    volumes:
+      - ./backend:/app
+      - agrocycle_ml_models:/app/ml_models
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - agrocycle_network
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=4
+
+networks:
+  agrocycle_network:
+    driver: bridge
+
+volumes:
+  agrocycle_db_data:
+  agrocycle_redis_data:
+  agrocycle_ml_models:

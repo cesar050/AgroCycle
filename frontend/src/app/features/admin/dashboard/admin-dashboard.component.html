@@ -1,0 +1,227 @@
+<div class="adm-dash">
+
+  <div class="adm-dash__header">
+    <div>
+      <p class="adm-dash__saludo">Buenos días, {{ nombreCorto }}</p>
+      <h1>Panel de administración</h1>
+      <p class="adm-dash__sub">Resumen general del sistema AgroCycle</p>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="skeleton" style="height:80px;border-radius:8px"></div>
+      }
+    </div>
+  }
+
+  @if (!cargando()) {
+
+    <!-- Métricas principales -->
+    <div class="adm-metrics">
+      <div class="adm-metric">
+        <div class="adm-metric__icono morado">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-metric__label">Total usuarios</p>
+          <p class="adm-metric__val">{{ totalUsuarios }}</p>
+          <p class="adm-metric__sub">{{ totalActivos }} activos</p>
+        </div>
+      </div>
+
+      <div class="adm-metric">
+        <div class="adm-metric__icono verde">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M7 20h10M10 20c5.5-2.5.8-6.4 3-10"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-metric__label">Agricultores</p>
+          <p class="adm-metric__val">{{ totalAgricultores }}</p>
+          <p class="adm-metric__sub">Usuarios productores</p>
+        </div>
+      </div>
+
+      <div class="adm-metric">
+        <div class="adm-metric__icono azul">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M12 2a10 10 0 0 1 0 20M12 2a10 10 0 0 0 0 20"/>
+            <path d="M2 12h20"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-metric__label">Agrónomos</p>
+          <p class="adm-metric__val">{{ totalAgronomos }}</p>
+          <p class="adm-metric__sub">Técnicos registrados</p>
+        </div>
+      </div>
+
+      <div class="adm-metric">
+        <div class="adm-metric__icono naranja">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-metric__label">Temporadas activas</p>
+          <p class="adm-metric__val">{{ temporadasActivas }}</p>
+          <p class="adm-metric__sub">De {{ totalTemporadas }} totales</p>
+        </div>
+      </div>
+
+      <!-- Estado del sistema -->
+      <div class="adm-metric adm-metric--sistema">
+        <div class="adm-metric__icono verde">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-metric__label">Backend API</p>
+          <p class="adm-metric__val adm-metric__val--ok">Online</p>
+          <p class="adm-metric__sub">Flask + PostgreSQL</p>
+        </div>
+      </div>
+
+      <div class="adm-metric adm-metric--sistema">
+        <div class="adm-metric__icono verde">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-metric__label">Open-Meteo API</p>
+          <p class="adm-metric__val adm-metric__val--ok">Conectado</p>
+          <p class="adm-metric__sub">Datos climáticos activos</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Últimos usuarios registrados -->
+    <div class="adm-card">
+      <div class="adm-card__header">
+        <h3>Últimos usuarios registrados</h3>
+        <a routerLink="/admin/usuarios" class="btn btn--ghost btn--sm">
+          Ver todos
+        </a>
+      </div>
+
+      @if (ultimosUsuarios.length === 0) {
+        <div class="adm-empty">
+          <p>Sin usuarios registrados.</p>
+        </div>
+      } @else {
+        <div class="adm-tabla">
+          <div class="adm-tabla__header">
+            <span>Usuario</span>
+            <span>Correo</span>
+            <span>Rol</span>
+            <span>Estado</span>
+            <span>Registro</span>
+          </div>
+          @for (u of ultimosUsuarios; track u.id) {
+            <div class="adm-tabla__row">
+              <div class="adm-usuario">
+                <div class="adm-usuario__avatar"
+                     [class]="u.rol === 'agricultor' ? 'verde' :
+                              u.rol === 'agronomo'   ? 'azul'  : 'morado'">
+                  {{ (u.nombre || 'U')[0].toUpperCase() }}
+                </div>
+                <span class="adm-usuario__nombre">{{ u.nombre }}</span>
+              </div>
+              <span class="adm-tabla__email">{{ u.correo }}</span>
+              <span>
+                <span class="tag" [class]="colorRol(u.rol)">
+                  {{ u.rol }}
+                </span>
+              </span>
+              <span>
+                <span class="tag"
+                      [class]="u.activo ? 'tag--verde' : 'tag--rojo'">
+                  {{ u.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </span>
+              <span class="font-mono adm-tabla__fecha">
+                {{ u.created_at | slice:0:10 }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="adm-acciones">
+      <a routerLink="/admin/usuarios" class="adm-accion">
+        <div class="adm-accion__icono morado">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-accion__titulo">Gestionar usuarios</p>
+          <p class="adm-accion__sub">Activar, desactivar y editar usuarios</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </a>
+
+      <a routerLink="/admin/fincas" class="adm-accion">
+        <div class="adm-accion__icono verde">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-accion__titulo">Ver todas las fincas</p>
+          <p class="adm-accion__sub">Fincas y temporadas registradas</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </a>
+
+      <a routerLink="/admin/sistema" class="adm-accion">
+        <div class="adm-accion__icono naranja">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </div>
+        <div>
+          <p class="adm-accion__titulo">Monitor del sistema</p>
+          <p class="adm-accion__sub">Estado de servicios y APIs</p>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+
+  }
+</div>

@@ -1,0 +1,51 @@
+@use 'sass:color';
+@use '../../../../styles' as *;
+
+.obs-page { display:flex;flex-direction:column;gap:$s4;animation:fadeIn .2s ease; }
+
+.obs-header {
+  display:flex;align-items:flex-start;justify-content:space-between;gap:$s4;flex-wrap:wrap;padding-bottom:$s4;border-bottom:1px solid var(--border);
+  h1{font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:3px} p{font-size:12px;color:var(--text-sec)}
+  &__actions{display:flex;gap:$s2;align-items:center;flex-wrap:wrap}
+}
+
+.obs-select{width:auto !important;font-size:12px !important;padding:6px $s3 !important}
+.obs-skeleton{display:flex;flex-direction:column;gap:$s3}
+
+.obs-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:$s3;min-height:30vh;text-align:center;
+  svg{color:var(--text-ter)} p{font-size:13px;color:var(--text-sec)}
+}
+
+.obs-lista{display:flex;flex-direction:column;gap:$s3}
+
+.obs-item {
+  background:var(--bg-surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:$radius-md;display:flex;
+  &__borde{width:3px;flex-shrink:0}
+  &__body{flex:1;padding:$s4}
+  &__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:$s2;gap:$s3;flex-wrap:wrap}
+  &__meta{display:flex;align-items:center;gap:$s2}
+  &__tipo{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-ter)}
+  &__fecha{font-size:11px;color:var(--text-ter)}
+  &__desc{font-size:13px;line-height:1.6;color:var(--text-primary)}
+  &--critico .obs-item__borde{background:$rojo-danger}
+  &--alerta  .obs-item__borde{background:$naranja-warning}
+  &--normal  .obs-item__borde{background:$verde-acento}
+}
+
+// Modal y form reutilizados
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;justify-content:center;padding:$s4;animation:fadeIn .15s ease}
+.modal{background:var(--bg-surface);border-radius:$radius-lg;width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:$shadow-lg;animation:slideUp .2s ease;
+  &__header{display:flex;align-items:center;justify-content:space-between;padding:$s4 $s5;border-bottom:1px solid var(--border);flex-shrink:0; h2{font-size:15px;font-weight:700;color:var(--text-primary)}}
+  &__close{width:32px;height:32px;border:none;background:none;border-radius:$radius-sm;color:var(--text-sec);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:$t-fast;&:hover{background:var(--bg-app)}}
+  &__error{margin:$s3 $s5 0;padding:$s2 $s3;background:$rojo-suave;border-radius:$radius-sm;font-size:12px;color:$rojo-danger;flex-shrink:0}
+  &__body{flex:1;overflow-y:auto;padding:$s4 $s5;display:flex;flex-direction:column;gap:$s4}
+  &__grid{display:grid;grid-template-columns:1fr 1fr;gap:$s3 $s4}
+  &__footer{display:flex;justify-content:flex-end;gap:$s2;padding:$s3 $s5;border-top:1px solid var(--border);flex-shrink:0}
+}
+.form-field{display:flex;flex-direction:column;gap:$s1;
+  label{font-size:12px;font-weight:600;color:var(--text-primary)}
+  textarea.input{resize:vertical;min-height:80px}
+}
+.required{color:$rojo-danger;margin-left:2px}
+.spinner-sm{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:$radius-full;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}

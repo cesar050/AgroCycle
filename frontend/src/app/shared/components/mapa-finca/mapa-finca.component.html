@@ -1,0 +1,338 @@
+<div class="mf">
+
+  @if (!datos || (!finca() && !lotes().length)) {
+    <div class="mf__empty" [style.height.px]="alto">
+      <div class="mf__empty-inner">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+        </svg>
+        <p>Cargando mapa de la finca...</p>
+      </div>
+    </div>
+  }
+
+  @if (finca() || lotes().length) {
+    <div class="mf__wrap" [style.height.px]="alto">
+
+      <!-- Controles zoom -->
+      <div class="mf__zoom">
+        <button class="mf__zoom-btn" (click)="zoomIn()" title="Acercar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button class="mf__zoom-btn" (click)="zoomOut()" title="Alejar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button class="mf__zoom-btn" (click)="resetZoom()" title="Restablecer vista">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Indicador Norte -->
+      <div class="mf__norte">
+        <svg width="10" height="14" viewBox="0 0 10 18" fill="none">
+          <polygon points="5,0 9,9 5,7 1,9" fill="#212529"/>
+          <polygon points="5,18 9,9 5,11 1,9" fill="#ADB5BD"/>
+        </svg>
+        <span>N</span>
+      </div>
+
+      <!-- SVG del mapa -->
+      <svg
+        [attr.viewBox]="viewBox"
+        width="100%"
+        [attr.height]="alto"
+        xmlns="http://www.w3.org/2000/svg"
+        class="mf__svg"
+        #svgRef
+        (wheel)="onWheel($event)"
+        (mousedown)="onMouseDown($event)"
+        [style.cursor]="'grab'">
+
+        <defs>
+          <pattern id="mf-grid" width="24" height="24"
+                   patternUnits="userSpaceOnUse">
+            <path d="M 24 0 L 0 0 0 24" fill="none"
+                  stroke="rgba(0,0,0,0.04)" stroke-width="0.5"/>
+          </pattern>
+
+          <filter id="mf-shadow" x="-10%" y="-10%"
+                  width="120%" height="120%">
+            <feDropShadow dx="0" dy="1" stdDeviation="2"
+                          flood-color="rgba(0,0,0,0.15)"/>
+          </filter>
+
+          <pattern id="mf-pendiente" width="5" height="5"
+                   patternUnits="userSpaceOnUse"
+                   patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="5"
+                  stroke="rgba(0,0,0,0.10)" stroke-width="1.2"/>
+          </pattern>
+        </defs>
+
+        <!-- Fondo -->
+        <rect width="100%" height="100%" fill="#E8EEEA"/>
+        <rect width="100%" height="100%" fill="url(#mf-grid)"/>
+
+        <g [attr.transform]="transform">
+
+          <!-- 1. Contorno de la FINCA -->
+          @if (finca()?.puntos?.length) {
+            <g class="finca-layer">
+              <!-- Sombra exterior -->
+              <path
+                [attr.d]="toPath(finca()!.puntos)"
+                fill="rgba(0,0,0,0.08)"
+                stroke="none"
+                transform="translate(3,3)"
+                pointer-events="none"/>
+
+              <!-- Área de la finca -->
+              <path
+                [attr.d]="toPath(finca()!.puntos)"
+                fill="#F1F8F2"
+                stroke="#495057"
+                stroke-width="2.5"
+                stroke-linejoin="round"/>
+
+              <!-- Nombre de la finca -->
+              <text
+                [attr.x]="finca()!.centroide.x"
+                [attr.y]="finca()!.centroide.y - 60"
+                text-anchor="middle"
+                class="txt-finca"
+                pointer-events="none">
+                {{ finca()!.nombre }}
+              </text>
+            </g>
+          }
+
+          <!-- 2. Contornos de LOTES -->
+          @for (lote of lotes(); track lote.id) {
+            @if (lote.puntos.length) {
+              <g class="lote-layer">
+                <path
+                  [attr.d]="toPath(lote.puntos)"
+                  fill="rgba(255,255,255,0.12)"
+                  stroke="#1976D2"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                  stroke-dasharray="5,3"/>
+
+                <!-- Nombre del lote -->
+                <text
+                  [attr.x]="lote.centroide.x"
+                  [attr.y]="lote.centroide.y - 35"
+                  text-anchor="middle"
+                  class="txt-lote"
+                  pointer-events="none">
+                  {{ lote.nombre }}
+                </text>
+              </g>
+            }
+
+            <!-- 3. PARCELAS dentro del lote -->
+            @for (p of lote.parcelas; track p.id) {
+              <g
+                (mouseenter)="onEnter($event, p)"
+                (mouseleave)="onLeave()"
+                (mousemove)="onMove($event)"
+                style="cursor:pointer">
+
+                <!-- Sombra -->
+                <path
+                  [attr.d]="toPath(p.puntos)"
+                  fill="rgba(0,0,0,0.1)"
+                  stroke="none"
+                  transform="translate(1.5,1.5)"
+                  pointer-events="none"/>
+
+                <!-- Relleno de la parcela -->
+                <path
+                  [attr.d]="toPath(p.puntos)"
+                  [attr.fill]="p.color"
+                  fill-opacity="0.85"
+                  [attr.stroke]="p.colorBorde"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"/>
+
+                <!-- Overlay pendiente (si > 8%) -->
+                @if (p.pendiente > 8) {
+                  <path
+                    [attr.d]="toPath(p.puntos)"
+                    fill="url(#mf-pendiente)"
+                    fill-opacity="0.5"
+                    stroke="none"
+                    pointer-events="none"/>
+                }
+
+                <!-- Etiquetas dentro de la parcela -->
+                <text
+                  [attr.x]="p.centroide.x"
+                  [attr.y]="p.centroide.y - 8"
+                  text-anchor="middle"
+                  class="txt-parcela"
+                  pointer-events="none">
+                  {{ p.nombre }}
+                </text>
+
+                <text
+                  [attr.x]="p.centroide.x"
+                  [attr.y]="p.centroide.y + 7"
+                  text-anchor="middle"
+                  class="txt-etapa"
+                  pointer-events="none">
+                  {{ label(p.estado_fenologico) }}
+                </text>
+
+                <text
+                  [attr.x]="p.centroide.x"
+                  [attr.y]="p.centroide.y + 19"
+                  text-anchor="middle"
+                  class="txt-area"
+                  pointer-events="none">
+                  {{ p.superficie_ha }} ha
+                </text>
+
+              </g>
+            }
+          }
+          <!-- Vista pendiente — polígono coloreado + flecha -->
+          @if (vista === 'pendiente') {
+            @for (lote of lotes(); track lote.id) {
+              @for (parcela of lote.parcelas; track parcela.id) {
+
+                @if (datosPendenciaParcela(parcela.id); as topo) {
+                  <!-- Overlay de color según pendiente -->
+                  <path
+                    [attr.d]="toPath(parcela.puntos)"
+                    [attr.fill]="colorPorPendiente(topo.pendiente)"
+                    fill-opacity="0.70"
+                    [attr.stroke]="colorPorPendiente(topo.pendiente)"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                    pointer-events="none"/>
+
+                  <!-- Etiqueta pendiente en el centroide -->
+                  <text
+                    [attr.x]="parcela.centroide.x"
+                    [attr.y]="parcela.centroide.y - 12"
+                    text-anchor="middle"
+                    class="txt-parcela"
+                    pointer-events="none">
+                    {{ parcela.nombre }}
+                  </text>
+
+                  <text
+                    [attr.x]="parcela.centroide.x"
+                    [attr.y]="parcela.centroide.y + 4"
+                    text-anchor="middle"
+                    class="txt-pendiente"
+                    pointer-events="none">
+                    {{ topo.pendiente }}% · {{ etiquetaPendiente(topo.pendiente) }}
+                  </text>
+
+                  <!-- Flecha de orientación -->
+                  <g [attr.transform]="'translate(' + parcela.centroide.x + ',' + (parcela.centroide.y + 22) + ')'">
+                    <g [attr.transform]="'rotate(' + flechaOrientacion(topo.orientacion) + ')'">
+                      <!-- Flecha apuntando dirección de la pendiente -->
+                      <line x1="0" y1="8" x2="0" y2="-8"
+                            stroke="white" stroke-width="1.5"
+                            pointer-events="none"/>
+                      <polygon points="0,-12 -4,-4 4,-4"
+                              fill="white" pointer-events="none"/>
+                    </g>
+                  </g>
+
+                  <text
+                    [attr.x]="parcela.centroide.x"
+                    [attr.y]="parcela.centroide.y + 42"
+                    text-anchor="middle"
+                    class="txt-orientacion"
+                    pointer-events="none">
+                    {{ topo.orientacion || '—' }}
+                  </text>
+
+                } @else {
+                  <!-- Sin datos de pendiente — color neutro -->
+                  <path
+                    [attr.d]="toPath(parcela.puntos)"
+                    fill="#9E9E9E"
+                    fill-opacity="0.4"
+                    stroke="#757575"
+                    stroke-width="1.5"
+                    pointer-events="none"/>
+
+                  <text
+                    [attr.x]="parcela.centroide.x"
+                    [attr.y]="parcela.centroide.y"
+                    text-anchor="middle"
+                    class="txt-etapa"
+                    pointer-events="none">
+                    Sin datos
+                  </text>
+                }
+
+              }
+            }
+          }
+        </g>
+
+      </svg>
+
+      <!-- Tooltip -->
+      @if (tooltipData().visible && tooltipData().p) {
+        <div class="mf__tooltip"
+             [style.left.px]="tooltipData().x"
+             [style.top.px]="tooltipData().y">
+          <p class="mf__tooltip-nombre">{{ tooltipData().p!.nombre }}</p>
+          <div class="mf__tooltip-kv">
+            <span>Lote</span>
+            <span>{{ tooltipData().p!.loteNombre }}</span>
+            <span>Etapa</span>
+            <span [style.color]="color(tooltipData().p!.estado_fenologico)">
+              {{ label(tooltipData().p!.estado_fenologico) }}
+            </span>
+            <span>Superficie</span>
+            <span>{{ tooltipData().p!.superficie_ha }} ha</span>
+            <span>Altitud</span>
+            <span>{{ tooltipData().p!.altitud_msnm }} msnm</span>
+            <span>Pendiente</span>
+            <span>{{ tooltipData().p!.pendiente }}%</span>
+            @if (tooltipData().p!.estimacion_qq_ha > 0) {
+              <span>Estimado</span>
+              <span>{{ tooltipData().p!.estimacion_qq_ha | number:'1.2-2' }} qq/ha</span>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- Leyenda -->
+    <div class="mf__leyenda">
+      @for (item of leyenda; track item.etapa) {
+        <div class="mf__leyenda-item">
+          <span class="mf__leyenda-dot" [style.background]="item.color"></span>
+          <span>{{ item.label }}</span>
+        </div>
+      }
+      <span class="mf__leyenda-flex"></span>
+      <span class="mf__leyenda-info">
+        {{ nombreFinca }} · {{ totalParcelas }} parcela(s)
+      </span>
+    </div>
+  }
+
+</div>

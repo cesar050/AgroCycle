@@ -1,0 +1,429 @@
+<div class="dash">
+
+  @if (cargando()) {
+    <div class="dash__loading">
+      <div class="loading-bar"></div>
+      <div class="sk-metrics">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="skeleton" style="height:80px"></div>
+        }
+      </div>
+      <div class="sk-body">
+        <div class="skeleton" style="height:400px;flex:1.4"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+          <div class="skeleton" style="height:120px"></div>
+          <div class="skeleton" style="height:120px"></div>
+          <div class="skeleton" style="height:140px"></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (!cargando() && !tieneFinca()) {
+    <div class="dash__onboarding">
+      <div class="dash__onboarding-card">
+        <p class="step-label">Paso 1 de 3</p>
+        <h2>Registra tu primera finca</h2>
+        <p>Para comenzar necesitas registrar tu finca con su nombre y ubicación.</p>
+        <a routerLink="/app/temporada" class="btn btn--primario btn--lg">
+          Registrar finca
+        </a>
+      </div>
+    </div>
+  }
+
+  @if (!cargando() && tieneFinca() && !tieneTemporada()) {
+    <div class="dash__onboarding">
+      <div class="dash__onboarding-card">
+        <p class="step-label">Paso 2 de 3</p>
+        <h2>Crea tu primera temporada</h2>
+        <p>
+          Tu finca <strong>{{ finca()?.nombre }}</strong> está registrada.
+          Ahora crea tu temporada de siembra.
+        </p>
+        <a routerLink="/app/temporada" class="btn btn--primario btn--lg">
+          Crear temporada
+        </a>
+      </div>
+    </div>
+  }
+
+  @if (!cargando() && tieneFinca() && tieneTemporada()) {
+
+    <!-- Saludo y título -->
+    <div class="dash__titulo">
+      <div>
+        <p class="dash__saludo">¡Buenos días, {{ nombreCorto }}!</p>
+        <h1 class="dash__finca">{{ finca()?.nombre }}</h1>
+        <div class="dash__meta">
+          <span class="status-dot status-dot--verde"></span>
+          <span>{{ temporada()?.nombre }}</span>
+          <span class="dash__meta-sep">·</span>
+          <span>{{ temporada()?.fechas?.inicio }}</span>
+        </div>
+      </div>
+      <a routerLink="/app/reportes" class="btn btn--secundario">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Descargar reporte
+      </a>
+    </div>
+
+    <!-- Métricas con íconos -->
+    <div class="dash__metrics">
+
+      <div class="metric-item">
+        <div class="metric-item__icono icono--verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+          </svg>
+        </div>
+        <div class="metric-item__data">
+          <p class="metric-item__label">Área total</p>
+          <p class="metric-item__value">
+            {{ temporada()?.produccion?.superficie_total_ha | number:'1.2-2' }}
+            <span>ha</span>
+          </p>
+          <p class="metric-item__sub">100% cultivable</p>
+        </div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-item__icono icono--verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </div>
+        <div class="metric-item__data">
+          <p class="metric-item__label">Número de lotes</p>
+          <p class="metric-item__value">
+            {{ datosMapa()?.finca?.lotes?.length || 1 }}
+          </p>
+          <p class="metric-item__sub">Activos</p>
+        </div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-item__icono icono--verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M12 2a10 10 0 0 1 0 20M12 2a10 10 0 0 0 0 20"/>
+            <path d="M2 12h20"/>
+          </svg>
+        </div>
+        <div class="metric-item__data">
+          <p class="metric-item__label">Cultivo principal</p>
+          <p class="metric-item__value value--text">
+            {{ temporada()?.cultivo || 'Maíz' }}
+          </p>
+          <p class="metric-item__sub">Etapa: Cosecha</p>
+        </div>
+      </div>
+
+      <div class="metric-item">
+        <div class="metric-item__icono icono--verde">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M7 20h10M10 20c5.5-2.5.8-6.4 3-10"/>
+            <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3"/>
+          </svg>
+        </div>
+        <div class="metric-item__data">
+          <p class="metric-item__label">Parcelas activas</p>
+          <p class="metric-item__value">
+            {{ temporada()?.produccion?.total_parcelas }}
+          </p>
+          <p class="metric-item__sub">
+            De {{ temporada()?.produccion?.total_parcelas }} totales
+          </p>
+        </div>
+      </div>
+
+      <div class="metric-item" [class.metric-item--positivo]="gananciaPositiva">
+        <div class="metric-item__icono"
+             [class]="gananciaPositiva ? 'icono--verde' : 'icono--rojo'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="metric-item__data">
+          <p class="metric-item__label">Estado general</p>
+          <p class="metric-item__value"
+             [class.value--verde]="gananciaPositiva"
+             [class.value--rojo]="!gananciaPositiva"
+             style="font-family:var(--font-sans);font-size:17px">
+            {{ gananciaPositiva ? 'Bueno' : 'En déficit' }}
+          </p>
+          <p class="metric-item__sub">Sin riesgos críticos</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Cuerpo principal -->
+    <div class="dash__body">
+
+      <!-- Columna izquierda: mapa + balance hídrico -->
+      <div class="dash__left">
+
+        <!-- Mapa de la finca -->
+        <div class="card">
+          <div class="card__head">
+            <div>
+              <h3>Vista general de la finca</h3>
+              <p>Selecciona una parcela para ver información detallada</p>
+            </div>
+            <a routerLink="/app/mapa" class="btn btn--secundario btn--sm">
+              Ir al mapa
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+
+          <app-mapa-finca
+            [datos]="datosMapa()"
+            [alto]="360">
+          </app-mapa-finca>
+        </div>
+
+        <!-- Condiciones de la finca -->
+        <div class="card">
+          <div class="card__head">
+            <div>
+              <h3>Balance hídrico por etapa</h3>
+              <p>Coef. estrés hídrico Ks — FAO-56 · Temporada actual</p>
+            </div>
+            <a routerLink="/app/climatico" class="btn btn--ghost btn--sm">
+              Ver detalle
+            </a>
+          </div>
+
+          <div class="ks-grid">
+            @for (etapa of ksEtapas; track etapa.key) {
+              <div class="ks-item">
+                <div class="ks-item__header">
+                  <span class="ks-item__label">{{ etapa.label }}</span>
+                  <span class="tag"
+                        [class]="etapa.ks >= 0.9 ? 'tag--verde' :
+                                 etapa.ks >= 0.75 ? 'tag--naranja' :
+                                 'tag--rojo'">
+                    {{ etapa.ks >= 0.9 ? 'Óptimo' :
+                       etapa.ks >= 0.75 ? 'Leve' : 'Severo' }}
+                  </span>
+                </div>
+                <div class="ks-item__track">
+                  <div class="ks-item__fill"
+                       [style.width.%]="etapa.ks * 100"
+                       [style.background]="etapa.color">
+                  </div>
+                </div>
+                <span class="ks-item__valor font-mono"
+                      [style.color]="etapa.color">
+                  {{ etapa.ks | number:'1.3-3' }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Columna derecha -->
+      <div class="dash__right">
+
+        <!-- Próximas actividades -->
+        <div class="card">
+          <div class="card__head">
+            <div><h3>Próximas actividades</h3></div>
+            <a routerLink="/app/actividades" class="btn btn--ghost btn--sm">
+              Ver calendario
+            </a>
+          </div>
+          <div class="actividades-lista">
+            @if (actividades().length === 0) {
+              <div class="empty-panel">
+                <p>Sin actividades próximas</p>
+                <a routerLink="/app/actividades"
+                   class="btn btn--secundario btn--sm">
+                  Registrar actividad
+                </a>
+              </div>
+            } @else {
+              @for (a of actividades().slice(0,4); track $index) {
+                <div class="actividad-item">
+                  <div class="actividad-item__icono">
+                    <svg width="14" height="14" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 11l3 3L22 4"/>
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                  </div>
+                  <div class="actividad-item__body">
+                    <p class="actividad-item__nombre">{{ a.tipo || 'Actividad' }}</p>
+                    <p class="actividad-item__meta">
+                      {{ a.parcela_nombre || 'General' }}
+                    </p>
+                  </div>
+                  <span class="actividad-item__fecha">{{ a.fecha }}</span>
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Alertas importantes -->
+        <div class="card">
+          <div class="card__head">
+            <div><h3>Alertas importantes</h3></div>
+            <a routerLink="/app/recomendaciones"
+               class="btn btn--ghost btn--sm">Ver todas</a>
+          </div>
+
+          @if (recomendaciones().length === 0) {
+            <div class="empty-panel">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <p>Sin alertas activas</p>
+            </div>
+          } @else {
+            @for (r of recomendaciones().slice(0,3); track $index) {
+              <div class="alerta" [class]="'alerta--' + (r.urgencia || 'baja')">
+                <div class="alerta__borde"></div>
+                <div class="alerta__body">
+                  <div class="alerta__top">
+                    <span class="alerta__tipo">
+                      {{ r.tipo || 'General' }}
+                    </span>
+                    <span class="tag"
+                          [class]="(r.urgencia === 'alta') ? 'tag--rojo' :
+                                   (r.urgencia === 'media') ? 'tag--naranja' :
+                                   'tag--verde'">
+                      {{ r.urgencia || 'baja' }}
+                    </span>
+                  </div>
+                  <p class="alerta__desc">{{ r.descripcion }}</p>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Clima actual -->
+        <div class="card">
+          <div class="card__head">
+            <div><h3>Clima actual</h3></div>
+            <a routerLink="/app/climatico"
+               class="btn btn--ghost btn--sm">
+              Ver pronóstico
+            </a>
+          </div>
+          <div class="clima-panel">
+            <div class="clima-panel__principal">
+              <div class="clima-panel__temp">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                     stroke="#F57C00" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="5"/>
+                  <line x1="12" y1="1" x2="12" y2="3"/>
+                  <line x1="12" y1="21" x2="12" y2="23"/>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  <line x1="1" y1="12" x2="3" y2="12"/>
+                  <line x1="21" y1="12" x2="23" y2="12"/>
+                </svg>
+                <span>22.8°C</span>
+              </div>
+              <p class="clima-panel__desc">Parcialmente nublado</p>
+            </div>
+            <div class="clima-panel__datos">
+              <div class="clima-panel__dato">
+                <span class="clima-panel__dato-k">Humedad</span>
+                <span class="clima-panel__dato-v">84.9%</span>
+              </div>
+              <div class="clima-panel__dato">
+                <span class="clima-panel__dato-k">Viento</span>
+                <span class="clima-panel__dato-v">12 km/h NE</span>
+              </div>
+              <div class="clima-panel__dato">
+                <span class="clima-panel__dato-k">Lluvia hoy</span>
+                <span class="clima-panel__dato-v">3.2 mm</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recomendación destacada -->
+        @if (recomendaciones().length > 0) {
+          <div class="card card--verde">
+            <div class="card__head">
+              <div>
+                <h3>Recomendación destacada</h3>
+              </div>
+            </div>
+            <div class="recomendacion-destacada">
+              <p>{{ recomendaciones()[0].descripcion }}</p>
+              <a routerLink="/app/recomendaciones"
+                 class="btn btn--primario btn--sm">
+                Ver recomendación
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+
+    <!-- Footer de estado -->
+    <div class="dash__footer">
+      <div class="dash__footer-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Última actualización: Hoy, 08:30 AM</span>
+      </div>
+      <div class="dash__footer-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+        </svg>
+        <span>Datos climáticos: Open-Meteo API</span>
+      </div>
+      <div class="dash__footer-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        <span>Modelo predictivo: FAO-33 v2.4.1</span>
+      </div>
+      <div class="dash__footer-item dash__footer-item--ok">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <span>Sincronización en tiempo real</span>
+      </div>
+    </div>
+
+  }
+</div>

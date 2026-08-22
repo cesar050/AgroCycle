@@ -1,0 +1,783 @@
+@use 'sass:color';
+
+// ================================================================
+// VARIABLES — consistentes con landing y login
+// ================================================================
+$verde:     #2E7D32;
+$verde-l:   #43A047;
+$verde-xs:  #E8F5E9;
+$azul:      #0097A7;
+$azul-xs:   #E0F7FA;
+$naranja:   #F57C00;
+$naranja-xs:#FFF3E0;
+$rojo:      #D32F2F;
+$rojo-xs:   #FFEBEE;
+$blanco:    #FFFFFF;
+$gris-100:  #F8F9FA;
+$gris-200:  #E9ECEF;
+$gris-400:  #ADB5BD;
+$gris-600:  #6C757D;
+$gris-800:  #343A40;
+$r-sm:  6px;
+$r-md:  10px;
+$r-lg:  16px;
+$r-xl:  24px;
+$r-full: 9999px;
+$t: all 0.2s ease;
+
+// ================================================================
+// LAYOUT SPLIT
+// ================================================================
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+// ================================================================
+// PANEL VISUAL IZQUIERDO — bosque seco
+// ================================================================
+.auth-panel-visual {
+  position: relative;
+  background: url('/images/bosque-seco.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: flex-start;
+  padding: 48px;
+  overflow: hidden;
+
+  @media (max-width: 768px) { display: none; }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(#0A1F0F, 0.90) 0%,
+      rgba(#0A1F0F, 0.75) 100%
+    );
+  }
+
+  &__contenido {
+    position: relative;
+    z-index: 1;
+    color: $blanco;
+    width: 100%;
+    padding-top: 16px;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 56px;
+
+    img { border-radius: $r-sm; }
+
+    span {
+      font-size: 18px;
+      font-weight: 700;
+      color: $blanco;
+      letter-spacing: -0.3px;
+    }
+  }
+
+  &__tagline {
+    margin-top: 48px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: rgba($blanco, 0.4);
+  }
+}
+
+// ================================================================
+// PASOS VISUALES EN EL PANEL IZQUIERDO
+// ================================================================
+.pasos-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.paso-visual {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  opacity: 0.45;
+  transition: $t;
+  padding: 12px 0;
+
+  &.activo  { opacity: 1; }
+  &.completo { opacity: 0.8; }
+
+  &__circulo {
+    width: 32px;
+    height: 32px;
+    border-radius: $r-full;
+    border: 2px solid rgba($blanco, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba($blanco, 0.6);
+    flex-shrink: 0;
+    transition: $t;
+  }
+
+  &.activo &__circulo {
+    background: $naranja;
+    border-color: $naranja;
+    color: $blanco;
+    box-shadow: 0 0 0 4px rgba($naranja, 0.2);
+  }
+
+  &.completo &__circulo {
+    background: $verde;
+    border-color: $verde;
+    color: $blanco;
+  }
+
+  &__texto { padding-top: 4px; }
+
+  &__titulo {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: $blanco;
+    margin-bottom: 2px;
+  }
+
+  &__desc {
+    display: block;
+    font-size: 12px;
+    color: rgba($blanco, 0.55);
+  }
+
+  &__linea {
+    width: 2px;
+    height: 20px;
+    background: rgba($blanco, 0.15);
+    margin-left: 15px;
+    transition: $t;
+    border-radius: 2px;
+
+    &.completo { background: $verde; }
+  }
+}
+
+// ================================================================
+// PANEL FORMULARIO DERECHO
+// ================================================================
+.auth-panel-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  background: $blanco;
+  overflow-y: auto;
+}
+
+.auth-form-inner {
+  width: 100%;
+  max-width: 460px;
+}
+
+// Logo mobile
+.auth-logo-mobile {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+
+  @media (max-width: 768px) { display: flex; }
+
+  span {
+    font-size: 16px;
+    font-weight: 700;
+    color: $verde;
+  }
+}
+
+// ================================================================
+// HEADER DEL FORMULARIO
+// ================================================================
+.auth-header {
+  margin-bottom: 28px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  div { flex: 1; }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: $gris-800;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $gris-600;
+  }
+}
+
+// ================================================================
+// ERROR
+// ================================================================
+.auth-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: $rojo-xs;
+  border: 1px solid color.adjust($rojo-xs, $lightness: -8%);
+  border-radius: $r-md;
+  font-size: 13px;
+  color: $rojo;
+  margin-bottom: 20px;
+
+  svg { flex-shrink: 0; }
+}
+
+// ================================================================
+// PASO 1 — SELECCIÓN DE ROL
+// ================================================================
+.roles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.rol-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1.5px solid $gris-200;
+  border-radius: $r-lg;
+  padding: 22px 18px;
+  cursor: pointer;
+  background: $blanco;
+  transition: $t;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+
+  &:hover {
+    border-color: $verde-l;
+    box-shadow: 0 6px 18px rgba($verde, 0.10);
+    transform: translateY(-2px);
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: $gris-800;
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: 12.5px;
+    color: $gris-600;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+
+    li {
+      font-size: 12px;
+      color: $gris-600;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      line-height: 1.3;
+
+      &::before {
+        content: '';
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        border-radius: $r-full;
+        background: $verde-xs;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232E7D32' stroke-width='4'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 8px 8px;
+      }
+    }
+  }
+
+  &__icono {
+    width: 44px;
+    height: 44px;
+    border-radius: $r-full;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    transition: $t;
+    flex-shrink: 0;
+
+    &.rol-agricultor {
+      background: $verde-xs;
+      color: $verde;
+    }
+
+    &.rol-agronomo {
+      background: $azul-xs;
+      color: $azul;
+    }
+  }
+
+  &__nota {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: $naranja;
+    background: $naranja-xs;
+    padding: 6px 10px;
+    border-radius: $r-sm;
+    margin-bottom: 14px;
+    width: 100%;
+  }
+
+  &__badge-pro {
+    display: inline-block;
+    padding: 3px 8px;
+    background: $azul-xs;
+    color: $azul;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: $r-full;
+    margin-bottom: 12px;
+    border: 1px solid color.adjust($azul-xs, $lightness: -8%);
+  }
+
+  &__cta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: $verde;
+    transition: $t;
+    margin-top: auto;
+
+    svg { transition: $t; }
+  }
+
+  &:nth-child(2) &__cta { color: $azul; }
+
+  &:hover &__cta svg { transform: translateX(3px); }
+}
+
+// ================================================================
+// PASO 2 — FORMULARIO DE DATOS
+// ================================================================
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: $gris-800;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid $gris-200;
+    border-radius: $r-md;
+    font-size: 14px;
+    color: $gris-800;
+    background: $blanco;
+    font-family: 'Inter', sans-serif;
+    transition: $t;
+    outline: none;
+
+    &::placeholder { color: $gris-400; }
+
+    &:focus {
+      border-color: $verde;
+      box-shadow: 0 0 0 3px rgba($verde, 0.1);
+    }
+  }
+
+  select { cursor: pointer; }
+}
+
+.form-hint {
+  font-size: 11px;
+  color: $gris-400;
+  margin-top: 3px;
+  display: block;
+  line-height: 1.4;
+}
+
+.form-error-inline {
+  font-size: 11.5px;
+  color: $rojo;
+  margin-top: 2px;
+  display: block;
+}
+
+.form-link {
+  color: $verde;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+// Checkbox de términos
+.form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    accent-color: $verde;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  label {
+    font-size: 12.5px;
+    color: $gris-600;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+}
+
+// Input password
+.input-password {
+  position: relative;
+
+  input { padding-right: 44px; }
+
+  &__toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $gris-400;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: $t;
+
+    &:hover { color: $gris-800; }
+  }
+}
+
+// Sección campos agrónomo
+.agronomo-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: $azul-xs;
+  border: 1px solid color.adjust($azul-xs, $lightness: -6%);
+  border-radius: $r-lg;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: $azul;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    svg { flex-shrink: 0; }
+  }
+}
+
+// Indicador fuerza contraseña
+.password-strength {
+  margin-top: 8px;
+
+  &__barras {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+
+    .barra {
+      flex: 1;
+      height: 4px;
+      border-radius: $r-full;
+      background: $gris-200;
+      transition: $t;
+    }
+  }
+
+  &__texto {
+    font-size: 11px;
+    font-weight: 600;
+  }
+}
+
+.password-requisitos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+
+  span {
+    font-size: 11px;
+    color: $gris-400;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    &::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      border-radius: $r-full;
+      border: 1.5px solid $gris-400;
+      transition: $t;
+    }
+
+    &.ok {
+      color: $verde;
+
+      &::before {
+        border-color: $verde;
+        background: $verde;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 7px 7px;
+      }
+    }
+  }
+}
+
+// ================================================================
+// PASO 3 — RESUMEN
+// ================================================================
+.resumen-datos {
+  background: $gris-100;
+  border: 1px solid $gris-200;
+  border-radius: $r-lg;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.resumen-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid $gris-200;
+  gap: 12px;
+
+  &:last-child { border-bottom: none; }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $gris-400;
+    flex-shrink: 0;
+  }
+
+  &__valor {
+    font-size: 13px;
+    font-weight: 600;
+    color: $gris-800;
+    text-align: right;
+
+    &.tipo-agricultor { color: $verde; }
+    &.tipo-agronomo   { color: $azul; }
+  }
+}
+
+// Aviso de verificación
+.verificacion-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  background: $naranja-xs;
+  border: 1px solid color.adjust($naranja-xs, $lightness: -8%);
+  border-radius: $r-md;
+  font-size: 13px;
+  color: color.adjust($naranja, $lightness: -10%);
+  margin-bottom: 20px;
+  line-height: 1.5;
+
+  svg { flex-shrink: 0; margin-top: 2px; }
+  strong { font-weight: 700; }
+}
+
+// ================================================================
+// ÉXITO
+// ================================================================
+.exito-container {
+  text-align: center;
+  padding: 20px 0;
+
+  h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: $gris-800;
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: $gris-600;
+    margin-bottom: 32px;
+
+    strong { color: $gris-800; font-weight: 700; }
+  }
+}
+
+.exito-icono {
+  width: 72px;
+  height: 72px;
+  background: $verde-xs;
+  border-radius: $r-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $verde;
+  margin: 0 auto 20px;
+}
+
+// ================================================================
+// BOTONES
+// ================================================================
+.btn-auth {
+  width: 100%;
+  padding: 13px;
+  background: $verde;
+  color: $blanco;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: $r-lg;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  transition: $t;
+  text-decoration: none;
+
+  &:hover:not(:disabled) {
+    background: color.adjust($verde, $lightness: -5%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($verde, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.btn-back {
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid $gris-200;
+  border-radius: $r-full;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gris-600;
+  transition: $t;
+  flex-shrink: 0;
+  margin-top: 4px;
+
+  &:hover {
+    border-color: $gris-400;
+    color: $gris-800;
+    background: $gris-100;
+  }
+}
+
+// ================================================================
+// FOOTER LINK
+// ================================================================
+.auth-footer-link {
+  text-align: center;
+  font-size: 13px;
+  color: $gris-600;
+  margin-top: 24px;
+
+  a {
+    color: $naranja;
+    font-weight: 600;
+    text-decoration: none;
+    transition: $t;
+
+    &:hover { color: color.adjust($naranja, $lightness: -10%); }
+  }
+}
+
+// ================================================================
+// SPINNER
+// ================================================================
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($blanco, 0.3);
+  border-top-color: $blanco;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

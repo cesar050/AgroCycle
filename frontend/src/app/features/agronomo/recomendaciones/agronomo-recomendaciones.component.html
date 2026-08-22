@@ -1,0 +1,139 @@
+<div class="rec-page">
+  <div class="rec-header">
+    <div>
+      <h1>Recomendaciones emitidas</h1>
+      <p>Recomendaciones técnicas enviadas a los agricultores</p>
+    </div>
+    <div class="rec-header__actions">
+      <select class="input rec-select" [value]="temporadaId()"
+              (change)="cargar($any($event.target).value)">
+        @for (t of temporadas(); track t.id) {
+          <option [value]="t.id">{{ t.nombre }}</option>
+        }
+      </select>
+      <button class="btn btn--primario" (click)="abrirForm()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva recomendación
+      </button>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div style="display:flex;flex-direction:column;gap:12px">
+      @for (i of [1,2]; track i) {
+        <div class="skeleton" style="height:90px;border-radius:8px"></div>
+      }
+    </div>
+  }
+
+  @if (!cargando() && recomendaciones().length === 0) {
+    <div class="rec-empty">
+      <p>Sin recomendaciones en esta temporada.</p>
+      <button class="btn btn--primario btn--sm" (click)="abrirForm()">
+        Emitir primera recomendación
+      </button>
+    </div>
+  }
+
+  @if (!cargando() && recomendaciones().length > 0) {
+    <div class="rec-lista">
+      @for (r of recomendaciones(); track r.id) {
+        <div class="rec-item" [class]="'rec-item--' + (r.urgencia || 'baja')">
+          <div class="rec-item__borde"></div>
+          <div class="rec-item__body">
+            <div class="rec-item__header">
+              <div class="rec-item__meta">
+                <span class="rec-item__tipo">{{ r.tipo }}</span>
+                <span class="tag" [class]="colorU(r.urgencia)">{{ r.urgencia }}</span>
+                @if (r.leida) { <span class="tag tag--gris">Leída</span> }
+              </div>
+              <span class="rec-item__fecha font-mono">
+                {{ r.fecha_recomendacion || r.created_at | slice:0:10 }}
+              </span>
+            </div>
+            <p class="rec-item__desc">{{ r.descripcion }}</p>
+            @if (r.accion_recomendada) {
+              <div class="rec-item__accion">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <polyline points="9 11 12 14 22 4"/>
+                </svg>
+                {{ r.accion_recomendada }}
+              </div>
+            }
+            @if (r.fecha_limite) {
+              <p class="rec-item__limite">Fecha límite: {{ r.fecha_limite }}</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (mostrarForm()) {
+    <div class="modal-overlay" (click)="cerrarForm()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal__header">
+          <h2>Nueva recomendación</h2>
+          <button class="modal__close" (click)="cerrarForm()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        @if (errorForm()) {
+          <div class="modal__error">{{ errorForm() }}</div>
+        }
+        <div class="modal__body">
+          <div class="modal__grid">
+            <div class="form-field">
+              <label>Tipo <span class="required">*</span></label>
+              <select class="input" [(ngModel)]="form.tipo">
+                <option value="">Seleccionar...</option>
+                @for (t of tipos; track t) {
+                  <option [value]="t">{{ t }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Urgencia</label>
+              <select class="input" [(ngModel)]="form.urgencia">
+                @for (u of urgencias; track u.id) {
+                  <option [value]="u.id">{{ u.label }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Descripción <span class="required">*</span></label>
+            <textarea class="input" [(ngModel)]="form.descripcion"
+                      rows="3" placeholder="Descripción técnica de la recomendación...">
+            </textarea>
+          </div>
+          <div class="form-field">
+            <label>Acción recomendada</label>
+            <input type="text" class="input" [(ngModel)]="form.accion_recomendada"
+                   placeholder="Ej. Aplicar 50 kg/ha de urea...">
+          </div>
+          <div class="form-field">
+            <label>Fecha límite</label>
+            <input type="date" class="input" [(ngModel)]="form.fecha_limite">
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secundario" (click)="cerrarForm()">Cancelar</button>
+          <button class="btn btn--primario" [disabled]="guardando()" (click)="guardar()">
+            @if (guardando()) { <span class="spinner-sm"></span> Guardando... }
+            @else { Emitir recomendación }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

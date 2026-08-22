@@ -1,0 +1,420 @@
+<div class="auth-layout">
+
+  <!-- Panel visual -->
+  <div class="auth-panel-visual">
+    <div class="auth-panel-visual__overlay"></div>
+    <div class="auth-panel-visual__contenido">
+      <div class="auth-panel-visual__logo">
+        <img src="/images/logo_agrocycle.png" alt="AgroCycle" height="40">
+        <span>AgroCycle</span>
+      </div>
+
+      <!-- Indicador de pasos -->
+      <div class="pasos-visual">
+        <div class="paso-visual" [class.activo]="paso() >= 1" [class.completo]="paso() > 1">
+          <div class="paso-visual__circulo">
+            @if (paso() > 1) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            } @else {
+              1
+            }
+          </div>
+          <div class="paso-visual__texto">
+            <span class="paso-visual__titulo">Tipo de cuenta</span>
+            <span class="paso-visual__desc">Agricultor o Agrónomo</span>
+          </div>
+        </div>
+        <div class="paso-visual__linea" [class.completo]="paso() > 1"></div>
+        <div class="paso-visual" [class.activo]="paso() >= 2" [class.completo]="paso() > 2">
+          <div class="paso-visual__circulo">
+            @if (paso() > 2) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            } @else {
+              2
+            }
+          </div>
+          <div class="paso-visual__texto">
+            <span class="paso-visual__titulo">Tus datos</span>
+            <span class="paso-visual__desc">Nombre, correo y contraseña</span>
+          </div>
+        </div>
+        <div class="paso-visual__linea" [class.completo]="paso() > 2"></div>
+        <div class="paso-visual" [class.activo]="paso() >= 3">
+          <div class="paso-visual__circulo">3</div>
+          <div class="paso-visual__texto">
+            <span class="paso-visual__titulo">Confirmar</span>
+            <span class="paso-visual__desc">Revisa y crea tu cuenta</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="auth-panel-visual__tagline">
+        Sistema de estimación agrícola para el<br>
+        Bosque Seco del Sur del Ecuador
+      </p>
+    </div>
+  </div>
+
+  <!-- Panel formulario -->
+  <div class="auth-panel-form">
+    <div class="auth-form-inner">
+
+      <!-- Logo mobile -->
+      <div class="auth-logo-mobile">
+        <img src="/images/logo_agrocycle.png" alt="AgroCycle" height="32">
+        <span>AgroCycle</span>
+      </div>
+
+      <!-- Error global -->
+      @if (error()) {
+        <div class="auth-error">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {{ error() }}
+        </div>
+      }
+
+      <!-- PASO 1 — Selección de rol -->
+      @if (paso() === 1) {
+        <div class="auth-header">
+          <h1>Crear cuenta</h1>
+          <p>Selecciona el tipo de cuenta que necesitas</p>
+        </div>
+
+        <div class="roles-grid">
+          <button class="rol-card" (click)="seleccionarRol('agricultor')">
+            <div class="rol-card__icono rol-agricultor">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.5">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <h3>Soy Agricultor</h3>
+            <p>Gestiona tu finca, registra temporadas y conoce tu estimación de cosecha</p>
+            <ul>
+              <li>Monitoreo de parcelas</li>
+              <li>Estimación de producción</li>
+              <li>Control financiero</li>
+            </ul>
+            <div class="rol-card__cta">
+              Registrarme como Agricultor
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </button>
+
+          <button class="rol-card" (click)="seleccionarRol('agronomo')">
+            <div class="rol-card__icono rol-agronomo">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.5">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07"/>
+                <path d="M14.05 2a9 9 0 0 1 8 7.94"/>
+                <path d="M14.05 6A5 5 0 0 1 18 10"/>
+                <path d="M2 2l20 20"/>
+                <path d="M8.71 8.71A10 10 0 0 0 2 12s4 8 10 8a9.74 9.74 0 0 0 5.39-1.61"/>
+              </svg>
+            </div>
+            <h3>Soy Agrónomo</h3>
+            <p>Vincula tu perfil profesional y da seguimiento técnico a los agricultores asignados</p>
+            <ul>
+              <li>Observaciones técnicas</li>
+              <li>Recomendaciones con urgencia</li>
+              <li>Evaluaciones de campo</li>
+            </ul>
+            <div class="rol-card__nota">
+              Requiere N° de registro profesional
+            </div>
+            <div class="rol-card__cta">
+              Registrarme como Agrónomo
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <p class="auth-footer-link">
+          ¿Ya tienes cuenta?
+          <a routerLink="/auth/login">Inicia sesión aquí</a>
+        </p>
+      }
+
+      <!-- PASO 2 — Formulario -->
+      @if (paso() === 2) {
+        <div class="auth-header">
+          <button class="btn-back" (click)="volver()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div>
+            <h1>
+              {{ rolSeleccionado() === 'agricultor' ? 'Cuenta de Agricultor' : 'Cuenta de Agrónomo' }}
+            </h1>
+            <p>Completa tus datos para crear tu cuenta</p>
+          </div>
+        </div>
+
+        <form class="auth-form" (ngSubmit)="irAPaso3()">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre</label>
+              <input id="nombre" type="text" [(ngModel)]="nombre"
+                     name="nombre" placeholder="Juan" required>
+            </div>
+            <div class="form-group">
+              <label for="apellido">Apellido</label>
+              <input id="apellido" type="text" [(ngModel)]="apellido"
+                     name="apellido" placeholder="Pérez" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="correo">Correo electrónico</label>
+            <input id="correo" type="email" [(ngModel)]="correo"
+                   name="correo" placeholder="tu@correo.com"
+                   autocomplete="email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <div class="input-password">
+              <input
+                id="password"
+                [type]="mostrarPassword() ? 'text' : 'password'"
+                [(ngModel)]="password"
+                name="password"
+                placeholder="Mínimo 8 caracteres"
+                (input)="evaluarPassword()"
+                required>
+              <button type="button" class="input-password__toggle"
+                      (click)="togglePassword()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Indicador fortaleza -->
+            @if (password) {
+              <div class="password-strength">
+                <div class="password-strength__barras">
+                  @for (i of [1,2,3,4]; track i) {
+                    <div class="barra"
+                         [style.background]="i <= fortalezaNivel ? fortalezaColor : '#E2E2E2'">
+                    </div>
+                  }
+                </div>
+                <span class="password-strength__texto"
+                      [style.color]="fortalezaColor">
+                  {{ fortalezaTexto }}
+                </span>
+              </div>
+              <div class="password-requisitos">
+                <span [class.ok]="fortaleza().longitud">
+                  Mínimo 8 caracteres
+                </span>
+                <span [class.ok]="fortaleza().mayuscula">
+                  Una mayúscula
+                </span>
+                <span [class.ok]="fortaleza().numero">
+                  Un número
+                </span>
+                <span [class.ok]="fortaleza().especial">
+                  Un símbolo
+                </span>
+              </div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="confirmar">Confirmar contraseña</label>
+            <div class="input-password">
+              <input
+                id="confirmar"
+                [type]="mostrarConfirmar() ? 'text' : 'password'"
+                [(ngModel)]="confirmarPassword"
+                name="confirmarPassword"
+                placeholder="Repite tu contraseña"
+                required>
+              <button type="button" class="input-password__toggle"
+                      (click)="toggleConfirmar()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            @if (confirmarPassword && password !== confirmarPassword) {
+              <span class="form-error-inline">Las contraseñas no coinciden</span>
+            }
+          </div>
+
+          <!-- Campos solo para agrónomo -->
+          @if (rolSeleccionado() === 'agronomo') {
+            <div class="agronomo-campos">
+              <div class="agronomo-campos__header">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                Datos profesionales requeridos para agronomos
+              </div>
+              <div class="form-group">
+                <label for="numReg">N° de Registro Profesional</label>
+                <input id="numReg" type="text"
+                       [(ngModel)]="numeroRegistro"
+                       name="numeroRegistro"
+                       placeholder="ING-AGR-001"
+                       required>
+              </div>
+              <div class="form-group">
+                <label for="especialidad">Especialidad (opcional)</label>
+                <input id="especialidad" type="text"
+                       [(ngModel)]="especialidad"
+                       name="especialidad"
+                       placeholder="Cultivos tropicales, Fitosanidad...">
+              </div>
+            </div>
+          }
+
+          <div class="form-check">
+            <input id="terminos" type="checkbox"
+                   [(ngModel)]="aceptaTerminos"
+                   name="aceptaTerminos">
+            <label for="terminos">
+              Acepto los
+              <a href="#" class="form-link">términos y condiciones</a>
+              y la
+              <a href="#" class="form-link">política de privacidad</a>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-auth">
+            Continuar
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </form>
+
+        <p class="auth-footer-link">
+          ¿Ya tienes cuenta?
+          <a routerLink="/auth/login">Inicia sesión aquí</a>
+        </p>
+      }
+
+      <!-- PASO 3 — Confirmación -->
+      @if (paso() === 3 && !exito()) {
+        <div class="auth-header">
+          <button class="btn-back" (click)="volver()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div>
+            <h1>Confirmar registro</h1>
+            <p>Revisa tus datos antes de crear la cuenta</p>
+          </div>
+        </div>
+
+        <div class="resumen-datos">
+          <div class="resumen-item">
+            <span class="resumen-item__label">Tipo de cuenta</span>
+            <span class="resumen-item__valor tipo-{{ rolSeleccionado() }}">
+              {{ rolSeleccionado() === 'agricultor' ? 'Agricultor' : 'Agrónomo' }}
+            </span>
+          </div>
+          <div class="resumen-item">
+            <span class="resumen-item__label">Nombre completo</span>
+            <span class="resumen-item__valor">{{ nombre }} {{ apellido }}</span>
+          </div>
+          <div class="resumen-item">
+            <span class="resumen-item__label">Correo electrónico</span>
+            <span class="resumen-item__valor">{{ correo }}</span>
+          </div>
+          @if (rolSeleccionado() === 'agronomo') {
+            <div class="resumen-item">
+              <span class="resumen-item__label">N° de Registro</span>
+              <span class="resumen-item__valor">{{ numeroRegistro }}</span>
+            </div>
+            @if (especialidad) {
+              <div class="resumen-item">
+                <span class="resumen-item__label">Especialidad</span>
+                <span class="resumen-item__valor">{{ especialidad }}</span>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="verificacion-aviso">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Recibirás un correo de verificación en <strong>{{ correo }}</strong>.
+          Debes verificarlo antes de iniciar sesión.
+        </div>
+
+        <button
+          class="btn-auth"
+          (click)="onSubmit()"
+          [disabled]="cargando()">
+          @if (cargando()) {
+            <span class="spinner"></span>
+            Creando cuenta...
+          } @else {
+            Crear mi cuenta
+          }
+        </button>
+      }
+
+      <!-- ÉXITO -->
+      @if (exito()) {
+        <div class="exito-container">
+          <div class="exito-icono">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h2>¡Cuenta creada!</h2>
+          <p>
+            Te enviamos un enlace de verificación a
+            <strong>{{ correo }}</strong>.
+            Haz clic en el enlace para activar tu cuenta.
+          </p>
+          <a routerLink="/auth/login" class="btn-auth">
+            Ir al inicio de sesión
+          </a>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

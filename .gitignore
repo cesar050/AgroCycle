@@ -1,0 +1,71 @@
+# ============================================================
+# AGROCYCLE — .gitignore
+# ============================================================
+
+# Variables de entorno — NUNCA subir
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.log
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# ML models — binarios grandes, no van en git
+backend/ml_models/*.pkl
+backend/ml_models/*.joblib
+
+# Base de datos local
+*.db
+*.sqlite3
+*.sqlite
+
+# Node / Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker
+*.override.yml
+
+# Reportes generados
+backend/reportes_generados/
+*.pdf
+
+# Logs
+*.log
+logs/

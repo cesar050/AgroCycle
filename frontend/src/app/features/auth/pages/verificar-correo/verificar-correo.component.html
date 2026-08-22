@@ -1,0 +1,53 @@
+<div class="verificar-layout">
+  <div class="verificar-card">
+    <img src="/images/logo_agrocycle.png" alt="AgroCycle" height="40"
+         class="verificar-logo">
+
+    @if (estado() === 'cargando') {
+      <div class="verificar-spinner"></div>
+      <h2>Verificando tu correo...</h2>
+      <p>Espera un momento por favor.</p>
+    }
+
+    @if (estado() === 'exito') {
+      <div class="verificar-icono exito">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <h2>¡Correo verificado!</h2>
+      <p>
+        Tu cuenta en AgroCycle está activa.
+        Ya puedes iniciar sesión y comenzar a usar el sistema.
+      </p>
+      <a routerLink="/auth/login" class="btn-auth">
+        Iniciar sesión
+      </a>
+    }
+
+    @if (estado() === 'error') {
+      <div class="verificar-icono error">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+      <h2>Enlace inválido</h2>
+      <p>
+        Este enlace de verificación expiró o ya fue usado.
+        Solicita uno nuevo iniciando sesión.
+      </p>
+      <a routerLink="/auth/login" class="btn-auth">
+        Ir al login
+      </a>
+    }
+
+    <p class="verificar-footer">
+      AgroCycle · Universidad Nacional de Loja · Ecuador
+    </p>
+  </div>
+</div>

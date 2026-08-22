@@ -1,0 +1,240 @@
+<div class="nf-page">
+
+  <!-- Breadcrumb -->
+  <div class="nf-breadcrumb">
+    <a routerLink="/app/dashboard">Inicio</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+    <a routerLink="/app/mapa">Mapa</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+    <span>Nueva finca</span>
+  </div>
+
+  <!-- Header -->
+  <div class="nf-header">
+    <div>
+      <h1>Registrar nueva finca</h1>
+      <p>Completa la información y dibuja el perímetro de tu finca en el mapa</p>
+    </div>
+    <div class="nf-header__actions">
+      <a routerLink="/app/mapa" class="btn btn--secundario">
+        Cancelar
+      </a>
+      <button
+        class="btn btn--primario"
+        [disabled]="!puedeGuardar || cargando()"
+        (click)="guardar()">
+        @if (cargando()) {
+          <span class="spinner-sm"></span>
+          Guardando...
+        } @else {
+          Guardar finca
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="nf-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Contenido -->
+  <div class="nf-content">
+
+    <!-- Formulario -->
+    <div class="nf-form">
+
+      <!-- Sección 1 -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__num">1</span>
+          <h2>Información básica</h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field form-field--full">
+            <label for="nombre">
+              Nombre de la finca <span class="required">*</span>
+            </label>
+            <input
+              id="nombre"
+              type="text"
+              class="input"
+              [(ngModel)]="nombre"
+              placeholder="Ej. Finca La Esperanza"
+              autocomplete="off">
+          </div>
+
+          <div class="form-field">
+            <label for="provincia">Provincia</label>
+            <input id="provincia" type="text" class="input"
+                   [(ngModel)]="provincia" placeholder="Loja">
+          </div>
+
+          <div class="form-field">
+            <label for="canton">Cantón</label>
+            <input id="canton" type="text" class="input"
+                   [(ngModel)]="canton" placeholder="Paltas">
+          </div>
+
+          <div class="form-field">
+            <label for="parroquia">Parroquia</label>
+            <input id="parroquia" type="text" class="input"
+                   [(ngModel)]="parroquia" placeholder="Guachanama">
+          </div>
+
+          <div class="form-field">
+            <label for="sector">Sector / Recinto</label>
+            <input id="sector" type="text" class="input"
+                   [(ngModel)]="sector" placeholder="Bramaderos">
+          </div>
+
+          <div class="form-field form-field--full">
+            <label for="descripcion">
+              Descripción (opcional)
+            </label>
+            <textarea
+              id="descripcion"
+              class="input"
+              [(ngModel)]="descripcion"
+              rows="2"
+              placeholder="Información adicional sobre la finca...">
+            </textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Panel mapa -->
+    <div class="nf-mapa-panel">
+      <div class="nf-mapa-panel__header">
+        <div>
+          <h3>Perímetro de la finca</h3>
+          <p>Haz clic en el mapa para definir los vértices del polígono</p>
+        </div>
+
+        <div class="nf-mapa-panel__actions">
+          <button class="btn btn--ghost btn--sm"
+                  (click)="usarUbicacionActual()"
+                  title="Ir a mi ubicación">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+            </svg>
+            Mi ubicación
+          </button>
+          <button class="btn btn--ghost btn--sm"
+                  (click)="deshacerUltimoPunto()"
+                  [disabled]="puntosDefinidos === 0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            Deshacer
+          </button>
+          <button class="btn btn--ghost btn--sm"
+                  (click)="limpiarMapa()"
+                  [disabled]="puntosDefinidos === 0">
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Mapa Leaflet -->
+      <div class="nf-mapa" #mapaRef></div>
+
+      <!-- Info del polígono -->
+      <div class="nf-mapa-info">
+        <div class="nf-mapa-info__item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+          </svg>
+          <span>{{ puntosDefinidos }} vértice(s) definido(s)</span>
+        </div>
+        @if (areaHa() > 0) {
+          <div class="nf-mapa-info__item nf-mapa-info__item--verde">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>Área: {{ areaHa() }} ha (aproximado)</span>
+          </div>
+        }
+        @if (puntosDefinidos < 3) {
+          <div class="nf-mapa-info__item nf-mapa-info__item--hint">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Necesitas al menos 3 puntos para definir el polígono</span>
+          </div>
+        }
+      </div>
+
+      <!-- Consejos -->
+      <div class="nf-consejos">
+        <p class="nf-consejos__titulo">Consejos útiles</p>
+        <div class="nf-consejo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+          </svg>
+          <div>
+            <p class="nf-consejo__titulo">Define bien los límites</p>
+            <p class="nf-consejo__desc">
+              Asegúrate de que el polígono cubra exactamente el área de tu finca.
+            </p>
+          </div>
+        </div>
+        <div class="nf-consejo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+          </svg>
+          <div>
+            <p class="nf-consejo__titulo">Usa la vista satelital</p>
+            <p class="nf-consejo__desc">
+              El mapa satelital te ayuda a identificar los bordes exactos del terreno.
+            </p>
+          </div>
+        </div>
+        <div class="nf-consejo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+          </svg>
+          <div>
+            <p class="nf-consejo__titulo">Información precisa</p>
+            <p class="nf-consejo__desc">
+              Datos exactos mejoran las estimaciones de producción.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

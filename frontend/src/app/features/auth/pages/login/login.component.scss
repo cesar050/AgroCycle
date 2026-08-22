@@ -1,0 +1,393 @@
+@use 'sass:color';
+
+// ================================================================
+// VARIABLES — consistentes con landing
+// ================================================================
+$verde:     #2E7D32;
+$verde-l:   #43A047;
+$verde-xs:  #E8F5E9;
+$naranja:   #F57C00;
+$rojo:      #D32F2F;
+$rojo-xs:   #FFEBEE;
+$blanco:    #FFFFFF;
+$negro:     #0A0A0A;
+$gris-100:  #F8F9FA;
+$gris-200:  #E9ECEF;
+$gris-400:  #ADB5BD;
+$gris-600:  #6C757D;
+$gris-800:  #343A40;
+$r-sm:  6px;
+$r-md:  10px;
+$r-lg:  16px;
+$r-full: 9999px;
+$t: all 0.2s ease;
+
+// ================================================================
+// LAYOUT SPLIT
+// ================================================================
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ================================================================
+// PANEL VISUAL IZQUIERDO
+// ================================================================
+.auth-panel-visual {
+  position: relative;
+  background: url('/images/hero-agrocycle.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: flex-end;
+  padding: 48px;
+  overflow: hidden;
+
+  @media (max-width: 768px) { display: none; }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(#0A1F0F, 0.88) 0%,
+      rgba(#0A1F0F, 0.72) 100%
+    );
+  }
+
+  &__contenido {
+    position: relative;
+    z-index: 1;
+    color: $blanco;
+    width: 100%;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 64px;
+
+    span {
+      font-size: 18px;
+      font-weight: 700;
+      color: $blanco;
+      letter-spacing: -0.3px;
+    }
+  }
+
+  &__cita {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.5;
+    color: $blanco;
+    margin: 0 0 32px;
+    padding-left: 20px;
+    border-left: 3px solid $naranja;
+    font-style: normal;
+  }
+
+  &__metrica {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__metrica-valor {
+    font-size: 52px;
+    font-weight: 800;
+    color: $naranja;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+  }
+
+  &__metrica-label {
+    font-size: 12px;
+    color: rgba($blanco, 0.55);
+    letter-spacing: 0.3px;
+  }
+}
+
+// ================================================================
+// PANEL FORMULARIO DERECHO
+// ================================================================
+.auth-panel-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  background: $blanco;
+  overflow-y: auto;
+}
+
+.auth-form-inner {
+  width: 100%;
+  max-width: 400px;
+}
+
+// Logo mobile
+.auth-logo-mobile {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+
+  @media (max-width: 768px) { display: flex; }
+
+  span {
+    font-size: 16px;
+    font-weight: 700;
+    color: $verde;
+  }
+}
+
+// Header
+.auth-header {
+  margin-bottom: 32px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: $gris-800;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $gris-600;
+  }
+}
+
+// Ícono 2FA
+.auth-2fa-icono {
+  width: 56px;
+  height: 56px;
+  background: $verde-xs;
+  border-radius: $r-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $verde;
+  margin-bottom: 20px;
+}
+
+// Error
+.auth-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: $rojo-xs;
+  border: 1px solid color.adjust($rojo-xs, $lightness: -8%);
+  border-radius: $r-md;
+  font-size: 13px;
+  color: $rojo;
+  margin-bottom: 20px;
+
+  svg { flex-shrink: 0; }
+}
+
+// Formulario
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: $gris-800;
+  }
+
+  input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid $gris-200;
+    border-radius: $r-md;
+    font-size: 14px;
+    color: $gris-800;
+    background: $blanco;
+    font-family: 'Inter', sans-serif;
+    transition: $t;
+    outline: none;
+
+    &::placeholder { color: $gris-400; }
+
+    &:focus {
+      border-color: $verde;
+      box-shadow: 0 0 0 3px rgba($verde, 0.1);
+    }
+  }
+}
+
+.form-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: $naranja;
+  text-decoration: none;
+  transition: $t;
+
+  &:hover { color: color.adjust($naranja, $lightness: -10%); }
+}
+
+.form-hint {
+  font-size: 11px;
+  color: $gris-400;
+  margin-top: 4px;
+  display: block;
+}
+
+// Input password
+.input-password {
+  position: relative;
+
+  input { padding-right: 44px; }
+
+  &__toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $gris-400;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: $t;
+
+    &:hover { color: $gris-800; }
+  }
+}
+
+// Input código 2FA
+.input-codigo {
+  text-align: center;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  letter-spacing: 8px;
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+// Checkbox
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: $verde;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  label {
+    font-size: 13px;
+    color: $gris-600;
+    cursor: pointer;
+  }
+}
+
+// Botón principal
+.btn-auth {
+  width: 100%;
+  padding: 13px;
+  background: $verde;
+  color: $blanco;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: $r-lg;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  transition: $t;
+  margin-top: 4px;
+
+  &:hover:not(:disabled) {
+    background: color.adjust($verde, $lightness: -5%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($verde, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+// Spinner
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba($blanco, 0.3);
+  border-top-color: $blanco;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// Link footer
+.auth-footer-link {
+  text-align: center;
+  font-size: 13px;
+  color: $gris-600;
+  margin-top: 24px;
+
+  a {
+    color: $naranja;
+    font-weight: 600;
+    text-decoration: none;
+    transition: $t;
+
+    &:hover { color: color.adjust($naranja, $lightness: -10%); }
+  }
+}
+
+// Botón volver 2FA
+.btn-volver {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: none;
+  border: 1.5px solid $gris-200;
+  border-radius: $r-full;
+  font-size: 13px;
+  font-weight: 600;
+  color: $gris-600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: $t;
+  width: 100%;
+  justify-content: center;
+
+  &:hover {
+    border-color: $gris-400;
+    color: $gris-800;
+    background: $gris-100;
+  }
+}

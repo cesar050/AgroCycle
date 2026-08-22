@@ -1,0 +1,48 @@
+# Framework
+flask==3.1.0
+flask-jwt-extended==4.7.1
+flask-cors==5.0.0
+
+# Base de datos
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+geoalchemy2==0.15.2
+alembic==1.14.0
+
+# Cache y cola de tareas
+redis==5.2.1
+celery==5.4.0
+flask-caching==2.3.0
+
+# Validación
+marshmallow==3.23.1
+email-validator==2.2.0
+
+# Seguridad
+bcrypt==4.2.1
+pybreaker==1.2.0
+
+# ML
+scikit-learn==1.6.0
+pandas==2.2.3
+numpy==2.2.0
+joblib==1.4.2
+
+# APIs externas
+requests==2.32.3
+
+# PDF
+weasyprint==63.1
+
+# Utilidades
+python-dotenv==1.0.1
+shapely==2.0.6
+flask-mail==0.10.0
+itsdangerous==2.2.0
+
+matplotlib
+flask-limiter
+flask-limiter
+pyotp
+qrcode
+pillow

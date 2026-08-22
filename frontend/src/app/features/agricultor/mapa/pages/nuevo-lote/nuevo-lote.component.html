@@ -1,0 +1,194 @@
+<div class="nf-page">
+
+  <div class="nf-breadcrumb">
+    <a routerLink="/app/dashboard">Inicio</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+    <a routerLink="/app/mapa">Mapa</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+    <span>Nuevo lote</span>
+  </div>
+
+  <div class="nf-header">
+    <div>
+      <h1>Registrar nuevo lote</h1>
+      <p>
+        Finca: <strong>{{ finca()?.nombre }}</strong> ·
+        Dibuja el perímetro del lote dentro de la finca
+      </p>
+    </div>
+    <div class="nf-header__actions">
+      <a routerLink="/app/mapa" class="btn btn--secundario">Cancelar</a>
+      <button
+        class="btn btn--primario"
+        [disabled]="!puedeGuardar || cargando()"
+        (click)="guardar()">
+        @if (cargando()) {
+          <span class="spinner-sm"></span>
+          Guardando...
+        } @else {
+          Guardar lote
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="nf-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  <div class="nf-content">
+
+    <!-- Formulario -->
+    <div class="nf-form">
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__num">1</span>
+          <h2>Información del lote</h2>
+        </div>
+        <div class="form-grid">
+          <div class="form-field form-field--full">
+            <label for="nombre">
+              Nombre del lote <span class="required">*</span>
+            </label>
+            <input id="nombre" type="text" class="input"
+                   [(ngModel)]="nombre"
+                   placeholder="Ej. Lote Norte, Lote Choza...">
+          </div>
+          <div class="form-field form-field--full">
+            <label for="descripcion">Descripción (opcional)</label>
+            <textarea id="descripcion" class="input"
+                      [(ngModel)]="descripcion"
+                      rows="3"
+                      placeholder="Información adicional sobre el lote...">
+            </textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info del polígono -->
+      @if (puntosDefinidos > 0 || areaHa() > 0) {
+        <div class="form-section">
+          <div class="form-section__header">
+            <span class="form-section__num">2</span>
+            <h2>Polígono definido</h2>
+          </div>
+          <div class="poligono-info">
+            <div class="poligono-stat">
+              <p class="poligono-stat__value">{{ puntosDefinidos }}</p>
+              <p class="poligono-stat__label">Vértices</p>
+            </div>
+            <div class="poligono-stat">
+              <p class="poligono-stat__value">{{ areaHa() }}</p>
+              <p class="poligono-stat__label">ha (aprox)</p>
+            </div>
+            <div class="poligono-stat">
+              <p class="poligono-stat__value"
+                 [class.ok]="puntosDefinidos >= 3"
+                 [class.pending]="puntosDefinidos < 3">
+                {{ puntosDefinidos >= 3 ? 'Listo' : 'Incompleto' }}
+              </p>
+              <p class="poligono-stat__label">Estado</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Referencia -->
+      <div class="referencia-card">
+        <div class="referencia-card__icono">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div>
+          <p class="referencia-card__titulo">
+            El contorno verde punteado muestra el límite de la finca
+          </p>
+          <p class="referencia-card__desc">
+            Dibuja el lote dentro de ese límite haciendo clic
+            en el mapa. Los lotes existentes se muestran en gris claro.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Panel mapa -->
+    <div class="nf-mapa-panel">
+      <div class="nf-mapa-panel__header">
+        <div>
+          <h3>Ubicación del lote</h3>
+          <p>Dibuja el polígono dentro del contorno de la finca</p>
+        </div>
+        <div class="nf-mapa-panel__actions">
+          <button class="btn btn--ghost btn--sm"
+                  (click)="deshacerUltimoPunto()"
+                  [disabled]="puntosDefinidos === 0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            Deshacer
+          </button>
+          <button class="btn btn--ghost btn--sm"
+                  (click)="limpiarMapa()"
+                  [disabled]="puntosDefinidos === 0">
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <div class="nf-mapa-wrap">
+        <div class="nf-mapa" #mapaRef></div>
+
+        <!-- Alerta punto fuera de límite -->
+        @if (mensajeError()) {
+          <div class="alerta-mapa-error">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            {{ mensajeError() }}
+          </div>
+        }
+      </div>
+
+      <div class="nf-mapa-info">
+        <div class="nf-mapa-info__item">
+          <span class="leyenda-dot" style="background:#2E7D32;border:1px dashed #2E7D32;background:transparent"></span>
+          <span>Límite de la finca</span>
+        </div>
+        <div class="nf-mapa-info__item">
+          <span class="leyenda-dot" style="background:#F57C00"></span>
+          <span>Nuevo lote</span>
+        </div>
+        @if (puntosDefinidos < 3 && puntosDefinidos > 0) {
+          <div class="nf-mapa-info__item nf-mapa-info__item--hint">
+            <span>Faltan {{ 3 - puntosDefinidos }} punto(s) más</span>
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+</div>

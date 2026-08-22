@@ -1,0 +1,205 @@
+@use 'sass:color';
+@use '../../../../styles' as *;
+
+$admin-color: #6C3483;
+$admin-suave: color.adjust($admin-color, $lightness: 42%);
+
+.adm-dash {
+  display: flex;
+  flex-direction: column;
+  gap: $s4;
+  animation: fadeIn 0.2s ease;
+
+  &__header {
+    padding-bottom: $s4;
+    border-bottom: 1px solid var(--border);
+  }
+
+  &__saludo { font-size: 12px; color: var(--text-sec); margin-bottom: 3px; }
+  h1        { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+  &__sub    { font-size: 12px; color: var(--text-sec); }
+}
+
+.adm-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $s3;
+
+  @include tablet { grid-template-columns: repeat(2, 1fr); }
+  @include mobile { grid-template-columns: 1fr; }
+}
+
+.adm-metric {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-md;
+  padding: $s4;
+  display: flex;
+  align-items: center;
+  gap: $s4;
+  transition: $t-fast;
+
+  &:hover { box-shadow: $shadow-sm; }
+
+  &__icono {
+    width: 44px; height: 44px;
+    border-radius: $radius-md;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+
+    &.morado  { background: $admin-suave; color: $admin-color; }
+    &.verde   { background: $verde-suave; color: $verde-primario; }
+    &.azul    { background: $azul-suave;  color: $azul-info; }
+    &.naranja { background: $naranja-suave; color: $naranja-warning; }
+  }
+
+  &__label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-ter); margin-bottom: 3px;
+  }
+
+  &__val {
+    font-size: 22px; font-weight: 700;
+    color: var(--text-primary); font-family: $font-mono;
+    line-height: 1; margin-bottom: 2px;
+
+    &--ok { color: $verde-primario; font-family: $font-sans; font-size: 16px; }
+  }
+
+  &__sub { font-size: 11px; color: var(--text-ter); }
+}
+
+.adm-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-md;
+  overflow: hidden;
+
+  &__header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: $s3 $s4;
+    border-bottom: 1px solid var(--border);
+    gap: $s3;
+
+    h3 { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  }
+}
+
+.adm-tabla {
+  overflow-x: auto;
+
+  &__header {
+    display: grid;
+    grid-template-columns: 2fr 2fr 0.8fr 0.8fr 1fr;
+    padding: $s2 $s4;
+    background: var(--bg-app);
+    border-bottom: 1px solid var(--border);
+    min-width: 560px;
+
+    span {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.4px;
+      color: var(--text-ter);
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 2fr 2fr 0.8fr 0.8fr 1fr;
+    padding: $s3 $s4;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    min-width: 560px;
+    transition: $t-fast;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: var(--bg-app); }
+
+    span { font-size: 12px; color: var(--text-sec); }
+  }
+
+  &__email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px !important;
+    font-family: $font-mono;
+  }
+
+  &__fecha {
+    font-size: 11px !important;
+    color: var(--text-ter) !important;
+  }
+}
+
+.adm-usuario {
+  display: flex; align-items: center; gap: $s2;
+
+  &__avatar {
+    width: 28px; height: 28px;
+    border-radius: $radius-full;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+
+    &.verde  { background: $verde-suave;  color: $verde-primario; }
+    &.azul   { background: $azul-suave;   color: $azul-info; }
+    &.morado { background: $admin-suave;  color: $admin-color; }
+  }
+
+  &__nombre {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.adm-empty {
+  padding: $s8;
+  text-align: center;
+  p { font-size: 12px; color: var(--text-sec); }
+}
+
+.adm-acciones {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.adm-accion {
+  display: flex; align-items: center; gap: $s4;
+  padding: $s4; text-decoration: none;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  transition: $t-fast;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--bg-app); }
+
+  &__icono {
+    width: 40px; height: 40px;
+    border-radius: $radius-md;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+
+    &.morado  { background: $admin-suave;   color: $admin-color; }
+    &.verde   { background: $verde-suave;   color: $verde-primario; }
+    &.naranja { background: $naranja-suave; color: $naranja-warning; }
+  }
+
+  div { flex: 1; }
+
+  &__titulo { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  &__sub    { font-size: 11px; color: var(--text-sec); }
+
+  svg:last-child { color: var(--border); flex-shrink: 0; transition: $t-fast; }
+  &:hover svg:last-child { color: $admin-color; }
+}

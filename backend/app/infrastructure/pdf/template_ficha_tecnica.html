@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 8.5pt;
+    color: #000000;
+    background: #FFFFFF;
+    line-height: 1.4;
+}
+
+@page {
+    size: A4;
+    margin: 12mm 12mm 18mm 12mm;
+    @bottom-center {
+        content: "Ficha Técnica Agrícola  |  AgroCycle  |  Universidad Nacional de Loja  |  Página " counter(page) " de " counter(pages);
+        font-size: 6.5pt;
+        color: #000000;
+        border-top: 0.8pt solid #000000;
+        padding-top: 3mm;
+        width: 100%;
+        text-align: center;
+        font-family: Arial, sans-serif;
+    }
+}
+
+/* ================================================================
+   ENCABEZADO
+================================================================ */
+.encabezado {
+    width: 100%;
+    border-bottom: 1.5pt solid #000000;
+    padding-bottom: 5pt;
+    margin-bottom: 5pt;
+}
+
+.encabezado table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.encabezado td { vertical-align: middle; padding: 0; }
+
+.logo-izq img { height: 45pt; width: auto; }
+.logo-der { text-align: right; }
+.logo-der img { height: 45pt; width: auto; }
+
+.titulo-doc { text-align: center; padding: 0 10pt; }
+
+.titulo-doc h1 {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 2pt;
+}
+
+.titulo-doc h2 {
+    font-size: 9pt;
+    font-weight: 400;
+    color: #000000;
+    margin-top: 2pt;
+}
+
+.titulo-doc .meta {
+    font-size: 7pt;
+    color: #333333;
+    margin-top: 3pt;
+}
+
+/* ================================================================
+   BANDA DE IDENTIFICACIÓN — solo borde negro
+================================================================ */
+.banda {
+    width: 100%;
+    border: 1pt solid #000000;
+    margin-bottom: 6pt;
+}
+
+.banda table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.banda td {
+    padding: 4pt 6pt;
+    text-align: center;
+    border-right: 0.5pt solid #000000;
+    vertical-align: middle;
+}
+
+.banda td:last-child { border-right: none; }
+
+.banda .lbl {
+    display: block;
+    font-size: 5.5pt;
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+    margin-bottom: 1pt;
+    font-weight: 400;
+}
+
+.banda .val {
+    display: block;
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #000000;
+}
+
+/* ================================================================
+   SECCIONES
+================================================================ */
+.seccion {
+    width: 100%;
+    margin-bottom: 6pt;
+    page-break-inside: avoid;
+}
+
+.sec-titulo {
+    background: #000000;
+    color: #FFFFFF;
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+    padding: 3pt 6pt;
+    width: 100%;
+}
+
+.sec-titulo .num {
+    margin-right: 5pt;
+}
+
+/* ================================================================
+   TABLAS ESTILO WORD — bordes negros, sin colores
+================================================================ */
+.tabla-datos {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1pt solid #000000;
+}
+
+.tabla-datos td {
+    padding: 3.5pt 6pt;
+    border: 0.5pt solid #000000;
+    vertical-align: top;
+    font-size: 8pt;
+}
+
+.tabla-datos .etq {
+    font-size: 6pt;
+    color: #333333;
+    text-transform: uppercase;
+    letter-spacing: 0.2pt;
+    font-weight: 400;
+    display: block;
+    margin-bottom: 1pt;
+}
+
+.tabla-datos .val {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #000000;
+    display: block;
+}
+
+.tabla-datos .val.grande {
+    font-size: 11pt;
+    font-weight: 700;
+}
+
+.tabla-contenido {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1pt solid #000000;
+}
+
+.tabla-contenido thead tr {
+    background: #000000;
+}
+
+.tabla-contenido thead th {
+    color: #FFFFFF;
+    font-size: 7.5pt;
+    font-weight: 700;
+    padding: 3pt 6pt;
+    text-align: left;
+    border: 0.5pt solid #000000;
+    text-transform: uppercase;
+}
+
+.tabla-contenido tbody tr:nth-child(even) td {
+    background: #F2F2F2;
+}
+
+.tabla-contenido tbody tr:nth-child(odd) td {
+    background: #FFFFFF;
+}
+
+.tabla-contenido tbody td {
+    padding: 3pt 6pt;
+    border: 0.5pt solid #000000;
+    font-size: 8pt;
+    vertical-align: middle;
+}
+
+.tabla-contenido tfoot td {
+    background: #000000;
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 8pt;
+    padding: 3pt 6pt;
+    border: 0.5pt solid #000000;
+}
+
+/* ================================================================
+   CAJA PRODUCCIÓN
+================================================================ */
+.caja-produccion {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1.5pt solid #000000;
+}
+
+.caja-produccion td {
+    padding: 8pt 10pt;
+    text-align: center;
+    border-right: 1pt solid #000000;
+    vertical-align: middle;
+}
+
+.caja-produccion td:last-child { border-right: none; }
+
+.caja-produccion .prod-lbl {
+    display: block;
+    font-size: 6pt;
+    color: #333333;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+    margin-bottom: 2pt;
+    font-weight: 400;
+}
+
+.caja-produccion .prod-val {
+    display: block;
+    font-size: 22pt;
+    font-weight: 700;
+    color: #000000;
+    line-height: 1;
+}
+
+.caja-produccion .prod-uni {
+    display: block;
+    font-size: 7.5pt;
+    color: #333333;
+    margin-top: 2pt;
+}
+
+.caja-produccion .prod-rango {
+    display: block;
+    font-size: 7pt;
+    color: #555555;
+    margin-top: 3pt;
+}
+
+/* ================================================================
+   RECOMENDACIONES
+================================================================ */
+.rec-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1pt solid #000000;
+}
+
+.rec-tabla thead th {
+    background: #000000;
+    color: #FFFFFF;
+    font-size: 7.5pt;
+    font-weight: 700;
+    padding: 3pt 6pt;
+    border: 0.5pt solid #000000;
+    text-transform: uppercase;
+}
+
+.rec-tabla tbody td {
+    padding: 3pt 6pt;
+    border: 0.5pt solid #000000;
+    font-size: 8pt;
+    vertical-align: middle;
+    background: #FFFFFF;
+}
+
+.rec-tabla tbody tr:nth-child(even) td {
+    background: #F2F2F2;
+}
+
+.urgencia-badge {
+    font-size: 6.5pt;
+    font-weight: 700;
+    padding: 1.5pt 5pt;
+    border: 1pt solid #000000;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+/* ================================================================
+   GRÁFICOS — con título de sección negro y gráfico a color
+================================================================ */
+.grafico-contenedor {
+    width: 100%;
+    border: 1pt solid #000000;
+    margin-top: 4pt;
+    background: #FFFFFF;
+}
+
+.grafico-titulo {
+    background: #000000;
+    color: #FFFFFF;
+    font-size: 7.5pt;
+    font-weight: 700;
+    padding: 3pt 6pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+}
+
+.grafico-img {
+    padding: 6pt;
+    text-align: center;
+}
+
+.grafico-img img {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* ================================================================
+   FIRMAS
+================================================================ */
+.firmas-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10pt;
+    border: 1pt solid #000000;
+}
+
+.firmas-tabla td {
+    padding: 6pt 8pt;
+    border: 0.5pt solid #000000;
+    vertical-align: top;
+    text-align: center;
+    width: 33.33%;
+}
+
+.firma-espacio {
+    height: 28pt;
+    border-bottom: 0.8pt solid #000000;
+    margin-bottom: 4pt;
+}
+
+.firma-nombre { font-size: 8pt; font-weight: 700; }
+.firma-cargo  { font-size: 7pt; color: #333333; }
+.firma-reg    { font-size: 7pt; font-weight: 600; }
+
+/* ================================================================
+   UTILIDADES
+================================================================ */
+.salto      { page-break-before: always; }
+.sin-datos  { color: #555555; font-style: italic; font-size: 7.5pt; padding: 6pt; }
+.negrita    { font-weight: 700; }
+.mt4        { margin-top: 4pt; }
+.mt6        { margin-top: 6pt; }
+.center     { text-align: center; }
+
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     ENCABEZADO
+================================================================ -->
+<div class="encabezado">
+    <table>
+        <tr>
+            <td class="logo-izq" style="width:18%;">
+                <img src="{{ logo_agrocycle }}" alt="AgroCycle">
+            </td>
+            <td class="titulo-doc">
+                <h1>Ficha Técnica Agrícola</h1>
+                <h2>{{ info_general.cultivo_nombre }} &mdash; {{ info_general.variedad_nombre }}</h2>
+                <div class="meta">
+                    Generado el {{ fecha_generacion }} &nbsp;|&nbsp; Temporada: {{ info_general.temporada_nombre }}
+                </div>
+            </td>
+            <td class="logo-der" style="width:18%;">
+                <img src="{{ logo_bosque_seco }}" alt="Bosque Seco">
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- BANDA IDENTIFICACIÓN -->
+<div class="banda">
+    <table>
+        <tr>
+            <td>
+                <span class="lbl">Parcela</span>
+                <span class="val">{{ ubicacion.parcela_nombre }}</span>
+            </td>
+            <td>
+                <span class="lbl">Finca</span>
+                <span class="val">{{ ubicacion.finca_nombre }}</span>
+            </td>
+            <td>
+                <span class="lbl">Agricultor</span>
+                <span class="val">{{ productor.agricultor.nombre }}</span>
+            </td>
+            <td>
+                <span class="lbl">Fecha Siembra</span>
+                <span class="val">{{ info_general.fecha_siembra }}</span>
+            </td>
+            <td>
+                <span class="lbl">DDS</span>
+                <span class="val">{{ info_general.dias_desde_siembra }} días</span>
+            </td>
+            <td>
+                <span class="lbl">Etapa Actual</span>
+                <span class="val">{{ info_general.estado_fenologico }}</span>
+            </td>
+            <td>
+                <span class="lbl">Avance Ciclo</span>
+                <span class="val">{{ info_general.avance_ciclo_porcentaje | round(1) }}%</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ================================================================
+     01 INFORMACIÓN GENERAL
+================================================================ -->
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">01</span>Información General del Cultivo</div>
+    <table class="tabla-datos">
+        <tr>
+            <td style="width:25%">
+                <span class="etq">Cultivo</span>
+                <span class="val">{{ info_general.cultivo_nombre }}</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Nombre Científico</span>
+                <span class="val">{{ info_general.nombre_cientifico }}</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Variedad / Híbrido</span>
+                <span class="val">{{ info_general.variedad_nombre }}</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Ciclo Vegetativo</span>
+                <span class="val">{{ info_general.ciclo_vegetativo_dias }} días</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="etq">Fecha de Siembra</span>
+                <span class="val">{{ info_general.fecha_siembra }}</span>
+            </td>
+            <td>
+                <span class="etq">Fecha Fin Estimada</span>
+                <span class="val">{{ info_general.fecha_fin_estimada }}</span>
+            </td>
+            <td>
+                <span class="etq">Nombre de Temporada</span>
+                <span class="val">{{ info_general.temporada_nombre }}</span>
+            </td>
+            <td>
+                <span class="etq">Estado de Temporada</span>
+                <span class="val">{{ info_general.temporada_estado | capitalize }}</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ================================================================
+     02 UBICACIÓN
+================================================================ -->
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">02</span>Ubicación de la Parcela</div>
+    <table class="tabla-datos">
+        <tr>
+            <td style="width:25%">
+                <span class="etq">Parcela</span>
+                <span class="val">{{ ubicacion.parcela_nombre }}</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Lote</span>
+                <span class="val">{{ ubicacion.lote_nombre }}</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Finca</span>
+                <span class="val">{{ ubicacion.finca_nombre }}</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Sector</span>
+                <span class="val">{{ ubicacion.sector or 'No registrado' }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="etq">Parroquia</span>
+                <span class="val">{{ ubicacion.parroquia }}</span>
+            </td>
+            <td>
+                <span class="etq">Cantón</span>
+                <span class="val">{{ ubicacion.canton }}</span>
+            </td>
+            <td>
+                <span class="etq">Provincia</span>
+                <span class="val">{{ ubicacion.provincia }}</span>
+            </td>
+            <td>
+                <span class="etq">Superficie</span>
+                <span class="val">{{ ubicacion.superficie_ha }} ha ({{ ubicacion.superficie_m2 | int }} m²)</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="etq">Altitud Promedio</span>
+                <span class="val grande">{{ ubicacion.altitud_msnm }} msnm</span>
+            </td>
+            <td>
+                <span class="etq">Pendiente</span>
+                <span class="val">{{ ubicacion.pendiente_porcentaje }}%</span>
+            </td>
+            <td>
+                <span class="etq">Orientación</span>
+                <span class="val">{{ ubicacion.orientacion | capitalize }}</span>
+            </td>
+            <td>
+                <span class="etq">Drenaje</span>
+                <span class="val">{{ ubicacion.drenaje | capitalize }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="etq">Latitud (Centroide GPS)</span>
+                <span class="val">{{ ubicacion.latitud }}</span>
+            </td>
+            <td>
+                <span class="etq">Longitud (Centroide GPS)</span>
+                <span class="val">{{ ubicacion.longitud }}</span>
+            </td>
+            <td>
+                <span class="etq">Acceso a Riego</span>
+                <span class="val">{{ ubicacion.acceso_riego }}</span>
+            </td>
+            <td>
+                <span class="etq">Tipo de Riego</span>
+                <span class="val">{{ ubicacion.tipo_riego | capitalize }}</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ================================================================
+     03 CONDICIONES AMBIENTALES
+================================================================ -->
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">03</span>Condiciones Ambientales Registradas</div>
+    {% if condiciones_ambientales.sin_datos %}
+        <p class="sin-datos">Sin datos climáticos registrados para el período de la temporada.</p>
+    {% else %}
+    <table class="tabla-datos">
+        <tr>
+            <td style="width:25%">
+                <span class="etq">Temperatura Promedio</span>
+                <span class="val grande">{{ condiciones_ambientales.temp_promedio }} °C</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Temperatura Máxima</span>
+                <span class="val">{{ condiciones_ambientales.temp_maxima }} °C</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Temperatura Mínima</span>
+                <span class="val">{{ condiciones_ambientales.temp_minima }} °C</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Precipitación Total</span>
+                <span class="val grande">{{ condiciones_ambientales.precip_total_mm }} mm</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="etq">Humedad Relativa Promedio</span>
+                <span class="val">{{ condiciones_ambientales.humedad_promedio }}%</span>
+            </td>
+            <td>
+                <span class="etq">Velocidad Viento Promedio</span>
+                <span class="val">{{ condiciones_ambientales.viento_promedio_km_h }} km/h</span>
+            </td>
+            <td>
+                <span class="etq">Días con Lluvia</span>
+                <span class="val">{{ condiciones_ambientales.dias_con_lluvia }} días</span>
+            </td>
+            <td>
+                <span class="etq">Días con Datos Climáticos</span>
+                <span class="val">{{ condiciones_ambientales.total_dias }} días</span>
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+</div>
+
+<!-- ================================================================
+     04 CARACTERÍSTICAS DEL SUELO
+================================================================ -->
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">04</span>Características del Suelo</div>
+    <table class="tabla-datos">
+        <tr>
+            <td style="width:25%">
+                <span class="etq">Tipo de Suelo</span>
+                <span class="val">{{ suelo.tipo_suelo }}</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Capacidad Retención Agua</span>
+                <span class="val">{{ suelo.capacidad_retencion_agua }} m³/m³</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Agua Disponible</span>
+                <span class="val">{{ suelo.agua_disponible_mm_m | int }} mm/m</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Pendiente del Terreno</span>
+                <span class="val">{{ suelo.pendiente_porcentaje }}%</span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="etq">Drenaje</span>
+                <span class="val">{{ suelo.drenaje | capitalize }}</span>
+            </td>
+            <td>
+                <span class="etq">Presencia de Piedras</span>
+                <span class="val">{{ suelo.presencia_piedras }}</span>
+            </td>
+            <td>
+                <span class="etq">Altitud</span>
+                <span class="val">{{ suelo.altitud_msnm }} msnm</span>
+            </td>
+            <td>
+                <span class="etq">Observaciones del Terreno</span>
+                <span class="val" style="font-size:7.5pt; font-weight:400;">{{ suelo.observaciones }}</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ================================================================
+     05 REQUERIMIENTOS DEL CULTIVO
+================================================================ -->
+{% if not requerimientos.sin_variedad %}
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">05</span>Requerimientos Técnicos del Cultivo</div>
+    <table class="tabla-datos">
+        <tr>
+            <td style="width:25%">
+                <span class="etq">Temperatura Óptima</span>
+                <span class="val">{{ requerimientos.temp_optima_min }} — {{ requerimientos.temp_optima_max }} °C</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Humedad Suelo Óptima</span>
+                <span class="val">{{ requerimientos.humedad_optima_min }} — {{ requerimientos.humedad_optima_max }}%</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Densidad de Siembra</span>
+                <span class="val">{{ requerimientos.densidad_min | int }} — {{ requerimientos.densidad_max | int }} plantas/ha</span>
+            </td>
+            <td style="width:25%">
+                <span class="etq">Producción Potencial de la Variedad</span>
+                <span class="val grande">{{ requerimientos.produccion_potencial_qq_ha }} qq/ha</span>
+            </td>
+        </tr>
+    </table>
+    <div class="mt4">
+    <table class="tabla-contenido">
+        <thead>
+            <tr>
+                <th style="width:30%">Etapa Fenológica</th>
+                <th style="width:20%">Kc (Coef. Cultivo)</th>
+                <th>Descripción Agronómica</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Emergencia</td>
+                <td class="center negrita">{{ requerimientos.kc_por_etapa.emergencia }}</td>
+                <td>Establecimiento inicial de la plántula. Baja demanda hídrica.</td>
+            </tr>
+            <tr>
+                <td>Crecimiento Vegetativo</td>
+                <td class="center negrita">{{ requerimientos.kc_por_etapa.crecimiento_vegetativo }}</td>
+                <td>Desarrollo de hojas, tallo y sistema radicular.</td>
+            </tr>
+            <tr>
+                <td class="negrita">Floración (Etapa Crítica)</td>
+                <td class="center negrita">{{ requerimientos.kc_por_etapa.floracion }}</td>
+                <td class="negrita">Máxima demanda hídrica. El déficit reduce el rendimiento en 1.5 veces el déficit hídrico (Ky=1.5).</td>
+            </tr>
+            <tr>
+                <td>Llenado de Grano</td>
+                <td class="center negrita">{{ requerimientos.kc_por_etapa.llenado_grano }}</td>
+                <td>Formación y acumulación de almidón en el grano.</td>
+            </tr>
+            <tr>
+                <td>Maduración</td>
+                <td class="center negrita">{{ requerimientos.kc_por_etapa.maduracion }}</td>
+                <td>Secado y endurecimiento del grano. Demanda hídrica en descenso.</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- ================================================================
+     06 MANEJO AGRONÓMICO
+================================================================ -->
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">06</span>Manejo Agronómico Registrado</div>
+    {% if manejo_agronomico.actividades %}
+    <table class="tabla-contenido">
+        <thead>
+            <tr>
+                <th>Tipo de Actividad</th>
+                <th class="center">Cantidad</th>
+                <th>Primera Aplicación</th>
+                <th>Última Aplicación</th>
+                <th>Costo Total (USD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for act in manejo_agronomico.actividades %}
+            <tr>
+                <td>{{ act.tipo }}</td>
+                <td class="center">{{ act.cantidad }}</td>
+                <td>{{ act.primera }}</td>
+                <td>{{ act.ultima }}</td>
+                <td style="text-align:right;">$ {{ act.costo_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4">Total Costos de Actividades Agronómicas Registradas</td>
+                <td style="text-align:right;">$ {{ manejo_agronomico.costo_total_actividades }}</td>
+            </tr>
+        </tfoot>
+    </table>
+    {% else %}
+    <p class="sin-datos">Sin actividades agronómicas registradas en esta temporada.</p>
+    {% endif %}
+</div>
+
+<!-- ================================================================
+     07 PARÁMETROS TÉCNICOS FAO-56 (nueva página)
+================================================================ -->
+<div class="seccion salto">
+    <div class="sec-titulo"><span class="num">07</span>Parámetros Técnicos — Balance Hídrico FAO-56 (Sin Sensores Físicos)</div>
+    {% if parametros_tecnicos.por_etapa %}
+    <table class="tabla-contenido">
+        <thead>
+            <tr>
+                <th>Etapa Fenológica</th>
+                <th class="center">Días con Datos</th>
+                <th class="center">Ks Promedio</th>
+                <th class="center">ETc Prom. (mm/día)</th>
+                <th class="center">Humedad Disp. Prom. (mm)</th>
+                <th class="center">Estado Hídrico</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for etapa in parametros_tecnicos.por_etapa %}
+            <tr>
+                <td>{{ etapa.etapa }}</td>
+                <td class="center">{{ etapa.dias }}</td>
+                <td class="center negrita">{{ etapa.ks_promedio }}</td>
+                <td class="center">{{ etapa.etc_promedio_mm }}</td>
+                <td class="center">{{ etapa.humedad_promedio }}</td>
+                <td class="center">
+                    {% if etapa.ks_promedio >= 0.90 %}Óptimo
+                    {% elif etapa.ks_promedio >= 0.75 %}Leve
+                    {% else %}Estrés
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="font-size:6.5pt; color:#333; margin-top:3pt; padding:0 2pt;">
+        Ks = Coeficiente de estrés hídrico FAO-56. Valor 1.000 indica condiciones hídricas óptimas.
+        ETc = Evapotranspiración del cultivo. Calculado con datos históricos Open-Meteo sin sensores físicos.
+        DDS = Días Desde la Siembra.
+    </p>
+
+    {% if grafico_ks %}
+    <div class="grafico-contenedor mt4">
+        <div class="grafico-titulo">Coeficiente de Estrés Hídrico (Ks) por Etapa Fenológica</div>
+        <div class="grafico-img"><img src="{{ grafico_ks }}"></div>
+    </div>
+    {% endif %}
+
+    {% if grafico_humedad %}
+    <div class="grafico-contenedor mt4">
+        <div class="grafico-titulo">Evolución de la Humedad del Suelo durante la Temporada</div>
+        <div class="grafico-img"><img src="{{ grafico_humedad }}"></div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <p class="sin-datos">Sin indicadores de estrés hídrico calculados para este período.</p>
+    {% endif %}
+</div>
+
+<!-- ================================================================
+     08 DESARROLLO FENOLÓGICO
+================================================================ -->
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">08</span>Desarrollo Fenológico del Cultivo</div>
+
+    {% if grafico_ciclo %}
+    <div class="grafico-contenedor">
+        <div class="grafico-titulo">Progreso del Ciclo Vegetativo</div>
+        <div class="grafico-img"><img src="{{ grafico_ciclo }}"></div>
+    </div>
+    {% endif %}
+
+    <div class="mt4">
+    <table class="tabla-contenido">
+        <thead>
+            <tr>
+                <th>Etapa Fenológica</th>
+                <th class="center">Rango (DDS)</th>
+                <th class="center">% del Ciclo</th>
+                <th class="center">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for etapa in desarrollo_cultivo.etapas %}
+            <tr>
+                <td {% if etapa.nombre | lower | replace(' ', '_') in info_general.estado_fenologico | lower | replace(' ', '_') %}class="negrita"{% endif %}>
+                    {{ etapa.nombre }}
+                    {% if etapa.nombre | lower | replace(' ', '_') in info_general.estado_fenologico | lower | replace(' ', '_') %} (EN CURSO){% endif %}
+                </td>
+                <td class="center">{{ etapa.rango_dias }}</td>
+                <td class="center">{{ etapa.porcentaje }}</td>
+                <td class="center">
+                    {% if etapa.nombre | lower | replace(' ', '_') in info_general.estado_fenologico | lower | replace(' ', '_') %}
+                        En Curso
+                    {% else %}
+                        Completada / Pendiente
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <div class="mt4">
+    <table class="tabla-datos">
+        <tr>
+            <td style="width:33%">
+                <span class="etq">Etapa Actual</span>
+                <span class="val">{{ desarrollo_cultivo.etapa_actual }}</span>
+            </td>
+            <td style="width:33%">
+                <span class="etq">Días desde la Siembra</span>
+                <span class="val grande">{{ desarrollo_cultivo.dias_desde_siembra }} DDS</span>
+            </td>
+            <td style="width:34%">
+                <span class="etq">Avance del Ciclo Vegetativo</span>
+                <span class="val grande">{{ desarrollo_cultivo.avance_porcentaje | round(1) }}% de {{ desarrollo_cultivo.ciclo_total_dias }} días totales</span>
+            </td>
+        </tr>
+    </table>
+    </div>
+</div>
+
+<!-- ================================================================
+     09 ESTIMACIÓN DE PRODUCCIÓN
+================================================================ -->
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">09</span>Estimación de Producción — Modelo Matemático FAO-33 (Stewart, 1977)</div>
+    {% if produccion.sin_estimacion %}
+        <p class="sin-datos">Sin estimación de producción generada. Ejecute el módulo de estimación para obtener proyecciones.</p>
+    {% else %}
+    <table class="caja-produccion">
+        <tr>
+            <td>
+                <span class="prod-lbl">Producción Estimada</span>
+                <span class="prod-val">{{ produccion.valor_estimado_qq_ha }}</span>
+                <span class="prod-uni">qq por hectárea</span>
+                <span class="prod-rango">Rango: {{ produccion.rango_minimo_qq_ha }} — {{ produccion.rango_maximo_qq_ha }} qq/ha</span>
+            </td>
+            <td>
+                <span class="prod-lbl">Producción Total Parcela</span>
+                <span class="prod-val">{{ produccion.valor_total_estimado_qq }}</span>
+                <span class="prod-uni">quintales totales</span>
+                <span class="prod-rango">Superficie: {{ ubicacion.superficie_ha }} ha</span>
+            </td>
+            <td>
+                <span class="prod-lbl">Margen de Error</span>
+                <span class="prod-val">±{{ produccion.margen_error }}%</span>
+                <span class="prod-uni">Algoritmo: {{ produccion.algoritmo | upper }}</span>
+                <span class="prod-rango">Generado: {{ produccion.fecha_estimacion }}</span>
+            </td>
+        </tr>
+    </table>
+
+    {% if produccion.produccion_real_qq %}
+    <div class="mt4">
+    <table class="tabla-datos">
+        <tr>
+            <td style="width:33%">
+                <span class="etq">Producción Real Registrada</span>
+                <span class="val grande">{{ produccion.produccion_real_qq }} quintales</span>
+            </td>
+            <td style="width:33%">
+                <span class="etq">Fecha de Cosecha Real</span>
+                <span class="val">{{ produccion.fecha_cosecha }}</span>
+            </td>
+            <td style="width:34%">
+                <span class="etq">Precio de Venta Registrado</span>
+                <span class="val">$ {{ produccion.precio_venta_qq }} por quintal</span>
+            </td>
+        </tr>
+    </table>
+    </div>
+    {% endif %}
+
+    {% if grafico_precipitacion %}
+    <div class="grafico-contenedor mt4">
+        <div class="grafico-titulo">Precipitación Mensual — Datos Reales Open-Meteo Bramaderos</div>
+        <div class="grafico-img"><img src="{{ grafico_precipitacion }}"></div>
+    </div>
+    {% endif %}
+
+    {% if grafico_gastos %}
+    <div class="grafico-contenedor mt4">
+        <div class="grafico-titulo">Distribución de Gastos por Categoría</div>
+        <div class="grafico-img" style="padding:8pt 60pt;">
+            <img src="{{ grafico_gastos }}">
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<!-- ================================================================
+     11 RECOMENDACIONES TÉCNICAS
+================================================================ -->
+{% if recomendaciones %}
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">11</span>Recomendaciones Técnicas Vigentes del Agrónomo</div>
+    <table class="rec-tabla">
+        <thead>
+            <tr>
+                <th style="width:10%">Urgencia</th>
+                <th style="width:13%">Tipo</th>
+                <th>Descripción</th>
+                <th style="width:12%">Fecha</th>
+                <th style="width:13%">Fecha Límite</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rec in recomendaciones %}
+            <tr>
+                <td class="center">
+                    <span class="urgencia-badge">{{ rec.urgencia | upper }}</span>
+                </td>
+                <td>{{ rec.tipo }}</td>
+                <td>{{ rec.descripcion }}</td>
+                <td>{{ rec.fecha }}</td>
+                <td>{{ rec.fecha_limite or 'Sin límite' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- ================================================================
+     13 PRODUCTOR Y FIRMAS
+================================================================ -->
+<div class="seccion">
+    <div class="sec-titulo"><span class="num">13</span>Información del Productor y Responsable Técnico</div>
+    <table class="tabla-contenido">
+        <thead>
+            <tr>
+                <th style="width:50%">Agricultor Responsable</th>
+                <th style="width:50%">Técnico Agrónomo Responsable</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tr>
+                            <td style="padding:2pt 0; font-size:7.5pt; width:40%; color:#333;">Nombre completo</td>
+                            <td style="padding:2pt 0; font-size:8pt; font-weight:700;">{{ productor.agricultor.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:2pt 0; font-size:7.5pt; color:#333;">Correo electrónico</td>
+                            <td style="padding:2pt 0; font-size:8pt;">{{ productor.agricultor.correo }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:2pt 0; font-size:7.5pt; color:#333;">Teléfono</td>
+                            <td style="padding:2pt 0; font-size:8pt;">{{ productor.agricultor.telefono or 'No registrado' }}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    {% if productor.agronomo %}
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tr>
+                            <td style="padding:2pt 0; font-size:7.5pt; width:40%; color:#333;">Nombre completo</td>
+                            <td style="padding:2pt 0; font-size:8pt; font-weight:700;">{{ productor.agronomo.nombre }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:2pt 0; font-size:7.5pt; color:#333;">N° Registro Profesional</td>
+                            <td style="padding:2pt 0; font-size:8pt; font-weight:700;">{{ productor.agronomo.numero_registro }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:2pt 0; font-size:7.5pt; color:#333;">Especialidad</td>
+                            <td style="padding:2pt 0; font-size:8pt;">{{ productor.agronomo.especialidad or 'No registrada' }}</td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <p class="sin-datos">Sin agrónomo vinculado a esta temporada.</p>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="firmas-tabla">
+        <tr>
+            <td>
+                <div class="firma-espacio"></div>
+                <div class="firma-nombre">{{ productor.agricultor.nombre }}</div>
+                <div class="firma-cargo">Agricultor Responsable</div>
+            </td>
+            {% if productor.agronomo %}
+            <td>
+                <div class="firma-espacio"></div>
+                <div class="firma-nombre">{{ productor.agronomo.nombre }}</div>
+                <div class="firma-cargo">Técnico Agrónomo</div>
+                <div class="firma-reg">Reg. {{ productor.agronomo.numero_registro }}</div>
+            </td>
+            {% endif %}
+            <td>
+                <div class="firma-espacio"></div>
+                <div class="firma-nombre">AgroCycle</div>
+                <div class="firma-cargo">Sistema de Estimación Agrícola</div>
+                <div class="firma-reg">Universidad Nacional de Loja — Ecuador</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+<div class="nf-page">
+
+  <div class="nf-breadcrumb">
+    <a routerLink="/app/dashboard">Inicio</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+    <a routerLink="/app/temporada">Temporadas</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2">
+      <path d="M9 18l6-6-6-6"/>
+    </svg>
+    <span>Nueva temporada</span>
+  </div>
+
+  <div class="nf-header">
+    <div>
+      <h1>Nueva temporada de siembra</h1>
+      <p>Registra los datos del ciclo productivo</p>
+    </div>
+    <div class="nf-header__actions">
+      <a routerLink="/app/temporada" class="btn btn--secundario">
+        Cancelar
+      </a>
+      <button
+        class="btn btn--primario"
+        [disabled]="!puedeGuardarPaso1 || cargando()"
+        (click)="guardarPaso1()">
+        @if (cargando()) {
+          <span class="spinner-sm"></span>
+          Guardando...
+        } @else {
+          Crear temporada
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="nf-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  <div class="nf-content nf-content--single">
+
+    <!-- Sección 1 — Información básica -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">1</span>
+        <h2>Información de la temporada</h2>
+      </div>
+      <div class="form-grid form-grid--3">
+
+        <!-- Finca -->
+        <div class="form-field">
+          <label>Finca <span class="required">*</span></label>
+          <select class="input"
+                  [(ngModel)]="fincaId"
+                  (change)="cargarLotes(fincaId)">
+            <option value="">Seleccionar finca</option>
+            @for (f of fincas(); track f.id) {
+              <option [value]="f.id">{{ f.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Cultivo -->
+        <div class="form-field">
+          <label>Cultivo principal <span class="required">*</span></label>
+          <select class="input" [(ngModel)]="cultivoId">
+            @for (c of cultivos; track c.id) {
+              <option [value]="c.id">{{ c.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Variedad -->
+        <div class="form-field">
+          <label>Variedad de semilla</label>
+          <select class="input" [(ngModel)]="variedadId">
+            <option value="">Seleccionar variedad</option>
+            @for (v of variedades[+cultivoId] || []; track v.id) {
+              <option [value]="v.id">{{ v.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Nombre -->
+        <div class="form-field form-field--full">
+          <label>
+            Nombre de la temporada <span class="required">*</span>
+          </label>
+          <div class="input-con-boton">
+            <input
+              type="text"
+              class="input"
+              [(ngModel)]="nombre"
+              placeholder="Ej. Temporada Maíz 2026-2027">
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              (click)="generarNombre()"
+              title="Generar nombre automático">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+              </svg>
+              Auto
+            </button>
+          </div>
+        </div>
+
+        <!-- Fecha inicio -->
+        <div class="form-field">
+          <label>Fecha de siembra <span class="required">*</span></label>
+          <input
+            type="date"
+            class="input"
+            [(ngModel)]="fechaInicio">
+        </div>
+
+        <!-- Fecha fin estimada -->
+        <div class="form-field">
+          <label>Fecha fin estimada</label>
+          <input
+            type="date"
+            class="input"
+            [(ngModel)]="fechaFinEstimada">
+        </div>
+
+        <!-- Densidad -->
+        <div class="form-field">
+          <label>Densidad de siembra (kg/ha)</label>
+          <input
+            type="number"
+            class="input"
+            [(ngModel)]="densidadSiembra"
+            placeholder="Ej. 25"
+            min="0" step="0.5">
+        </div>
+
+        <!-- Observaciones -->
+        <div class="form-field form-field--full">
+          <label>Observaciones (opcional)</label>
+          <textarea
+            class="input"
+            [(ngModel)]="observaciones"
+            rows="2"
+            placeholder="Notas sobre la temporada...">
+          </textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Sección 2 — Selección de parcelas -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">2</span>
+        <h2>
+          Parcelas a sembrar
+          <span class="form-section__sub">
+            — Selecciona las parcelas que incluirás en esta temporada
+          </span>
+        </h2>
+      </div>
+
+      @if (!fincaId) {
+        <div class="parcelas-hint">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Selecciona primero una finca para ver sus parcelas.
+        </div>
+      }
+
+      @if (fincaId && parcelas().length === 0) {
+        <div class="parcelas-hint">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Esta finca no tiene parcelas registradas aún.
+          <a routerLink="/app/mapa" class="link-inline">
+            Ir al mapa para crear parcelas
+          </a>
+        </div>
+      }
+
+      @if (parcelas().length > 0) {
+        <div class="parcelas-grid">
+          @for (p of parcelas(); track p.id) {
+            <button
+              class="parcela-card"
+              [class.seleccionada]="estaSeleccionada(p.id)"
+              (click)="toggleParcela(p.id)">
+              <div class="parcela-card__check">
+                @if (estaSeleccionada(p.id)) {
+                  <svg width="12" height="12" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                }
+              </div>
+              <div class="parcela-card__info">
+                <p class="parcela-card__nombre">{{ p.nombre }}</p>
+                <p class="parcela-card__meta">
+                  {{ p.superficie_ha }} ha
+                  @if (p.altitud_promedio_msnm) {
+                    · {{ p.altitud_promedio_msnm }} msnm
+                  }
+                </p>
+              </div>
+            </button>
+          }
+        </div>
+
+        @if (parcelasSeleccionadas().size > 0) {
+          <div class="parcelas-resumen">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            {{ parcelasSeleccionadas().size }} parcela(s) seleccionada(s)
+          </div>
+        }
+      }
+
+    </div>
+
+  </div>
+</div>

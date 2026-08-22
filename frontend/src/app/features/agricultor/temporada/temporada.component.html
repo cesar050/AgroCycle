@@ -1,0 +1,229 @@
+<div class="tem-page">
+
+  <!-- Header -->
+  <div class="tem-header">
+    <div>
+      <h1>Temporadas de siembra</h1>
+      <p>Gestiona el ciclo productivo de tu finca</p>
+    </div>
+    <a routerLink="/app/temporada/nueva" class="btn btn--primario">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nueva temporada
+    </a>
+  </div>
+
+  @if (cargando()) {
+    <div class="tem-skeleton">
+      @for (i of [1,2,3]; track i) {
+        <div class="skeleton" style="height:120px;border-radius:8px"></div>
+      }
+    </div>
+  }
+
+  @if (!cargando()) {
+
+    <!-- Comparativo entre temporadas -->
+    @if (comparativo() && temporadas().length > 1) {
+      <div class="tem-comparativo">
+        <div class="tem-comparativo__item">
+          <p class="tem-comparativo__label">Mejor producción</p>
+          <p class="tem-comparativo__value font-mono">
+            {{ comparativo().produccion?.mejor_temporada_qq || '—' }}
+            <span>qq</span>
+          </p>
+        </div>
+        <div class="tem-comparativo__item">
+          <p class="tem-comparativo__label">Promedio qq</p>
+          <p class="tem-comparativo__value font-mono">
+            {{ comparativo().produccion?.promedio_qq || '—' }}
+            <span>qq</span>
+          </p>
+        </div>
+        <div class="tem-comparativo__item">
+          <p class="tem-comparativo__label">Mejor rendimiento</p>
+          <p class="tem-comparativo__value font-mono">
+            {{ comparativo().produccion?.mejor_rendimiento_qq_ha || '—' }}
+            <span>qq/ha</span>
+          </p>
+        </div>
+        <div class="tem-comparativo__item">
+          <p class="tem-comparativo__label">Mejor ganancia</p>
+          <p class="tem-comparativo__value font-mono">
+            ${{ comparativo().financiero?.mejor_ganancia || '—' }}
+          </p>
+        </div>
+        <div class="tem-comparativo__item">
+          <p class="tem-comparativo__label">Temporadas rentables</p>
+          <p class="tem-comparativo__value">
+            {{ comparativo().financiero?.temporadas_rentables || 0 }}
+            de {{ temporadas().length }}
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Sin temporadas -->
+    @if (temporadas().length === 0) {
+      <div class="tem-empty">
+        <div class="tem-empty__card">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2a10 10 0 0 1 0 20M12 2a10 10 0 0 0 0 20"/>
+            <path d="M2 12h20"/>
+          </svg>
+          <h2>Sin temporadas registradas</h2>
+          <p>
+            Crea tu primera temporada de siembra para comenzar
+            el seguimiento del cultivo.
+          </p>
+          <a routerLink="/app/temporada/nueva" class="btn btn--primario">
+            Crear primera temporada
+          </a>
+        </div>
+      </div>
+    }
+
+    <!-- Temporadas activas -->
+    @if (activas.length > 0) {
+      <div class="tem-seccion">
+        <p class="tem-seccion__titulo">Temporada activa</p>
+        @for (t of activas; track t.id) {
+          <div class="tem-card tem-card--activa">
+            <div class="tem-card__header">
+              <div class="tem-card__titulo-wrap">
+                <h3>{{ t.nombre }}</h3>
+                <span class="tag tag--verde">Activa</span>
+              </div>
+              <div class="tem-card__acciones">
+                <a [routerLink]="['/app/temporada', t.id]"
+                   class="btn btn--secundario btn--sm">
+                  Ver detalle
+                </a>
+              </div>
+            </div>
+
+            <div class="tem-card__body">
+              <div class="tem-card__info">
+                <div class="tem-kv">
+                  <span class="tem-kv__k">Finca</span>
+                  <span class="tem-kv__v">{{ t.finca }}</span>
+                </div>
+                <div class="tem-kv">
+                  <span class="tem-kv__k">Cultivo</span>
+                  <span class="tem-kv__v">{{ t.cultivo }}</span>
+                </div>
+                <div class="tem-kv">
+                  <span class="tem-kv__k">Inicio</span>
+                  <span class="tem-kv__v font-mono">
+                    {{ t.fechas?.inicio }}
+                  </span>
+                </div>
+                <div class="tem-kv">
+                  <span class="tem-kv__k">Fin estimado</span>
+                  <span class="tem-kv__v font-mono">
+                    {{ t.fechas?.fin_estimado || '—' }}
+                  </span>
+                </div>
+                <div class="tem-kv">
+                  <span class="tem-kv__k">Parcelas</span>
+                  <span class="tem-kv__v">
+                    {{ t.produccion?.total_parcelas || 0 }}
+                  </span>
+                </div>
+                <div class="tem-kv">
+                  <span class="tem-kv__k">Superficie</span>
+                  <span class="tem-kv__v font-mono">
+                    {{ t.produccion?.superficie_total_ha || '—' }} ha
+                  </span>
+                </div>
+              </div>
+
+              <!-- Métricas de producción -->
+              @if (t.produccion?.produccion_total_qq) {
+                <div class="tem-card__metricas">
+                  <div class="tem-metrica">
+                    <p class="tem-metrica__val font-mono">
+                      {{ t.produccion.produccion_total_qq }}
+                    </p>
+                    <p class="tem-metrica__label">qq cosechados</p>
+                  </div>
+                  <div class="tem-metrica">
+                    <p class="tem-metrica__val font-mono">
+                      {{ t.produccion.rendimiento_qq_ha }}
+                    </p>
+                    <p class="tem-metrica__label">qq/ha</p>
+                  </div>
+                  @if (t.financiero?.ingresos_totales) {
+                    <div class="tem-metrica">
+                      <p class="tem-metrica__val font-mono verde">
+                        ${{ t.financiero.ingresos_totales }}
+                      </p>
+                      <p class="tem-metrica__label">ingresos</p>
+                    </div>
+                  }
+                </div>
+              }
+
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Historial -->
+    @if (cerradas.length > 0 || otras.length > 0) {
+      <div class="tem-seccion">
+        <p class="tem-seccion__titulo">Historial</p>
+        <div class="tem-tabla">
+          <div class="tem-tabla__header">
+            <span>Temporada</span>
+            <span>Finca</span>
+            <span>Inicio</span>
+            <span>Superficie</span>
+            <span>Producción</span>
+            <span>Ingresos</span>
+            <span>Estado</span>
+            <span></span>
+          </div>
+          @for (t of [...cerradas, ...otras]; track t.id) {
+            <div class="tem-tabla__row">
+              <span class="tem-tabla__nombre">{{ t.nombre }}</span>
+              <span>{{ t.finca }}</span>
+              <span class="font-mono">{{ t.fechas?.inicio }}</span>
+              <span class="font-mono">
+                {{ t.produccion?.superficie_total_ha || '—' }} ha
+              </span>
+              <span class="font-mono">
+                {{ t.produccion?.produccion_total_qq || '—' }} qq
+              </span>
+              <span class="font-mono"
+                    [class.verde]="(t.financiero?.ganancia_neta || 0) > 0"
+                    [class.rojo]="(t.financiero?.ganancia_neta || 0) < 0">
+                @if (t.financiero?.ganancia_neta !== null) {
+                  ${{ t.financiero.ganancia_neta }}
+                } @else {
+                  —
+                }
+              </span>
+              <span>
+                <span class="tag" [class]="badgeEstado(t.estado)">
+                  {{ labelEstado(t.estado) }}
+                </span>
+              </span>
+              <span>
+                <a [routerLink]="['/app/temporada', t.id]"
+                   class="btn btn--ghost btn--sm">
+                  Ver
+                </a>
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

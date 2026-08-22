@@ -1,0 +1,342 @@
+<div class="mapa-page">
+
+  <!-- ============================================================
+  SIN FINCA
+  ============================================================ -->
+  @if (!cargando() && fincas().length === 0) {
+    <div class="mapa-page__empty">
+      <div class="mapa-page__empty-card">
+        <div class="empty-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+        </div>
+        <h2>Aún no tienes ninguna finca registrada</h2>
+        <p>
+          Registra tu primera finca para comenzar a dibujar
+          tus lotes y parcelas en el mapa.
+        </p>
+        <a routerLink="/app/mapa/nueva-finca" class="btn btn--primario btn--lg">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Registrar primera finca
+        </a>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================
+  MAPA COMPLETO
+  ============================================================ -->
+  @if (!cargando() && fincas().length > 0) {
+
+    <!-- Toolbar superior -->
+    <div class="mapa-toolbar">
+      <div class="mapa-toolbar__left">
+
+        <!-- Selector de finca -->
+        <div class="finca-selector">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+          </svg>
+          <select (change)="seleccionarFinca(fincas()[$any($event.target).selectedIndex])">
+            @for (f of fincas(); track f.id) {
+              <option [value]="f.id">{{ f.nombre }}</option>
+            }
+          </select>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
+
+        <!-- Vistas del mapa -->
+        <div class="vista-tabs">
+          <button
+            class="vista-tab"
+            [class.activo]="vistaActiva() === 'normal'"
+            (click)="cambiarVista('normal')">
+            Mapa normal
+          </button>
+          <button
+            class="vista-tab"
+            [class.activo]="vistaActiva() === 'pendiente'"
+            (click)="cambiarVista('pendiente')">
+            Mapa de pendiente
+          </button>
+          <button
+            class="vista-tab"
+            [class.activo]="vistaActiva() === 'humedad'"
+            (click)="cambiarVista('humedad')">
+            Mapa de humedad
+          </button>
+        </div>
+      </div>
+
+      <div class="mapa-toolbar__right">
+        <!-- Acciones -->
+        <a
+          [routerLink]="['/app/mapa/nueva-finca']"
+          class="btn btn--secundario btn--sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nueva finca
+        </a>
+
+        @if (fincaActiva()) {
+          <a
+            [routerLink]="['/app/mapa/nuevo-lote', fincaActiva().id]"
+            class="btn btn--secundario btn--sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Nuevo lote
+          </a>
+        }
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="mapa-content">
+
+      <!-- Panel lateral izquierdo -->
+      <div class="mapa-panel">
+
+        <!-- Info de la finca -->
+        <div class="panel-section">
+          <h3 class="panel-section__title">
+            {{ fincaActiva()?.nombre }}
+          </h3>
+          <p class="panel-section__sub">
+            {{ fincaActiva()?.sector }},
+            {{ fincaActiva()?.canton }},
+            {{ fincaActiva()?.provincia }}
+          </p>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="panel-stats">
+          <div class="panel-stat">
+            <p class="panel-stat__value">{{ superficieTotal | number:'1.2-2' }}</p>
+            <p class="panel-stat__label">ha totales</p>
+          </div>
+          <div class="panel-stat">
+            <p class="panel-stat__value">{{ totalLotes }}</p>
+            <p class="panel-stat__label">lotes</p>
+          </div>
+          <div class="panel-stat">
+            <p class="panel-stat__value">{{ totalParcelas }}</p>
+            <p class="panel-stat__label">parcelas</p>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <!-- Lista de lotes -->
+        @if (datosMapa()?.finca?.lotes?.length > 0) {
+          <div class="panel-section">
+            <p class="panel-section__label">Lotes y parcelas</p>
+            @for (lote of datosMapa().finca.lotes; track lote.id) {
+              <div class="lote-item">
+                <div class="lote-item__header">
+                  <div class="lote-item__icono">
+                    <svg width="12" height="12" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    </svg>
+                  </div>
+                  <div class="lote-item__info">
+                    <p class="lote-item__nombre">{{ lote.nombre }}</p>
+                    <p class="lote-item__area">{{ lote.area_ha | number:'1.2-2' }} ha</p>
+                  </div>
+                  <a [routerLink]="['/app/mapa/nueva-parcela', lote.id]"
+                     class="lote-item__add" title="Nueva parcela">
+                    <svg width="12" height="12" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                  </a>
+                </div>
+
+                <!-- Parcelas del lote -->
+                @for (parcela of lote.parcelas; track parcela.id) {
+                  <div class="parcela-item">
+                    <div class="parcela-item__color"
+                         [style.background]="colorEtapa(parcela.estado_fenologico)">
+                    </div>
+                    <div class="parcela-item__info">
+                      <p class="parcela-item__nombre">{{ parcela.nombre }}</p>
+                      <p class="parcela-item__meta">
+                        {{ etiquetaEtapa(parcela.estado_fenologico) }}
+                        · {{ parcela.superficie_ha | number:'1.2-2' }} ha
+                      </p>
+                    </div>
+                    <div class="parcela-item__ks"
+                         [class.ks-ok]="(parcela.estimacion_qq_ha || 0) > 0">
+                      @if (parcela.estimacion_qq_ha > 0) {
+                        <span>{{ parcela.estimacion_qq_ha | number:'1.1-1' }} qq</span>
+                      }
+                    </div>
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="panel-section">
+            <p class="panel-section__empty">
+              Esta finca no tiene lotes registrados aún.
+            </p>
+            <a [routerLink]="['/app/mapa/nuevo-lote', fincaActiva()?.id]"
+               class="btn btn--primario btn--sm" style="margin-top:12px">
+              Crear primer lote
+            </a>
+          </div>
+        }
+
+        <div class="panel-divider"></div>
+
+        <!-- Leyenda de colores -->
+        <div class="panel-section">
+          <p class="panel-section__label">Leyenda</p>
+          <div class="leyenda">
+            @for (item of leyendaEtapas; track item.etapa) {
+              <div class="leyenda-row">
+                <span class="leyenda-dot" [style.background]="item.color"></span>
+                <span>{{ item.label }}</span>
+              </div>
+            }
+          </div>
+        </div>
+        
+      @if (vistaActiva() === 'pendiente') {
+        <div class="panel-section">
+          <p class="panel-section__label">Pendiente del terreno</p>
+
+          @if (cargandoTopo()) {
+            <div class="topo-cargando">
+              <div class="mapa-loading__spinner"></div>
+              <span>Consultando NASA SRTM...</span>
+            </div>
+          } @else {
+            <div class="pendiente-leyenda">
+              <div class="pendiente-item">
+                <span class="pendiente-dot" style="background:#2E7D32"></span>
+                <div>
+                  <p class="pendiente-item__label">Plano</p>
+                  <p class="pendiente-item__rango">&lt; 5%</p>
+                </div>
+              </div>
+              <div class="pendiente-item">
+                <span class="pendiente-dot" style="background:#8BC34A"></span>
+                <div>
+                  <p class="pendiente-item__label">Suave</p>
+                  <p class="pendiente-item__rango">5 – 10%</p>
+                </div>
+              </div>
+              <div class="pendiente-item">
+                <span class="pendiente-dot" style="background:#FFC107"></span>
+                <div>
+                  <p class="pendiente-item__label">Moderado</p>
+                  <p class="pendiente-item__rango">10 – 20%</p>
+                </div>
+              </div>
+              <div class="pendiente-item">
+                <span class="pendiente-dot" style="background:#FF5722"></span>
+                <div>
+                  <p class="pendiente-item__label">Pronunciado</p>
+                  <p class="pendiente-item__rango">20 – 35%</p>
+                </div>
+              </div>
+              <div class="pendiente-item">
+                <span class="pendiente-dot" style="background:#D32F2F"></span>
+                <div>
+                  <p class="pendiente-item__label">Muy pronunciado</p>
+                  <p class="pendiente-item__rango">&gt; 35%</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Datos de cada parcela -->
+            @if (datosTopografia()?.parcelas?.length > 0) {
+              <div class="panel-divider"></div>
+              @for (p of datosTopografia().parcelas; track p.parcela_id) {
+                <div class="topo-card">
+                  <div class="topo-card__header">
+                    <span class="topo-card__dot"
+                          [style.background]="colorPendiente(p.pendiente)">
+                    </span>
+                    <span class="topo-card__nombre">{{ p.nombre }}</span>
+                  </div>
+                  <div class="topo-card__datos">
+                    <div class="topo-card__dato">
+                      <span>Pendiente</span>
+                      <strong>{{ p.pendiente }}%</strong>
+                    </div>
+                    <div class="topo-card__dato">
+                      <span>Tipo</span>
+                      <strong>{{ etiquetaPendiente(p.pendiente) }}</strong>
+                    </div>
+                    <div class="topo-card__dato">
+                      <span>Orientación</span>
+                      <strong style="text-transform:capitalize">
+                        {{ p.orientacion || '—' }}
+                      </strong>
+                    </div>
+                    <div class="topo-card__dato">
+                      <span>Alt. mínima</span>
+                      <strong>{{ p.altitud_min }} msnm</strong>
+                    </div>
+                    <div class="topo-card__dato">
+                      <span>Alt. máxima</span>
+                      <strong>{{ p.altitud_max }} msnm</strong>
+                    </div>
+                    <div class="topo-card__dato">
+                      <span>Desnivel</span>
+                      <strong>{{ p.altitud_max - p.altitud_min }} m</strong>
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+          }
+        </div>
+      }
+
+      </div>
+
+      <!-- Mapa SVG principal -->
+      <div class="mapa-svg-area">
+        @if (cargando()) {
+          <div class="mapa-loading">
+            <div class="mapa-loading__spinner"></div>
+            <p>Cargando mapa...</p>
+          </div>
+        } @else {
+          <app-mapa-finca
+            [datos]="datosMapa()"
+            [topografia]="datosTopografia()"
+            [vista]="vistaActiva()"
+            [alto]="600">
+          </app-mapa-finca>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>
