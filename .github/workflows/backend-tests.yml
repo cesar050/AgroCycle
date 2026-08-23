@@ -6,7 +6,7 @@ on:
     paths:
       - 'backend/**'
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
     paths:
       - 'backend/**'
 
@@ -37,7 +37,7 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
-      - name: Ejecutar tests unitarios
+      - name: Ejecutar tests unitarios completos
         run: |
           cd backend
           python -m pytest tests/unit/ \
@@ -48,7 +48,17 @@ jobs:
             --cov-report=xml:coverage.xml \
             -q
         env:
-          PYTHONPATH: /home/runner/work/AgroCycle/AgroCycle/backend
+          PYTHONPATH: ${{ github.workspace }}/backend
+
+      - name: Verificar cobertura minima FAO33
+        run: |
+          cd backend
+          python -m pytest tests/unit/estimacion/ \
+            --cov=app.infrastructure.ml.fao33_calculator \
+            --cov-fail-under=90 \
+            -q
+        env:
+          PYTHONPATH: ${{ github.workspace }}/backend
 
       - name: Subir reporte de cobertura
         uses: actions/upload-artifact@v4
@@ -57,13 +67,3 @@ jobs:
           name: coverage-report
           path: backend/coverage.xml
           retention-days: 30
-
-      - name: Verificar cobertura minima FAO33
-        run: |
-          cd backend
-          python -m pytest tests/unit/estimacion/ \
-            --cov=app/infrastructure/ml/fao33_calculator \
-            --cov-fail-under=90 \
-            -q
-        env:
-          PYTHONPATH: /home/runner/work/AgroCycle/AgroCycle/backend
