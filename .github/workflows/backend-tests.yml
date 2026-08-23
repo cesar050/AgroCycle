@@ -5,10 +5,9 @@ on:
     branches: [ main, develop ]
     paths:
       - 'backend/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - 'backend/**'
 
 jobs:
   unit-tests:
@@ -37,23 +36,21 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov
 
-      - name: Ejecutar tests unitarios con cobertura
+      - name: Ejecutar 130 tests unitarios
         run: |
           cd backend
-          python -m pytest tests/unit/ \
-            -v \
-            --tb=short \
-            --cov=app \
-            --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            -q
+          python -m pytest tests/unit/ -v --tb=short -q
         env:
           PYTHONPATH: ${{ github.workspace }}/backend
 
-      - name: Verificar que todos los tests pasen
+      - name: Generar reporte de cobertura
         run: |
           cd backend
-          python -m pytest tests/unit/ -q --tb=short
+          python -m pytest tests/unit/ \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            -q
         env:
           PYTHONPATH: ${{ github.workspace }}/backend
 
