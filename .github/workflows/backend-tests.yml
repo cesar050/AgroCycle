@@ -1,0 +1,69 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  unit-tests:
+    name: Unit Tests — Python 3.11
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependencias del sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev gcc gdal-bin libgdal-dev
+
+      - name: Instalar dependencias Python
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Ejecutar tests unitarios
+        run: |
+          cd backend
+          python -m pytest tests/unit/ \
+            -v \
+            --tb=short \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            -q
+        env:
+          PYTHONPATH: /home/runner/work/AgroCycle/AgroCycle/backend
+
+      - name: Subir reporte de cobertura
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: backend/coverage.xml
+          retention-days: 30
+
+      - name: Verificar cobertura minima FAO33
+        run: |
+          cd backend
+          python -m pytest tests/unit/estimacion/ \
+            --cov=app/infrastructure/ml/fao33_calculator \
+            --cov-fail-under=90 \
+            -q
+        env:
+          PYTHONPATH: /home/runner/work/AgroCycle/AgroCycle/backend
