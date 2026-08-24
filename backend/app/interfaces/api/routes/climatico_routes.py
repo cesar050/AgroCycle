@@ -302,22 +302,26 @@ def registrar_evento_manual(parcela_id):
             'error': 'Formato de fecha inválido. Use YYYY-MM-DD'
         }), 400
 
-    db = get_db()
-    use_case = RegistrarEventoManualUseCase(db=db)
-
-    resultado, status = use_case.ejecutar(
-        parcela_id=parcela_id,
-        agricultor_id=agricultor_id,
-        fecha=fecha,
-        precipitacion_mm=data.get('precipitacion_mm'),
-        temperatura_max_c=data.get('temperatura_max_c'),
-        temperatura_min_c=data.get('temperatura_min_c'),
-        temperatura_promedio_c=data.get('temperatura_promedio_c'),
-        humedad_relativa_porcentaje=data.get('humedad_relativa_porcentaje'),
-        evapotranspiracion_mm=data.get('evapotranspiracion_mm'),
-        velocidad_viento_km_h=data.get('velocidad_viento_km_h'),
-    )
-    return jsonify(resultado), status
+        db = get_db()
+    try:
+        use_case = RegistrarEventoManualUseCase(db=db)
+        resultado, status = use_case.ejecutar(
+            parcela_id=parcela_id,
+            agricultor_id=agricultor_id,
+            fecha=fecha,
+            precipitacion_mm=data.get('precipitacion_mm'),
+            temperatura_max_c=data.get('temperatura_max_c'),
+            temperatura_min_c=data.get('temperatura_min_c'),
+            temperatura_promedio_c=data.get('temperatura_promedio_c'),
+            humedad_relativa_porcentaje=data.get('humedad_relativa_porcentaje'),
+            evapotranspiracion_mm=data.get('evapotranspiracion_mm'),
+            velocidad_viento_km_h=data.get('velocidad_viento_km_h'),
+        )
+        return jsonify(resultado), status
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
 
 
 @climatico_bp.route('/parcelas/<parcela_id>/historial', methods=['GET'])
@@ -359,15 +363,19 @@ def historial_climatico(parcela_id):
     fuente = request.args.get('fuente')
 
     db = get_db()
-    use_case = HistorialClimaticoUseCase(db=db)
-
-    resultado, status = use_case.ejecutar(
-        parcela_id=parcela_id,
-        agricultor_id=agricultor_id,
-        fecha_inicio=fecha_inicio,
-        fecha_fin=fecha_fin,
-        fuente=fuente,
-        pagina=pagina,
-        por_pagina=por_pagina,
-    )
-    return jsonify(resultado), status
+    try:
+        use_case = HistorialClimaticoUseCase(db=db)
+        resultado, status = use_case.ejecutar(
+            parcela_id=parcela_id,
+            agricultor_id=agricultor_id,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            fuente=fuente,
+            pagina=pagina,
+            por_pagina=por_pagina,
+        )
+        return jsonify(resultado), status
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        db.close()
