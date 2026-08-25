@@ -16,6 +16,7 @@ from app.infrastructure.security.decorators import requiere_rol
 lotes_parcelas_bp = Blueprint('lotes_parcelas', __name__)
 
 
+
 def get_repos():
     db = SessionLocal()
     return (
@@ -25,6 +26,12 @@ def get_repos():
         db
     )
 
+def nueva_db():
+    """
+    Retorna una sesion nueva con cierre garantizado.
+    Usar en endpoints que no usan get_repos()
+    """
+    return SessionLocal()
 
 def obtener_agricultor_id() -> str:
     claims = get_jwt()
@@ -243,7 +250,7 @@ def ver_grilla_topografica(parcela_id):
 def parcelas_geojson(finca_id):
     """Retorna todas las parcelas de una finca con su geometría GeoJSON."""
     from sqlalchemy import text
-    db = SessionLocal()
+    db = nueva_db()
     try:
         rows = db.execute(text("""
             SELECT
@@ -294,7 +301,7 @@ def mapa_finca(finca_id):
     """
     import json
     from sqlalchemy import text
-    db = SessionLocal()
+    db = nueva_db()
     try:
         # Finca con su geometría
         finca_row = db.execute(text("""
@@ -414,7 +421,7 @@ def mapa_topografia(finca_id):
     from app.infrastructure.external.topografia_service import (
         generar_puntos_dentro_poligono, consultar_altitudes
     )
-    db = SessionLocal()
+    db = nueva_db()
     try:
         rows = db.execute(text("""
             SELECT
