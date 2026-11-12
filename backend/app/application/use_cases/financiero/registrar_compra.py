@@ -1,5 +1,5 @@
 """
-CU-FIN-001 — Registrar compra o gasto durante la temporada agrícola.
+CU-FIN-002 — Registrar compra o gasto durante la temporada agrícola.
 
 Permite al agricultor registrar cada inversión realizada:
 semillas, fertilizantes, agroquímicos, mano de obra u otros gastos.
@@ -18,7 +18,7 @@ from app.infrastructure.logging.logger import log_caso_de_uso
 
 class RegistrarCompraUseCase:
     """
-    Implementa CU-FIN-001.
+    Implementa CU-FIN-002.
 
     Responsabilidades:
     1. Verificar que la temporada pertenece al agricultor
@@ -35,7 +35,7 @@ class RegistrarCompraUseCase:
         self.db = db
         self.compra_repo = compra_repo
 
-    @log_caso_de_uso('CU-FIN-001 Registrar Compra')
+    @log_caso_de_uso('CU-FIN-002 Registrar Compra')
     def ejecutar(
         self,
         temporada_id: str,

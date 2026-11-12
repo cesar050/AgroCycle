@@ -1,5 +1,6 @@
 """
-CU-FIN-004 — Calcular rentabilidad de una temporada agrícola.
+CU-FIN-005 / CU-FIN-006 — Calcular rentabilidad de una temporada
+agrícola y el costo por quintal producido.
 
 Consolida todos los gastos registrados, los ingresos por venta
 de cosecha y calcula la ganancia o pérdida neta de la temporada.
@@ -20,7 +21,7 @@ from app.infrastructure.logging.logger import log_caso_de_uso
 
 class CalcularRentabilidadUseCase:
     """
-    Implementa CU-FIN-004.
+    Implementa CU-FIN-005 (rentabilidad) y CU-FIN-006 (costo por quintal).
 
     Responsabilidades:
     1. Sumar todos los gastos por categoría
@@ -40,7 +41,7 @@ class CalcularRentabilidadUseCase:
         self.compra_repo = compra_repo
         self.resultado_repo = resultado_repo
 
-    @log_caso_de_uso('CU-FIN-004 Calcular Rentabilidad')
+    @log_caso_de_uso('CU-FIN-005 Calcular Rentabilidad y Costo por Quintal')
     def ejecutar(
         self,
         temporada_id: str,

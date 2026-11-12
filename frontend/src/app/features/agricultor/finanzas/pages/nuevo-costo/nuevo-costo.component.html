@@ -1,0 +1,144 @@
+<div class="nf-page">
+
+  <div class="nf-breadcrumb">
+    <a routerLink="/app/dashboard">Inicio</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <a routerLink="/app/finanzas">Finanzas</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <span>Registrar costo</span>
+  </div>
+
+  <div class="nf-header">
+    <div>
+      <h1>Registrar costo o compra</h1>
+      <p>
+        @if (temporadaNombre()) {
+          Temporada: {{ temporadaNombre() }}
+        } @else {
+          Gasto de la temporada agrícola
+        }
+      </p>
+    </div>
+    <div class="nf-header__actions">
+      <a routerLink="/app/finanzas" class="btn btn--secundario">Cancelar</a>
+      <button class="btn btn--primario"
+              [disabled]="!puedeGuardar || guardando()"
+              (click)="guardar()">
+        @if (guardando()) {
+          <span class="spinner-sm"></span> Guardando...
+        } @else {
+          Registrar gasto
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="nf-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  @if (!cargando() && temporadaEstado() && temporadaEstado() !== 'activa') {
+    <div class="nf-aviso">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Solo se pueden registrar gastos en temporadas activas.
+      Esta temporada está <strong>{{ temporadaEstado() }}</strong>.
+    </div>
+  }
+
+  <div class="nf-form nf-form--amplio">
+
+    <!-- Sección 1 — Tipo de gasto -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">1</span>
+        <h2>Tipo de gasto</h2>
+      </div>
+      <div class="cat-selector">
+        @for (c of categorias; track c.id) {
+          <button type="button" class="cat-opt"
+                  [class.activo]="form.categoria === c.id"
+                  (click)="seleccionarCategoria(c.id)">
+            {{ c.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Sección 2 — Detalle de la compra -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">2</span>
+        <h2>Detalle de la compra</h2>
+      </div>
+      <div class="form-grid">
+
+        <div class="form-field form-field--full">
+          <label>Producto o descripción</label>
+          <input type="text" class="input"
+                 [(ngModel)]="form.producto_personalizado"
+                 placeholder="Ej. Urea 46%, Jornal de recolección...">
+        </div>
+
+        <div class="form-field">
+          <label>Fecha de compra <span class="required">*</span></label>
+          <input type="date" class="input" [(ngModel)]="form.fecha_compra">
+        </div>
+
+        <div class="form-field">
+          <label>Proveedor</label>
+          <input type="text" class="input"
+                 [(ngModel)]="form.proveedor"
+                 placeholder="Ej. Agroquímica Loja">
+        </div>
+
+        <div class="form-field">
+          <label>Cantidad</label>
+          <input type="number" class="input"
+                 [(ngModel)]="form.cantidad"
+                 placeholder="Ej. 5" min="0" step="0.01">
+        </div>
+
+        <div class="form-field">
+          <label>Unidad de medida</label>
+          <select class="input" [(ngModel)]="form.unidad_medida">
+            @for (u of unidades; track u) {
+              <option [value]="u">{{ u }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Precio unitario ($) <span class="required">*</span></label>
+          <input type="number" class="input"
+                 [(ngModel)]="form.precio_unitario"
+                 placeholder="0.00" min="0" step="0.01">
+        </div>
+
+        <div class="form-field costo-field">
+          <label>Costo total</label>
+          <div class="costo-total">
+            <span class="costo-total__val">${{ costoTotal() | number:'1.2-2' }}</span>
+            <span class="costo-total__hint">cantidad × precio unitario</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

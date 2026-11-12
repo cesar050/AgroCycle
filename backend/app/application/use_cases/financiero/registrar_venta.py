@@ -1,5 +1,5 @@
 """
-CU-FIN-002 — Registrar venta de cosecha.
+CU-FIN-004 — Registrar precio y volumen de venta de cosecha.
 
 Cuando el agricultor cosecha y vende, registra:
 - Cuántos quintales produjo realmente
@@ -22,7 +22,7 @@ from app.infrastructure.transaction import transaccion_atomica
 
 class RegistrarVentaUseCase:
     """
-    Implementa CU-FIN-002.
+    Implementa CU-FIN-004.
 
     Responsabilidades:
     1. Verificar que la temporada_parcela pertenece al agricultor
@@ -34,7 +34,7 @@ class RegistrarVentaUseCase:
     def __init__(self, db: Session):
         self.db = db
 
-    @log_caso_de_uso('CU-FIN-002 Registrar Venta de Cosecha')
+    @log_caso_de_uso('CU-FIN-004 Registrar Venta de Cosecha')
     def ejecutar(
         self,
         temporada_parcela_id: str,

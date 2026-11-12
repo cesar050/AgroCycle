@@ -1,0 +1,161 @@
+<div class="nf-page">
+
+  <div class="nf-breadcrumb">
+    <a routerLink="/app/dashboard">Inicio</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <a routerLink="/app/finanzas">Finanzas</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <span>Registrar venta</span>
+  </div>
+
+  <div class="nf-header">
+    <div>
+      <h1>Registrar venta de cosecha</h1>
+      <p>
+        @if (temporadaNombre()) {
+          Temporada: {{ temporadaNombre() }}
+        } @else {
+          Precio y volumen de venta de la temporada
+        }
+      </p>
+    </div>
+    <div class="nf-header__actions">
+      <a routerLink="/app/finanzas" class="btn btn--secundario">Cancelar</a>
+      <button class="btn btn--primario"
+              [disabled]="!puedeGuardar || guardando()"
+              (click)="guardar()">
+        @if (guardando()) {
+          <span class="spinner-sm"></span> Guardando...
+        } @else {
+          Registrar venta
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="nf-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="skeleton" style="height:120px;border-radius:8px"></div>
+  }
+
+  @if (!cargando()) {
+    <div class="nf-form nf-form--amplio">
+
+      <!-- Sección 1 — Parcela cosechada -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__num">1</span>
+          <h2>Parcela cosechada</h2>
+        </div>
+
+        @if (parcelas().length === 0) {
+          <div class="nv-hint">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Esta temporada no tiene parcelas vinculadas. Vincula una
+            parcela desde el módulo de Temporadas antes de registrar la venta.
+          </div>
+        } @else {
+          <div class="nv-parcelas">
+            @for (p of parcelas(); track p.tpId) {
+              <button type="button" class="nv-parcela"
+                      [class.activa]="tpId() === p.tpId"
+                      (click)="seleccionarParcela(p.tpId)">
+                <span class="nv-parcela__check">
+                  @if (tpId() === p.tpId) {
+                    <svg width="12" height="12" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  }
+                </span>
+                <span class="nv-parcela__info">
+                  <span class="nv-parcela__nombre">{{ p.nombre }}</span>
+                  <span class="nv-parcela__meta">
+                    @if (p.superficie) { {{ p.superficie }} ha }
+                    @if (p.estado) { · {{ p.estado }} }
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Sección 2 — Producción y venta -->
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__num">2</span>
+          <h2>Producción y venta</h2>
+        </div>
+        <div class="form-grid">
+
+          <div class="form-field">
+            <label>Producción real (qq) <span class="required">*</span></label>
+            <input type="number" class="input"
+                   [(ngModel)]="form.produccion_real_qq"
+                   placeholder="Ej. 48.5" min="0" step="0.1">
+          </div>
+
+          <div class="form-field">
+            <label>Fecha de cosecha <span class="required">*</span></label>
+            <input type="date" class="input" [(ngModel)]="form.fecha_cosecha">
+          </div>
+
+          <div class="form-field">
+            <label>Precio por quintal ($) <span class="required">*</span></label>
+            <input type="number" class="input"
+                   [(ngModel)]="form.precio_venta_qq"
+                   placeholder="Ej. 32.50" min="0" step="0.01">
+          </div>
+
+          <div class="form-field">
+            <label>Quintales vendidos <span class="required">*</span></label>
+            <input type="number" class="input"
+                   [class.input-error]="excedeProduccion"
+                   [(ngModel)]="form.volumen_vendido_qq"
+                   placeholder="Ej. 40.0" min="0" step="0.1">
+            @if (excedeProduccion) {
+              <span class="nv-field-error">Supera la producción real.</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label>Autoconsumo (qq)</label>
+            <input type="number" class="input"
+                   [(ngModel)]="form.produccion_autoconsumo_qq"
+                   [placeholder]="autoconsumoSugerido() ? ('Sugerido: ' + autoconsumoSugerido()) : 'Ej. 8.5'"
+                   min="0" step="0.1">
+          </div>
+
+          <div class="form-field costo-field">
+            <label>Ingresos por venta</label>
+            <div class="nv-ingresos">
+              <span class="nv-ingresos__val">${{ ingresos() | number:'1.2-2' }}</span>
+              <span class="nv-ingresos__hint">quintales vendidos × precio/qq</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  }
+</div>

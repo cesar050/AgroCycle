@@ -1,0 +1,114 @@
+@use 'sass:color';
+@use '../../../../../../styles' as *;
+@use '../../../../../shared/styles/pagina-formulario';
+
+.nf-form--amplio { max-width: 760px; }
+
+.nv-hint {
+  display: flex;
+  align-items: center;
+  gap: $s2;
+  padding: $s4;
+  font-size: 12px;
+  color: var(--text-sec);
+
+  svg { color: $azul-info; flex-shrink: 0; }
+}
+
+// Selector de parcelas
+.nv-parcelas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $s3;
+  padding: $s4;
+}
+
+.nv-parcela {
+  display: flex;
+  align-items: flex-start;
+  gap: $s3;
+  padding: $s3;
+  background: var(--bg-app);
+  border: 1.5px solid var(--border);
+  border-radius: $radius-xs;
+  cursor: pointer;
+  text-align: left;
+  transition: $t-fast;
+
+  &:hover { border-color: $verde-acento; }
+
+  &.activa {
+    border-color: $verde-primario;
+    background: $verde-suave;
+    .nv-parcela__nombre { color: $verde-primario; }
+  }
+
+  &__check {
+    width: 18px;
+    height: 18px;
+    border-radius: $radius-xs;
+    border: 1.5px solid var(--border);
+    background: var(--bg-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: #fff;
+
+    .activa & { background: $verde-primario; border-color: $verde-primario; }
+  }
+
+  &__info { display: flex; flex-direction: column; gap: 2px; }
+
+  &__nombre {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  &__meta {
+    font-size: 11px;
+    color: var(--text-ter);
+    font-family: $font-mono;
+  }
+}
+
+.input-error {
+  border-color: $rojo-danger !important;
+  &:focus { box-shadow: 0 0 0 3px rgba($rojo-danger, 0.12) !important; }
+}
+
+.nv-field-error {
+  font-size: 11px;
+  color: $rojo-danger;
+  font-weight: 500;
+}
+
+// Ingresos — cifra viva en verde institucional
+.costo-field { justify-content: flex-end; }
+
+.nv-ingresos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px $s3;
+  border: 1px dashed var(--border);
+  border-radius: $radius-xs;
+  background: var(--bg-app);
+
+  &__val {
+    font-family: $font-mono;
+    font-size: 18px;
+    font-weight: 700;
+    color: $verde-primario;
+    line-height: 1.1;
+  }
+
+  &__hint {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-ter);
+  }
+}

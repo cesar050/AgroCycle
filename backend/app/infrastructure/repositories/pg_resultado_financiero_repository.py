@@ -94,6 +94,51 @@ class PgResultadoFinancieroRepository(IResultadoFinancieroRepository):
         ).fetchall()
         return [self._row_a_entidad(r) for r in rows]
 
+    def listar_comparativo(self, agricultor_id: str) -> List[dict]:
+        """
+        Retorna el resultado financiero de cada temporada del
+        agricultor junto con su nombre y estado, ordenado
+        cronológicamente para el comparativo entre temporadas
+        (CU-FIN-007). El JOIN se hace en BD por eficiencia.
+        """
+        sql = text("""
+            SELECT
+                rf.temporada_id,
+                t.nombre                            AS temporada_nombre,
+                t.estado,
+                t.fecha_inicio,
+                rf.ingresos_totales,
+                rf.costos_totales,
+                rf.ganancia_neta,
+                rf.margen_rentabilidad_porcentaje,
+                rf.costo_por_quintal,
+                rf.produccion_total_qq
+            FROM resultados_financieros rf
+            JOIN temporadas t    ON rf.temporada_id = t.id
+            JOIN agricultores a  ON t.agricultor_id = a.id
+            WHERE a.usuario_id = CAST(:agricultor_id AS uuid)
+            ORDER BY t.fecha_inicio ASC
+        """)
+        rows = self.db.execute(
+            sql, {'agricultor_id': agricultor_id}
+        ).fetchall()
+
+        return [
+            {
+                'temporada_id': str(r.temporada_id),
+                'temporada_nombre': r.temporada_nombre,
+                'estado': r.estado,
+                'fecha_inicio': str(r.fecha_inicio),
+                'ingresos_totales': float(r.ingresos_totales or 0),
+                'costos_totales': float(r.costos_totales or 0),
+                'ganancia_neta': float(r.ganancia_neta) if r.ganancia_neta is not None else None,
+                'margen_rentabilidad_porcentaje': float(r.margen_rentabilidad_porcentaje) if r.margen_rentabilidad_porcentaje is not None else None,
+                'costo_por_quintal': float(r.costo_por_quintal) if r.costo_por_quintal is not None else None,
+                'produccion_total_qq': float(r.produccion_total_qq) if r.produccion_total_qq is not None else None,
+            }
+            for r in rows
+        ]
+
     def _modelo_a_entidad(self, m: ResultadoFinancieroModel) -> ResultadoFinanciero:
         """Convierte modelo ORM a entidad de dominio."""
         r = ResultadoFinanciero(
