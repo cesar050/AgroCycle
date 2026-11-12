@@ -1,0 +1,273 @@
+<div class="dt-page">
+
+  <!-- Breadcrumb -->
+  <div class="dt-breadcrumb">
+    <a routerLink="/app/dashboard">Inicio</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <a routerLink="/app/temporada">Temporadas</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <span>{{ temporada()?.nombre || 'Detalle' }}</span>
+  </div>
+
+  @if (error()) {
+    <div class="dt-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="dt-loading"><span class="dt-loading__bar"></span></div>
+    <div class="dt-sk-grid">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="skeleton" style="height:70px"></div>
+      }
+    </div>
+  }
+
+  @if (!cargando() && temporada()) {
+    <!-- Header -->
+    <div class="dt-header">
+      <div class="dt-header__info">
+        <div class="dt-header__titulo">
+          <h1>{{ temporada().nombre }}</h1>
+          <span class="tag" [class]="tagEstado(temporada().estado)">
+            {{ labelEstado(temporada().estado) }}
+          </span>
+        </div>
+        <p class="dt-header__sub">
+          {{ cultivoNombre(temporada().cultivo_id) }}
+          <span class="dt-sep">·</span>
+          {{ totalParcelas }} parcela(s)
+          @if (temporada().fecha_inicio) {
+            <span class="dt-sep">·</span>
+            Siembra {{ temporada().fecha_inicio }}
+          }
+        </p>
+      </div>
+      <div class="dt-header__actions">
+        <a routerLink="/app/temporada" class="btn btn--cancelar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Regresar
+        </a>
+        @if (esActiva()) {
+          <button class="btn btn--tecnico"
+                  [disabled]="actualizandoFenologia()"
+                  (click)="actualizarFenologia()">
+            @if (actualizandoFenologia()) {
+              <span class="spinner-sm spinner-sm--dark"></span> Recalculando...
+            } @else {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M23 4v6h-6M1 20v-6h6"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+              Actualizar fenología
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Resumen (CU-TEM-006) -->
+    <div class="dt-metrics">
+      <div class="dt-metric">
+        <span class="dt-metric__label">Estado</span>
+        <span class="dt-metric__value dt-metric__value--text">
+          {{ labelEstado(temporada().estado) }}
+        </span>
+      </div>
+      <div class="dt-metric">
+        <span class="dt-metric__label">Parcelas</span>
+        <span class="dt-metric__value">{{ totalParcelas }}</span>
+      </div>
+      <div class="dt-metric">
+        <span class="dt-metric__label">Avance ciclo</span>
+        <span class="dt-metric__value">{{ avancePromedio }}<span>%</span></span>
+      </div>
+      <div class="dt-metric">
+        <span class="dt-metric__label">Cosechadas</span>
+        <span class="dt-metric__value">
+          {{ parcelasCosechadas }}<span>/ {{ totalParcelas }}</span>
+        </span>
+      </div>
+      <div class="dt-metric">
+        <span class="dt-metric__label">Prod. estimada FAO</span>
+        @if (produccionEstimadaTotal() != null) {
+          <span class="dt-metric__value dt-metric__value--verde">
+            {{ produccionEstimadaTotal() | number:'1.0-1' }}<span>qq</span>
+          </span>
+        } @else {
+          <span class="dt-metric__value dt-metric__value--empty">—</span>
+        }
+      </div>
+    </div>
+
+    <!-- Datos de la temporada -->
+    <div class="dt-panel">
+      <div class="dt-panel__head"><h2>Datos de la temporada</h2></div>
+      <div class="dt-kv-grid">
+        <div class="dt-kv">
+          <span class="dt-kv__k">Fecha siembra</span>
+          <span class="dt-kv__v">{{ temporada().fecha_inicio || '—' }}</span>
+        </div>
+        <div class="dt-kv">
+          <span class="dt-kv__k">Fin estimado</span>
+          <span class="dt-kv__v">{{ temporada().fecha_fin_estimada || '—' }}</span>
+        </div>
+        <div class="dt-kv">
+          <span class="dt-kv__k">Fin real</span>
+          <span class="dt-kv__v">{{ temporada().fecha_fin_real || '—' }}</span>
+        </div>
+        <div class="dt-kv">
+          <span class="dt-kv__k">Cultivo</span>
+          <span class="dt-kv__v dt-kv__v--sans">
+            {{ cultivoNombre(temporada().cultivo_id) }}
+          </span>
+        </div>
+      </div>
+      @if (temporada().observaciones) {
+        <div class="dt-obs">
+          <span class="dt-kv__k">Observaciones</span>
+          <p>{{ temporada().observaciones }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Seguimiento fenologico por parcela (CU-TEM-003) + estimacion -->
+    <div class="dt-panel">
+      <div class="dt-panel__head">
+        <h2>Seguimiento fenológico y estimación</h2>
+        <p>Etapa del ciclo, avance y producción estimada por parcela</p>
+      </div>
+
+      @if (parcelas.length === 0) {
+        <div class="dt-empty">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.5">
+            <path d="M2 22s4-2 10-2 10 2 10 2"/>
+            <path d="M12 2v14M12 8s-3-1-4-3 1-3 1-3 3 1 4 3-1 3-1 3z"/>
+          </svg>
+          <p>Esta temporada aún no tiene parcelas vinculadas.</p>
+        </div>
+      }
+
+      @for (p of parcelas; track p.id) {
+        <div class="dt-parcela">
+
+          <div class="dt-parcela__top">
+            <div class="dt-parcela__id">
+              <span class="dt-parcela__ref">#{{ parcelaRef(p) }}</span>
+              <span class="dt-parcela__etapa">{{ etapaLabel(p.estado_fenologico) }}</span>
+            </div>
+            <div class="dt-parcela__meta">
+              @if (p.fecha_siembra) {
+                <span>Siembra {{ p.fecha_siembra }}</span>
+              }
+              @if (p.dias_desde_siembra != null) {
+                <span class="dt-sep">·</span>
+                <span>Día {{ p.dias_desde_siembra }}</span>
+              }
+              <span class="dt-sep">·</span>
+              <span>{{ avanceParcela(p) }}% ciclo</span>
+            </div>
+          </div>
+
+          <!-- Stepper fenologico -->
+          <div class="dt-feno">
+            @for (e of etapas; track e.key; let i = $index) {
+              <div class="dt-feno__step"
+                   [class.done]="i < etapaIndex(p.estado_fenologico)"
+                   [class.current]="i === etapaIndex(p.estado_fenologico)">
+                @if (i > 0) { <span class="dt-feno__line"></span> }
+                <span class="dt-feno__dot"></span>
+                <span class="dt-feno__label">{{ e.label }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Barra de avance -->
+          <div class="dt-bar">
+            <div class="dt-bar__fill" [style.width.%]="avanceParcela(p)"></div>
+          </div>
+
+          <!-- Estimacion FAO + acciones -->
+          <div class="dt-parcela__footer">
+            @if (estimacionDeParcela(p.id); as est) {
+              <div class="dt-estim">
+                <div class="dt-estim__item">
+                  <span class="dt-estim__k">Rendimiento</span>
+                  <span class="dt-estim__v">
+                    {{ est.valor_qq_ha | number:'1.0-1' }}<small>qq/ha</small>
+                  </span>
+                </div>
+                <div class="dt-estim__item">
+                  <span class="dt-estim__k">Total parcela</span>
+                  <span class="dt-estim__v dt-estim__v--verde">
+                    {{ est.valor_total_qq | number:'1.0-1' }}<small>qq</small>
+                  </span>
+                </div>
+                <div class="dt-estim__item">
+                  <span class="dt-estim__k">Margen error</span>
+                  <span class="dt-estim__v">
+                    ±{{ est.margen_error_porcentaje | number:'1.0-1' }}<small>%</small>
+                  </span>
+                </div>
+                @if (est.algoritmo_usado) {
+                  <div class="dt-estim__item">
+                    <span class="dt-estim__k">Modelo</span>
+                    <span class="dt-estim__v dt-estim__v--sans">{{ est.algoritmo_usado }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="dt-estim dt-estim--vacia">
+                <span>Sin estimación generada para esta parcela.</span>
+              </div>
+            }
+
+            <div class="dt-parcela__acciones">
+              <button class="btn btn--sm btn--tecnico"
+                      [disabled]="generandoDe(p.id)"
+                      (click)="generarEstimacion(p.id)">
+                @if (generandoDe(p.id)) {
+                  <span class="spinner-sm spinner-sm--dark"></span> Calculando...
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                  </svg>
+                  {{ estimacionDeParcela(p.id) ? 'Recalcular' : 'Generar' }} estimación
+                }
+              </button>
+
+              @if (esActiva() && !estaCosechada(p)) {
+                <a class="btn btn--sm btn--guardar"
+                   [routerLink]="['/app/temporada', id, 'parcela', p.id, 'cosecha']">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                  Registrar cosecha
+                </a>
+              }
+              @if (estaCosechada(p)) {
+                <span class="tag tag--verde dt-tag-cosechada">Cosechada</span>
+              }
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+</div>

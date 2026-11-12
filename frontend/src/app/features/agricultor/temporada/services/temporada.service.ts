@@ -23,8 +23,19 @@ export class TemporadaService {
     return this.api.post(`/temporadas/${temporadaId}/parcelas`, datos);
   }
 
-  actualizarFenologia(temporadaId: string, datos: any): Observable<any> {
+  actualizarFenologia(temporadaId: string, datos: any = {}): Observable<any> {
     return this.api.patch(`/temporadas/${temporadaId}/fenologia`, datos);
+  }
+
+  registrarCosecha(
+    temporadaId: string,
+    temporadaParcelaId: string,
+    datos: any
+  ): Observable<any> {
+    return this.api.post(
+      `/temporadas/${temporadaId}/parcelas/${temporadaParcelaId}/cosecha`,
+      datos
+    );
   }
 
   cerrar(temporadaId: string, datos: any): Observable<any> {
