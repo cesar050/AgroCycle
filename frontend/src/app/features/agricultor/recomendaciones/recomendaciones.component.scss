@@ -1,114 +1,147 @@
-@use 'sass:color';
 @use '../../../../styles' as *;
 
-.rec-page {
+// ================================================================
+// PALETA LOCAL — estética plana de ingeniería / SIG, coherente con
+// el dashboard. Semáforo: alta=rojo, media=naranja, baja=verde.
+// ================================================================
+$c-card:     #FFFFFF;
+$c-border:   #E2E8F0;
+$c-text:     #0F172A;
+$c-text-sec: #64748B;
+$c-text-ter: #94A3B8;
+$c-bg:       #F8FAFC;
+
+$c-rojo:     #DC2626;
+$c-naranja:  #D97706;
+$c-verde:    #16A34A;
+
+.rec {
   display: flex;
   flex-direction: column;
-  gap: $s4;
+  gap: $s3;
+  color: $c-text;
+  font-size: 13px;
   animation: fadeIn 0.2s ease;
 }
 
-.rec-header {
+// ---- Encabezado ----
+.rec__head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: $s4;
   flex-wrap: wrap;
-  padding-bottom: $s4;
-  border-bottom: 1px solid var(--border);
+  padding-bottom: $s3;
+  border-bottom: 1px solid $c-border;
 
   h1 {
     font-size: 18px;
     font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 3px;
+    color: $c-text;
+    margin-bottom: 2px;
     display: flex;
     align-items: center;
     gap: $s2;
   }
 
-  p { font-size: 12px; color: var(--text-sec); }
+  p { font-size: 12px; color: $c-text-sec; }
 }
 
-.rec-badge {
+.rec__badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  background: $rojo-danger;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: $c-rojo;
   color: #fff;
+  font-family: $font-mono;
   font-size: 11px;
   font-weight: 700;
-  border-radius: $radius-full;
-  padding: 0 $s1;
+  border-radius: $radius-xs;
 }
 
-.rec-select {
-  width: auto !important;
-  font-size: 12px !important;
-  padding: 6px $s3 !important;
+.rec__select {
+  border: 1px solid $c-border;
+  border-radius: $radius-xs;
+  background: $c-card;
+  color: $c-text;
+  font-family: $font-sans;
+  font-size: 12px;
+  padding: 6px $s3;
+  outline: none;
+  cursor: pointer;
+
+  &:focus { border-color: #2563EB; }
 }
 
-.rec-filtros {
+.rec__filtros {
   display: flex;
   gap: $s2;
   flex-wrap: wrap;
 }
 
-.rec-skeleton { display: flex; flex-direction: column; gap: $s3; }
+// ---- Barra de carga ----
+.loading-bar {
+  height: 2px;
+  background: $c-text;
+  animation: recLoadbar 1.4s ease infinite;
+}
+@keyframes recLoadbar {
+  0%   { transform: scaleX(0); transform-origin: left; opacity: 1; }
+  60%  { transform: scaleX(0.85); }
+  100% { transform: scaleX(1); opacity: 0; }
+}
 
-.rec-empty {
+// ---- Vacío ----
+.rec__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $s3;
-  min-height: 35vh;
   text-align: center;
+  gap: $s2;
+  min-height: 30vh;
+  border: 1px solid $c-border;
+  border-radius: $radius-xs;
+  background: $c-card;
 
-  svg { color: var(--text-ter); }
-
-  h3 {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-
-  p {
-    font-size: 13px;
-    color: var(--text-sec);
-    max-width: 360px;
-    line-height: 1.6;
-  }
+  svg { color: $c-text-ter; }
+  h3  { font-size: 14px; font-weight: 700; color: $c-text; }
+  p   { font-size: 12px; color: $c-text-sec; max-width: 360px; line-height: 1.6; }
 }
 
-.rec-lista {
+// ================================================================
+// LISTA DE RECOMENDACIONES — filas planas con semáforo lateral
+// ================================================================
+.rec__lista {
   display: flex;
   flex-direction: column;
-  gap: $s3;
+  gap: $s2;
 }
 
 .rec-item {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--border);
-  border-radius: $radius-md;
-  padding: $s4;
-  transition: $t-fast;
+  background: $c-card;
+  border: 1px solid $c-border;
+  border-left: 3px solid $c-text-ter;
+  border-radius: $radius-xs;
+  padding: $s3;
+  display: flex;
+  flex-direction: column;
+  gap: $s2;
 
-  &:hover { box-shadow: $shadow-sm; }
+  &--alta  { border-left-color: $c-rojo; }
+  &--media { border-left-color: $c-naranja; }
+  &--baja  { border-left-color: $c-verde; }
 
-  &--no-leida {
-    background: color.adjust($verde-suave, $lightness: 3%);
-  }
+  &--no-leida { background: $c-bg; }
 
-  &__header {
+  &__top {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: $s3;
-    margin-bottom: $s3;
     flex-wrap: wrap;
   }
 
@@ -123,69 +156,129 @@
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-ter);
+    letter-spacing: 0.06em;
+    color: $c-text-ter;
   }
 
-  &__fecha-wrap {
+  &__nueva {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #2563EB;
+    border: 1px solid #2563EB;
+    border-radius: $radius-xs;
+    padding: 1px 5px;
+  }
+
+  &__acciones {
     display: flex;
     align-items: center;
-    gap: $s2;
+    gap: $s3;
     flex-shrink: 0;
   }
 
   &__fecha {
+    font-family: $font-mono;
     font-size: 11px;
-    color: var(--text-ter);
+    color: $c-text-ter;
   }
 
   &__desc {
     font-size: 13px;
-    line-height: 1.65;
-    color: var(--text-primary);
-    margin-bottom: $s3;
+    line-height: 1.55;
+    color: $c-text;
   }
 
   &__accion {
     display: flex;
-    align-items: flex-start;
+    align-items: baseline;
     gap: $s2;
     padding: $s2 $s3;
-    background: $verde-suave;
-    border-radius: $radius-sm;
+    border: 1px solid $c-border;
+    border-radius: $radius-xs;
+    background: $c-bg;
     font-size: 12px;
-    color: $verde-primario;
-    font-weight: 500;
-    margin-bottom: $s2;
+    color: $c-text;
+    line-height: 1.5;
 
-    svg { flex-shrink: 0; margin-top: 1px; color: $verde-acento; }
+    &-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: $c-verde;
+      flex-shrink: 0;
+    }
+  }
+
+  &__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $s3;
+    flex-wrap: wrap;
   }
 
   &__limite {
     display: flex;
     align-items: center;
-    gap: $s2;
+    gap: 5px;
     font-size: 11px;
-    color: $naranja-warning;
     font-weight: 600;
-    margin-bottom: $s2;
+    color: $c-naranja;
 
     svg { flex-shrink: 0; }
   }
 
   &__agronomo {
     font-size: 11px;
-    color: var(--text-ter);
+    color: $c-text-ter;
     font-style: italic;
-    margin-top: $s2;
+    margin-left: auto;
   }
 }
 
-.rec-dot-nueva {
-  width: 7px;
-  height: 7px;
-  border-radius: $radius-full;
-  background: $rojo-danger;
-  flex-shrink: 0;
-  animation: pulse-dot 2s infinite;
+// ---- Tag plano (semáforo de urgencia) ----
+.tag-plano {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border: 1px solid $c-border;
+  border-radius: $radius-xs;
+  color: $c-text-sec;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 1px;
+    background: $c-text-ter;
+    flex-shrink: 0;
+  }
+
+  &--rojo    { color: $c-rojo;    &::before { background: $c-rojo; } }
+  &--naranja { color: $c-naranja; &::before { background: $c-naranja; } }
+  &--verde   { color: $c-verde;   &::before { background: $c-verde; } }
+}
+
+// ---- Botón fantasma (marcar leída) ----
+.btn-ghost {
+  border: 1px solid $c-border;
+  border-radius: $radius-xs;
+  background: transparent;
+  color: $c-text-sec;
+  font-family: $font-sans;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px $s2;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+
+  &:hover { background: $c-bg; color: $c-text; }
 }
