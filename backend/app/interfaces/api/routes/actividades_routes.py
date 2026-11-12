@@ -7,12 +7,13 @@ el balance hidrico FAO-56.
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from datetime import date
-from sqlalchemy import text
 from app.application.use_cases.actividades.registrar_actividad import RegistrarActividadUseCase
 from app.application.use_cases.actividades.listar_actividades import ListarActividadesUseCase
+from app.application.use_cases.actividades.listar_tipos_actividad import ListarTiposActividadUseCase
 from app.application.use_cases.actividades.eliminar_actividad import EliminarActividadUseCase
 from app.infrastructure.repositories.pg_actividad_repository import PgActividadRepository
 from app.infrastructure.repositories.pg_dato_climatico_repository import PgDatoClimaticoRepository
+from app.infrastructure.repositories.pg_tipo_actividad_repository import PgTipoActividadRepository
 from app.infrastructure.database import SessionLocal
 from app.infrastructure.security.decorators import requiere_rol
 
@@ -151,20 +152,10 @@ def listar_tipos_actividad():
     """
     db = get_db()
     try:
-        resultados = db.execute(
-            text("SELECT id, nombre, descripcion FROM tipos_actividad WHERE activo = true ORDER BY id")
-        ).fetchall()
-
-        return jsonify({
-            "tipos": [
-                {
-                    "id": r.id,
-                    "nombre": r.nombre,
-                    "descripcion": r.descripcion
-                }
-                for r in resultados
-            ]
-        }), 200
+        tipo_repo = PgTipoActividadRepository(db)
+        use_case = ListarTiposActividadUseCase(tipo_repo)
+        tipos = use_case.ejecutar()
+        return jsonify({"tipos": tipos}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
