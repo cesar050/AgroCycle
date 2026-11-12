@@ -1,0 +1,300 @@
+<div class="nf-page">
+
+  <div class="nf-breadcrumb">
+    <a routerLink="/app/dashboard">Inicio</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <a routerLink="/app/actividades">Actividades</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <span>Nueva actividad</span>
+  </div>
+
+  <div class="nf-header">
+    <div>
+      <h1>Registrar actividad de campo</h1>
+      <p>Registra una labor agronómica con su detalle técnico</p>
+    </div>
+    <div class="nf-header__actions">
+      <a routerLink="/app/actividades" class="btn btn--cancelar">Cancelar</a>
+      <button class="btn btn--guardar"
+              [disabled]="!puedeGuardar || cargando()"
+              (click)="guardar()">
+        @if (cargando()) {
+          <span class="spinner-sm"></span> Guardando...
+        } @else {
+          Registrar actividad
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="nf-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  <div class="nf-content nf-content--single">
+
+    <!-- 1. Contexto -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">1</span>
+        <h2>Temporada y parcela</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Temporada <span class="required">*</span></label>
+          <select class="input" [(ngModel)]="temporadaId"
+                  (change)="cargarParcelas(temporadaId)">
+            <option value="">Seleccionar temporada</option>
+            @for (t of temporadas(); track t.id) {
+              <option [value]="t.id">
+                {{ t.nombre }}{{ t.estado === 'activa' ? ' (Activa)' : '' }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Parcela <span class="required">*</span></label>
+          <select class="input" [(ngModel)]="form.temporada_parcela_id"
+                  [disabled]="parcelas().length === 0">
+            <option value="">
+              {{ parcelas().length ? 'Seleccionar parcela' : 'Sin parcelas en la temporada' }}
+            </option>
+            @for (p of parcelas(); track p.id) {
+              <option [value]="p.id">
+                {{ parcelaRef(p) }} — {{ p.estado_fenologico || 'sin etapa' }}
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Actividad -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">2</span>
+        <h2>Tipo de actividad</h2>
+      </div>
+      <div class="na-tipo-grid">
+        @for (t of tipos(); track t.id) {
+          <button type="button" class="na-tipo"
+                  [class.sel]="form.tipo_actividad_id === (t.id + '')"
+                  (click)="form.tipo_actividad_id = t.id + ''">
+            <span class="na-tipo__dot"></span>
+            {{ t.nombre }}
+          </button>
+        }
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Fecha <span class="required">*</span></label>
+          <input type="date" class="input" [(ngModel)]="form.fecha">
+        </div>
+        <div class="form-field">
+          <label>Costo total</label>
+          <div class="na-input-unit na-input-unit--left">
+            <span class="na-unit">$</span>
+            <input type="number" class="input" min="0" step="0.01"
+                   [(ngModel)]="form.costo_total" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-field form-field--full">
+          <label>Descripción</label>
+          <input type="text" class="input" [(ngModel)]="form.descripcion"
+                 placeholder="Ej. Fertilización de fondo sector norte">
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Detalle especifico segun tipo -->
+    @if (tipoSel === 5) {
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__num">3</span>
+          <h2>Detalle de riego
+            <span class="form-section__opt">— ajusta el balance hídrico FAO-56</span></h2>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Tipo de riego</label>
+            <select class="input" [(ngModel)]="form.tipo_riego">
+              <option value="">Seleccionar...</option>
+              @for (r of tiposRiego; track r.value) {
+                <option [value]="r.value">{{ r.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Duración (horas)</label>
+            <input type="number" class="input" min="0" step="0.5"
+                   [(ngModel)]="form.duracion_horas" placeholder="Ej. 3">
+          </div>
+          <div class="form-field">
+            <label>Parcela regada (%)</label>
+            <input type="number" class="input" min="0" max="100" step="5"
+                   [(ngModel)]="form.porcentaje_parcela_regada" placeholder="100">
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (tipoSel === 3) {
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__num">3</span>
+          <h2>Detalle de fertilización</h2>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Insumo / producto</label>
+            <input type="text" class="input" [(ngModel)]="form.insumo_personalizado"
+                   placeholder="Ej. Urea 46%">
+          </div>
+          <div class="form-field">
+            <label>Dosis (kg/ha)</label>
+            <input type="number" class="input" min="0" step="0.5"
+                   [(ngModel)]="form.dosis_kg_ha" placeholder="Ej. 120">
+          </div>
+          <div class="form-field">
+            <label>Método de aplicación</label>
+            <input type="text" class="input" [(ngModel)]="form.metodo_aplicacion"
+                   placeholder="Ej. Al voleo, banda, fertirriego">
+          </div>
+          <div class="form-field">
+            <label>Costo unitario</label>
+            <div class="na-input-unit na-input-unit--left">
+              <span class="na-unit">$</span>
+              <input type="number" class="input" min="0" step="0.01"
+                     [(ngModel)]="form.costo_unitario" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (tipoSel === 4) {
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__num">3</span>
+          <h2>Detalle de control fitosanitario</h2>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Tipo de control</label>
+            <select class="input" [(ngModel)]="form.tipo_control">
+              <option value="">Seleccionar...</option>
+              @for (c of tiposControl; track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Motivo / plaga</label>
+            <input type="text" class="input" [(ngModel)]="form.motivo"
+                   placeholder="Ej. Gusano cogollero">
+          </div>
+          <div class="form-field">
+            <label>Dosis aplicada</label>
+            <input type="number" class="input" min="0" step="0.1"
+                   [(ngModel)]="form.dosis_aplicada" placeholder="Ej. 1.5">
+          </div>
+          <div class="form-field">
+            <label>Método de aplicación</label>
+            <input type="text" class="input" [(ngModel)]="form.metodo_aplicacion"
+                   placeholder="Ej. Bomba de mochila">
+          </div>
+          <div class="form-field">
+            <label>Incidencia (%)</label>
+            <input type="number" class="input" min="0" max="100" step="1"
+                   [(ngModel)]="form.incidencia_porcentaje" placeholder="Ej. 30">
+          </div>
+          <div class="form-field">
+            <label>Efectividad observada</label>
+            <select class="input" [(ngModel)]="form.efectividad_observada">
+              <option value="">Seleccionar...</option>
+              @for (e of efectividades; track e) {
+                <option [value]="e">{{ e }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Humedad al momento (%)</label>
+            <input type="number" class="input" min="0" max="100" step="1"
+                   [(ngModel)]="form.condicion_humedad_momento" placeholder="Ej. 65">
+          </div>
+          <div class="form-field">
+            <label>Temperatura al momento (°C)</label>
+            <input type="number" class="input" step="0.5"
+                   [(ngModel)]="form.condicion_temperatura_momento" placeholder="Ej. 24">
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (tipoSel === 6) {
+      <div class="form-section">
+        <div class="form-section__header">
+          <span class="form-section__num">3</span>
+          <h2>Detalle de mano de obra</h2>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Tipo de labor</label>
+            <input type="text" class="input" [(ngModel)]="form.tipo_labor"
+                   placeholder="Ej. Deshierbe manual">
+          </div>
+          <div class="form-field">
+            <label>Número de personas</label>
+            <input type="number" class="input" min="1" step="1"
+                   [(ngModel)]="form.numero_personas" placeholder="1">
+          </div>
+          <div class="form-field">
+            <label>Días trabajados</label>
+            <input type="number" class="input" min="0" step="0.5"
+                   [(ngModel)]="form.dias_trabajados" placeholder="Ej. 2">
+          </div>
+          <div class="form-field">
+            <label>Costo por jornal</label>
+            <div class="na-input-unit na-input-unit--left">
+              <span class="na-unit">$</span>
+              <input type="number" class="input" min="0" step="0.01"
+                     [(ngModel)]="form.costo_jornal" placeholder="Ej. 15.00">
+            </div>
+          </div>
+          <div class="form-field form-field--full">
+            <label class="na-check">
+              <input type="checkbox" [(ngModel)]="form.es_mano_obra_propia">
+              <span>Es mano de obra propia (no genera costo pagado)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Observaciones -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">{{ (tipoSel === 3 || tipoSel === 4 || tipoSel === 5 || tipoSel === 6) ? '4' : '3' }}</span>
+        <h2>Observaciones <span class="form-section__opt">— opcional</span></h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-field form-field--full">
+          <textarea class="input" rows="2" [(ngModel)]="form.observaciones"
+                    placeholder="Notas adicionales sobre la actividad..."></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

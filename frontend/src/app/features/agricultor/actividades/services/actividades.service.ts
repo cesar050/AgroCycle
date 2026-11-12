@@ -26,4 +26,12 @@ export class ActividadesService {
   listarTemporadas(): Observable<any> {
     return this.api.get('/temporadas/historial');
   }
+
+  obtenerTemporada(temporadaId: string): Observable<any> {
+    return this.api.get(`/temporadas/${temporadaId}`);
+  }
+
+  listarTipos(): Observable<any> {
+    return this.api.get('/actividades/tipos');
+  }
 }
