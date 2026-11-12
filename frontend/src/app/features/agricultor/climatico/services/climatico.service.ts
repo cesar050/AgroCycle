@@ -40,15 +40,15 @@ export class ClimaticoService {
     );
   }
 
-  calcularBalanceHidrico(tpId: string): Observable<any> {
+  calcularBalanceHidrico(tpId: string, body: any): Observable<any> {
     return this.api.post(
-      `/climatico/temporada-parcelas/${tpId}/balance-hidrico`, {}
+      `/climatico/temporada-parcelas/${tpId}/balance-hidrico`, body
     );
   }
 
-  calcularEstresHidrico(tpId: string): Observable<any> {
+  calcularEstresHidrico(tpId: string, body: any): Observable<any> {
     return this.api.post(
-      `/climatico/temporada-parcelas/${tpId}/estres-hidrico`, {}
+      `/climatico/temporada-parcelas/${tpId}/estres-hidrico`, body
     );
   }
 
@@ -68,7 +68,13 @@ export class ClimaticoService {
     return this.api.get(`/lotes/${loteId}/parcelas`);
   }
 
+  // Temporadas del agricultor (incluye estado). Se usa para localizar
+  // la temporada_parcela activa que alimenta balance/estres hidrico.
   listarTemporadas(): Observable<any> {
-    return this.api.get('/temporadas/historial');
+    return this.api.get('/temporadas');
+  }
+
+  obtenerTemporada(temporadaId: string): Observable<any> {
+    return this.api.get(`/temporadas/${temporadaId}`);
   }
 }
