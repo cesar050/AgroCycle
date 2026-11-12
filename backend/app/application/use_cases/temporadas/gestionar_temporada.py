@@ -163,3 +163,36 @@ class GestionarTemporadaUseCase:
             "fecha_fin_real": temporada_actualizada.fecha_fin_real.isoformat(),
             "mensaje": "Temporada cerrada exitosamente"
         }
+
+    @log_caso_de_uso('cancelar_temporada')
+    def cancelar(
+        self,
+        temporada_id: str,
+        agricultor_id: str,
+        motivo: Optional[str] = None
+    ) -> dict:
+        """
+        Cancela una temporada activa.
+        Solo una temporada activa puede cancelarse; una vez cancelada
+        no puede reabrirse. El motivo se almacena como observacion.
+        """
+        temporada = self.temporada_repository.buscar_por_id(temporada_id)
+        if not temporada:
+            raise ValueError("Temporada no encontrada")
+        if not temporada.es_del_agricultor(agricultor_id):
+            raise PermissionError("No tienes permiso para cancelar esta temporada")
+        if not temporada.esta_activa():
+            raise ValueError(f"La temporada ya esta {temporada.estado} y no puede cancelarse")
+
+        temporada.estado = 'cancelada'
+        if motivo:
+            temporada.observaciones = motivo
+
+        temporada_actualizada = self.temporada_repository.actualizar(temporada)
+
+        return {
+            "id": temporada_actualizada.id,
+            "nombre": temporada_actualizada.nombre,
+            "estado": temporada_actualizada.estado,
+            "mensaje": "Temporada cancelada exitosamente"
+        }
