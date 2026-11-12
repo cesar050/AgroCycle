@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
@@ -87,6 +87,29 @@ class PgParcelaRepository(IParcelaRepository):
         self.db.commit()
         self.db.refresh(modelo)
         return self._modelo_a_entidad(modelo)
+
+    def obtener_centroide(self, parcela_id: str) -> Optional[Tuple[float, float]]:
+        """
+        Obtiene el centroide de la parcela en coordenadas WGS84.
+        ST_Y / ST_X sobre ST_Centroid devuelven latitud y longitud
+        del punto central del poligono, que son las coordenadas que
+        Open-Meteo necesita para consultar el clima de la parcela.
+        """
+        resultado = self.db.execute(
+            text("""
+                SELECT
+                    ST_Y(ST_Centroid(geometria)) AS latitud,
+                    ST_X(ST_Centroid(geometria)) AS longitud
+                FROM parcelas
+                WHERE id = CAST(:parcela_id AS uuid)
+            """),
+            {"parcela_id": parcela_id}
+        ).fetchone()
+
+        if not resultado or resultado.latitud is None:
+            return None
+
+        return (float(resultado.latitud), float(resultado.longitud))
 
     def calcular_superficie_ha(self, geometria_wkt: str) -> float:
         """

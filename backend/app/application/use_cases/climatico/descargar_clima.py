@@ -6,6 +6,7 @@ siguiendo Clean Architecture.
 from datetime import date
 from app.domain.entities.dato_climatico import DatoClimatico
 from app.domain.repositories.i_dato_climatico_repository import IDatoClimaticoRepository
+from app.domain.repositories.i_parcela_repository import IParcelaRepository
 from app.infrastructure.external.openmeteo.openmeteo_service import (
     obtener_clima_historico,
     obtener_clima_forecast
@@ -17,22 +18,38 @@ logger = configurar_logger('descargar_clima')
 
 class DescargarClimaUseCase:
 
-    def __init__(self, dato_climatico_repository: IDatoClimaticoRepository):
+    def __init__(
+        self,
+        dato_climatico_repository: IDatoClimaticoRepository,
+        parcela_repository: IParcelaRepository
+    ):
         self.repo = dato_climatico_repository
+        self.parcela_repo = parcela_repository
+
+    def _resolver_centroide(self, parcela_id: str) -> tuple:
+        """
+        Obtiene lat/lon del centroide de la parcela via el repositorio.
+        Centraliza aqui la resolucion para que las rutas Flask no toquen SQL.
+        Lanza ValueError si la parcela no existe o no tiene geometria.
+        """
+        centroide = self.parcela_repo.obtener_centroide(parcela_id)
+        if not centroide:
+            raise ValueError("Parcela no encontrada o sin geometria")
+        return centroide
 
     @log_caso_de_uso('descargar_clima_historico')
     def ejecutar(
         self,
         parcela_id: str,
-        latitud: float,
-        longitud: float,
         fecha_inicio: date,
         fecha_fin: date,
         temporada_id: str = None
     ) -> dict:
         """
         Descarga datos climaticos historicos y los guarda via repositorio.
+        El centroide de la parcela se resuelve internamente via el repositorio.
         """
+        latitud, longitud = self._resolver_centroide(parcela_id)
         datos_api = obtener_clima_historico(latitud, longitud, fecha_inicio, fecha_fin)
 
         if not datos_api:
@@ -83,8 +100,11 @@ class DescargarClimaUseCase:
     def obtener_forecast(
         self,
         parcela_id: str,
-        latitud: float,
-        longitud: float,
         dias: int = 7
     ) -> list:
+        """
+        Obtiene el pronostico de Open-Meteo resolviendo el centroide
+        de la parcela internamente via el repositorio.
+        """
+        latitud, longitud = self._resolver_centroide(parcela_id)
         return obtener_clima_forecast(latitud, longitud, dias)
