@@ -6,12 +6,12 @@ y obtener el pronostico de los proximos dias.
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
 from datetime import date
-from sqlalchemy import text
 from app.application.use_cases.climatico.descargar_clima import DescargarClimaUseCase
 from app.application.use_cases.climatico.calcular_balance_hidrico import CalcularBalanceHidricoUseCase
 from app.application.use_cases.climatico.registrar_evento_manual import RegistrarEventoManualUseCase
 from app.application.use_cases.climatico.historial_climatico import HistorialClimaticoUseCase
 from app.infrastructure.repositories.pg_dato_climatico_repository import PgDatoClimaticoRepository
+from app.infrastructure.repositories.pg_parcela_repository import PgParcelaRepository
 from app.infrastructure.database import SessionLocal
 from app.infrastructure.security.decorators import requiere_rol
 
@@ -49,32 +49,20 @@ def descargar_clima(parcela_id):
 
     db = get_db()
     try:
-        resultado_coords = db.execute(
-            text("""
-                SELECT
-                    ST_Y(ST_Centroid(geometria)) as latitud,
-                    ST_X(ST_Centroid(geometria)) as longitud
-                FROM parcelas
-                WHERE id = CAST(:parcela_id AS uuid)
-            """),
-            {"parcela_id": parcela_id}
-        ).fetchone()
-
-        if not resultado_coords or not resultado_coords.latitud:
-            return jsonify({"error": "Parcela no encontrada o sin geometria"}), 404
-
-        repo = PgDatoClimaticoRepository(db)
-        use_case = DescargarClimaUseCase(repo)
+        use_case = DescargarClimaUseCase(
+            PgDatoClimaticoRepository(db),
+            PgParcelaRepository(db)
+        )
         resultado = use_case.ejecutar(
             parcela_id=parcela_id,
-            latitud=resultado_coords.latitud,
-            longitud=resultado_coords.longitud,
             fecha_inicio=date.fromisoformat(datos['fecha_inicio']),
             fecha_fin=date.fromisoformat(datos['fecha_fin']),
             temporada_id=datos.get('temporada_id')
         )
         return jsonify(resultado), 200
 
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
     except PermissionError as e:
         return jsonify({"error": str(e)}), 403
     except Exception as e:
@@ -140,28 +128,11 @@ def obtener_forecast(parcela_id):
     """
     db = get_db()
     try:
-        resultado = db.execute(
-            text("""
-                SELECT
-                    ST_Y(ST_Centroid(geometria)) as latitud,
-                    ST_X(ST_Centroid(geometria)) as longitud
-                FROM parcelas
-                WHERE id = CAST(:parcela_id AS uuid)
-            """),
-            {"parcela_id": parcela_id}
-        ).fetchone()
-
-        if not resultado or not resultado.latitud:
-            return jsonify({"error": "Parcela no encontrada o sin geometria"}), 404
-
-        repo = PgDatoClimaticoRepository(db)
-        use_case = DescargarClimaUseCase(repo)
-        forecast = use_case.obtener_forecast(
-            parcela_id=parcela_id,
-            latitud=resultado.latitud,
-            longitud=resultado.longitud,
-            dias=7
+        use_case = DescargarClimaUseCase(
+            PgDatoClimaticoRepository(db),
+            PgParcelaRepository(db)
         )
+        forecast = use_case.obtener_forecast(parcela_id=parcela_id, dias=7)
 
         return jsonify({
             "parcela_id": parcela_id,
@@ -169,6 +140,8 @@ def obtener_forecast(parcela_id):
             "total_dias": len(forecast)
         }), 200
 
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

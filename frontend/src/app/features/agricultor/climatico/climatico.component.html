@@ -1,401 +1,582 @@
-<div class="cli-page">
+<div class="cli">
 
-  <!-- Header -->
-  <div class="cli-header">
-    <div>
+  <!-- ===================== ENCABEZADO ===================== -->
+  <div class="cli__head">
+    <div class="cli__head-title">
+      <p class="cli__eyebrow">Módulo climático · Open-Meteo</p>
       <h1>Clima y agua</h1>
-      <p>
-        Datos climáticos e indicadores hídricos —
-        <strong>{{ parcelaNombre() || 'Cargando...' }}</strong>
+      <p class="cli__sub">
+        Análisis climático e hídrico de
+        <strong>{{ parcelaNombre() || '…' }}</strong>
+        @if (estadoFenologico()) {
+          <span class="cli__sep">·</span>
+          <span class="cli__feno">{{ etiquetaFenologia(estadoFenologico()) }}</span>
+        }
       </p>
     </div>
-    <div class="cli-header__actions">
-      <!-- Selector de parcela -->
+
+    <div class="cli__actions">
       @if (parcelas().length > 1) {
-        <select class="input cli-select"
+        <select class="input cli__select"
                 [value]="parcelaId()"
                 (change)="seleccionarParcela(
                   $any($event.target).value,
-                  $any($event.target).options[$any($event.target).selectedIndex].text
-                )">
+                  $any($event.target).options[$any($event.target).selectedIndex].text)">
           @for (p of parcelas(); track p.id) {
             <option [value]="p.id">{{ p.nombre }}</option>
           }
         </select>
       }
 
-      <button
-        class="btn btn--secundario btn--sm"
-        [disabled]="descargando() || !parcelaId()"
-        (click)="descargarDatosHistoricos()">
+      <button class="btn btn--secundario btn--sm"
+              [disabled]="descargando() || !parcelaId()"
+              (click)="descargarDatosHistoricos()">
         @if (descargando()) {
-          <span class="spinner-sm-dark"></span>
-          Descargando...
+          <span class="cli-spin"></span> Sincronizando…
         } @else {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+               stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/>
           </svg>
           Actualizar datos
         }
       </button>
-    </div>
-  </div>
 
-  @if (cargando()) {
-    <div class="cli-skeleton">
-      <div class="skeleton" style="height:80px;border-radius:8px"></div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-        @for (i of [1,2,3,4]; track i) {
-          <div class="skeleton" style="height:90px;border-radius:8px"></div>
-        }
-      </div>
-    </div>
-  }
-
-  @if (!cargando()) {
-
-    <!-- Alertas -->
-    @if (alertas().length > 0) {
-      <div class="cli-alertas">
-        @for (a of alertas().slice(0,2); track $index) {
-          <div class="cli-alerta"
-               [class]="'cli-alerta--' + (a.urgencia || 'baja')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            <span>{{ a.mensaje || a.descripcion }}</span>
-            <span class="tag" [class]="colorAlerta(a.urgencia)">
-              {{ a.urgencia || 'info' }}
-            </span>
-          </div>
-        }
-      </div>
-    }
-
-    <!-- Métricas resumen -->
-    @if (resumenClima()) {
-      <div class="cli-metricas">
-        <div class="cli-metrica">
-          <p class="cli-metrica__label">Precipitación acumulada</p>
-          <p class="cli-metrica__val font-mono">
-            {{ resumenClima().resumen?.precipitacion?.total_mm || '—' }}
-            <span>mm</span>
-          </p>
-          <p class="cli-metrica__sub">
-            Promedio:
-            {{ resumenClima().resumen?.precipitacion?.promedio_mm || '—' }}
-            mm/día
-          </p>
-        </div>
-        <div class="cli-metrica">
-          <p class="cli-metrica__label">Temperatura promedio</p>
-          <p class="cli-metrica__val font-mono">
-            {{ resumenClima().resumen?.temperatura?.promedio_c || '—' }}
-            <span>°C</span>
-          </p>
-          <p class="cli-metrica__sub">
-            Máx: {{ resumenClima().resumen?.temperatura?.maxima_c || '—' }}
-            · Mín: {{ resumenClima().resumen?.temperatura?.minima_c || '—' }}
-          </p>
-        </div>
-        <div class="cli-metrica">
-          <p class="cli-metrica__label">Humedad promedio</p>
-          <p class="cli-metrica__val font-mono">
-            {{ resumenClima().resumen?.humedad_promedio || '—' }}
-            <span>%</span>
-          </p>
-          <p class="cli-metrica__sub">Humedad relativa del aire</p>
-        </div>
-        <div class="cli-metrica">
-          <p class="cli-metrica__label">ET₀ acumulada</p>
-          <p class="cli-metrica__val font-mono">
-            {{ resumenClima().resumen?.et0_total_mm || '—' }}
-            <span>mm</span>
-          </p>
-          <p class="cli-metrica__sub">
-            Días con lluvia:
-            {{ resumenClima().resumen?.dias_con_lluvia || 0 }}
-          </p>
-        </div>
-      </div>
-    }
-
-    <!-- Tabs -->
-    <div class="cli-tabs">
-      <button class="cli-tab"
-              [class.activo]="tabActiva() === 'resumen'"
-              (click)="tabActiva.set('resumen')">
-        Gráfica climática
-      </button>
-      <button class="cli-tab"
-              [class.activo]="tabActiva() === 'historial'"
-              (click)="tabActiva.set('historial')">
-        Historial
-      </button>
-      <button class="cli-tab"
-              [class.activo]="tabActiva() === 'forecast'"
-              (click)="tabActiva.set('forecast')">
-        Pronóstico 7 días
-      </button>
-      <button class="cli-tab"
-              [class.activo]="tabActiva() === 'manual'"
-              (click)="tabActiva.set('manual')">
+      <button class="btn btn--sm cli-btn-crear"
+              [disabled]="!parcelaId()"
+              (click)="mostrarFormManual.set(!mostrarFormManual())">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
         Registrar dato
       </button>
     </div>
+  </div>
 
-    <!-- Tab: Gráfica -->
-    @if (tabActiva() === 'resumen') {
-      <div class="cli-card">
-        <div class="cli-card__header">
-          <h3>Precipitación y temperatura — últimos 15 días</h3>
-          <p>Datos históricos Open-Meteo · NASA ERA5</p>
-        </div>
-        @if (historial().length > 0) {
-          <div class="cli-grafica">
-            <canvas #graficaRef></canvas>
-          </div>
-        } @else {
-          <div class="cli-empty">
-            <p>Sin datos climáticos disponibles.</p>
-            <button class="btn btn--primario btn--sm"
-                    [disabled]="!parcelaId()"
-                    (click)="descargarDatosHistoricos()">
-              Descargar datos
-            </button>
-          </div>
-        }
-      </div>
-    }
-
-    <!-- Tab: Historial -->
-    @if (tabActiva() === 'historial') {
-      <div class="cli-card">
-        <div class="cli-card__header">
-          <h3>Historial climático</h3>
-          @if (paginacion()) {
-            <span class="cli-pag-info">
-              {{ paginacion().total_registros }} registros ·
-              Página {{ paginacion().pagina_actual }}
-              de {{ paginacion().total_paginas }}
-            </span>
-          }
-        </div>
-
-        @if (historial().length === 0) {
-          <div class="cli-empty">
-            <p>Sin datos históricos.</p>
-            <button class="btn btn--primario btn--sm"
-                    [disabled]="!parcelaId()"
-                    (click)="descargarDatosHistoricos()">
-              Descargar datos históricos
-            </button>
-          </div>
-        } @else {
-          <div class="cli-tabla">
-            <div class="cli-tabla__header">
-              <span>Fecha</span>
-              <span>Lluvia (mm)</span>
-              <span>T. Máx (°C)</span>
-              <span>T. Mín (°C)</span>
-              <span>Humedad (%)</span>
-              <span>ET₀ (mm)</span>
-              <span>Fuente</span>
-            </div>
-            @for (d of historial(); track d.fecha) {
-              <div class="cli-tabla__row">
-                <span class="font-mono">{{ d.fecha }}</span>
-                <span class="font-mono azul">
-                  {{ d.precipitacion_mm | number:'1.1-1' }}
-                </span>
-                <span class="font-mono rojo">
-                  {{ d.temperatura_max_c | number:'1.1-1' }}
-                </span>
-                <span class="font-mono azul-oscuro">
-                  {{ d.temperatura_min_c | number:'1.1-1' }}
-                </span>
-                <span class="font-mono">
-                  {{ d.humedad_relativa_porcentaje | number:'1.0-0' }}
-                </span>
-                <span class="font-mono">
-                  {{ d.evapotranspiracion_mm | number:'1.2-2' }}
-                </span>
-                <span>
-                  <span class="tag tag--gris">{{ d.fuente }}</span>
-                </span>
-              </div>
-            }
-          </div>
-
-          <!-- Paginación -->
-          @if (paginacion()?.total_paginas > 1) {
-            <div class="cli-paginacion">
-              <button class="btn btn--ghost btn--sm"
-                      [disabled]="!paginacion().tiene_anterior"
-                      (click)="cargarHistorial(paginaActual() - 1)">
-                ← Anterior
-              </button>
-              <span class="cli-pag-num">
-                {{ paginaActual() }} / {{ paginacion().total_paginas }}
-              </span>
-              <button class="btn btn--ghost btn--sm"
-                      [disabled]="!paginacion().tiene_siguiente"
-                      (click)="cargarHistorial(paginaActual() + 1)">
-                Siguiente →
-              </button>
-            </div>
-          }
-        }
-      </div>
-    }
-
-    <!-- Tab: Forecast -->
-    @if (tabActiva() === 'forecast') {
-      <div class="cli-card">
-        <div class="cli-card__header">
-          <h3>Pronóstico 7 días</h3>
-          <p>Open-Meteo Weather Forecast API</p>
-        </div>
-
-        @if (cargandoForecast()) {
-          <div class="cli-empty">
-            <div class="spinner-md"></div>
-            <p>Cargando pronóstico...</p>
-          </div>
-        } @else if (forecast().length === 0) {
-          <div class="cli-empty">
-            <p>Sin pronóstico disponible.</p>
-          </div>
-        } @else {
-          <div class="forecast-grid">
-            @for (d of forecast().slice(0,7); track d.fecha) {
-              <div class="forecast-dia">
-                <p class="forecast-dia__fecha">
-                  {{ d.fecha | slice:5 }}
-                </p>
-                <div class="forecast-dia__icono">
-                  <svg width="24" height="24" viewBox="0 0 24 24"
-                       fill="none" stroke="currentColor" stroke-width="1.5">
-                    @if ((d.precipitacion_mm || 0) > 2) {
-                      <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
-                      <line x1="8" y1="22" x2="8" y2="22"/>
-                      <line x1="12" y1="22" x2="12" y2="22"/>
-                      <line x1="16" y1="22" x2="16" y2="22"/>
-                    } @else {
-                      <circle cx="12" cy="12" r="5"/>
-                      <line x1="12" y1="1" x2="12" y2="3"/>
-                      <line x1="12" y1="21" x2="12" y2="23"/>
-                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                      <line x1="1" y1="12" x2="3" y2="12"/>
-                      <line x1="21" y1="12" x2="23" y2="12"/>
-                    }
-                  </svg>
-                </div>
-                <p class="forecast-dia__temp">
-                  <span class="rojo">
-                    {{ d.temperatura_max_c | number:'1.0-0' }}°
-                  </span>
-                  /
-                  <span class="azul-oscuro">
-                    {{ d.temperatura_min_c | number:'1.0-0' }}°
-                  </span>
-                </p>
-                <p class="forecast-dia__lluvia">
-                  {{ d.precipitacion_mm | number:'1.1-1' }} mm
-                </p>
-                <p class="forecast-dia__humedad">
-                  {{ d.humedad_relativa_porcentaje | number:'1.0-0' }}%
-                </p>
-              </div>
-            }
-          </div>
-        }
-      </div>
-    }
-
-    <!-- Tab: Registro manual -->
-    @if (tabActiva() === 'manual') {
-      <div class="cli-card">
-        <div class="cli-card__header">
-          <h3>Registrar dato climático manual</h3>
-          <p>
-            Ingresa datos observados directamente en campo
-            cuando no hay cobertura de la API
-          </p>
-        </div>
-
-        @if (error()) {
-          <div class="cli-error">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ error() }}
-          </div>
-        }
-
-        <div class="manual-form">
-          <div class="manual-grid">
-            <div class="form-field form-field--full">
-              <label>Fecha <span class="required">*</span></label>
-              <input type="date" class="input"
-                     [(ngModel)]="formManual.fecha">
-            </div>
-            <div class="form-field">
-              <label>Lluvia (mm)</label>
-              <input type="number" class="input"
-                     [(ngModel)]="formManual.precipitacion_mm"
-                     placeholder="0.0" min="0" step="0.1">
-            </div>
-            <div class="form-field">
-              <label>Temperatura máxima (°C)</label>
-              <input type="number" class="input"
-                     [(ngModel)]="formManual.temperatura_max_c"
-                     placeholder="Ej. 28.5">
-            </div>
-            <div class="form-field">
-              <label>Temperatura mínima (°C)</label>
-              <input type="number" class="input"
-                     [(ngModel)]="formManual.temperatura_min_c"
-                     placeholder="Ej. 18.0">
-            </div>
-            <div class="form-field">
-              <label>Humedad relativa (%)</label>
-              <input type="number" class="input"
-                     [(ngModel)]="formManual.humedad_relativa_porcentaje"
-                     placeholder="Ej. 75" min="0" max="100">
-            </div>
-            <div class="form-field">
-              <label>ET₀ estimada (mm)</label>
-              <input type="number" class="input"
-                     [(ngModel)]="formManual.evapotranspiracion_mm"
-                     placeholder="Ej. 3.5" min="0" step="0.1">
-            </div>
-          </div>
-
-          <div class="manual-footer">
-            <button
-              class="btn btn--primario"
-              [disabled]="guardandoManual()"
-              (click)="guardarEventoManual()">
-              @if (guardandoManual()) {
-                <span class="spinner-sm"></span>
-                Guardando...
-              } @else {
-                Guardar dato manual
-              }
-            </button>
-          </div>
-        </div>
-      </div>
-    }
-
+  @if (cargando() && climaDatos().length === 0) {
+    <div class="cli__loadbar"></div>
   }
+
+  <!-- ===================== REGISTRO MANUAL (panel plegable) ===================== -->
+  @if (mostrarFormManual()) {
+    <div class="panel panel--form animate-slide">
+      <div class="panel__head">
+        <div>
+          <h3>Registrar dato climático manual</h3>
+          <p>Observaciones de campo cuando no hay cobertura de la API</p>
+        </div>
+        <button class="btn btn--ghost btn--sm" (click)="mostrarFormManual.set(false)">Cerrar</button>
+      </div>
+
+      @if (error()) {
+        <div class="cli-inline-error">{{ error() }}</div>
+      }
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Fecha <span class="req">*</span></label>
+          <input type="date" class="input" [(ngModel)]="formManual.fecha">
+        </div>
+        <div class="form-field">
+          <label>Precipitación (mm)</label>
+          <input type="number" class="input" min="0" step="0.1"
+                 placeholder="0.0" [(ngModel)]="formManual.precipitacion_mm">
+        </div>
+        <div class="form-field">
+          <label>Temp. máxima (°C)</label>
+          <input type="number" class="input" step="0.1"
+                 placeholder="28.5" [(ngModel)]="formManual.temperatura_max_c">
+        </div>
+        <div class="form-field">
+          <label>Temp. mínima (°C)</label>
+          <input type="number" class="input" step="0.1"
+                 placeholder="18.0" [(ngModel)]="formManual.temperatura_min_c">
+        </div>
+        <div class="form-field">
+          <label>Humedad relativa (%)</label>
+          <input type="number" class="input" min="0" max="100"
+                 placeholder="75" [(ngModel)]="formManual.humedad_relativa_porcentaje">
+        </div>
+        <div class="form-field">
+          <label>ET₀ estimada (mm)</label>
+          <input type="number" class="input" min="0" step="0.1"
+                 placeholder="3.5" [(ngModel)]="formManual.evapotranspiracion_mm">
+        </div>
+      </div>
+
+      <div class="panel__foot">
+        <button class="btn btn--secundario btn--sm" (click)="mostrarFormManual.set(false)">Cancelar</button>
+        <button class="btn btn--sm cli-btn-crear"
+                [disabled]="guardandoManual()"
+                (click)="guardarEventoManual()">
+          @if (guardandoManual()) { <span class="cli-spin"></span> Guardando… }
+          @else { Guardar dato }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ===================== ALERTAS ACTIVAS ===================== -->
+  @if (alertas().length > 0) {
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <h3>Alertas climáticas activas</h3>
+          <p>Humedad estimada bajo umbral · semáforo de urgencia</p>
+        </div>
+        <span class="count-pill">{{ alertas().length }}</span>
+      </div>
+      <div class="alerta-list">
+        @for (a of alertas(); track $index) {
+          <div class="alerta-row">
+            <span class="status-dot status-dot--{{ claseUrgencia(a.clasificacion) }}"></span>
+            <div class="alerta-row__body">
+              <p class="alerta-row__msg">{{ a.mensaje }}</p>
+              <p class="alerta-row__meta">
+                {{ etiquetaFenologia(a.estado_fenologico) }}
+                <span class="cli__sep">·</span>
+                Balance 7d:
+                <span class="mono">{{ a.balance_7_dias_mm | number:'1.1-1' }} mm</span>
+              </p>
+            </div>
+            <span class="tag-plano tag-plano--{{ claseUrgencia(a.clasificacion) }}">
+              {{ a.humedad_estimada | number:'1.0-0' }}%
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===================== KPIs (resumen de temporada) ===================== -->
+  <div class="kpis">
+    <div class="kpi">
+      <p class="kpi__k">Precipitación acum.</p>
+      <p class="kpi__v mono">{{ resumen()?.precipitacion?.total_mm ?? '—' }}<span>mm</span></p>
+      <p class="kpi__s">{{ resumen()?.dias_con_lluvia ?? 0 }} días con lluvia</p>
+    </div>
+    <div class="kpi">
+      <p class="kpi__k">Temp. promedio</p>
+      <p class="kpi__v mono">{{ resumen()?.temperatura?.promedio_c ?? '—' }}<span>°C</span></p>
+      <p class="kpi__s">
+        máx {{ resumen()?.temperatura?.maxima_c ?? '—' }}° ·
+        mín {{ resumen()?.temperatura?.minima_c ?? '—' }}°
+      </p>
+    </div>
+    <div class="kpi">
+      <p class="kpi__k">Humedad del aire</p>
+      <p class="kpi__v mono">{{ resumen()?.humedad_promedio ?? '—' }}<span>%</span></p>
+      <p class="kpi__s">Promedio del período</p>
+    </div>
+    <div class="kpi">
+      <p class="kpi__k">ET₀ acumulada</p>
+      <p class="kpi__v mono">{{ resumen()?.et0_total_mm ?? '—' }}<span>mm</span></p>
+      <p class="kpi__s">Demanda atmosférica</p>
+    </div>
+    <div class="kpi">
+      <p class="kpi__k">Días registrados</p>
+      <p class="kpi__v mono">{{ resumen()?.total_dias ?? 0 }}</p>
+      <p class="kpi__s">{{ resumen()?.dias_manuales ?? 0 }} manuales</p>
+    </div>
+  </div>
+
+  <!-- ===================== PANEL FAO-56: BALANCE + ESTRÉS ===================== -->
+  <div class="fao-grid">
+
+    <!-- Balance hídrico / humedad del suelo -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <h3>Balance hídrico del suelo</h3>
+          <p>FAO-56 · humedad estimada de la zona radicular</p>
+        </div>
+      </div>
+
+      @if (cargandoBalance()) {
+        <div class="panel__empty"><span class="cli-spin cli-spin--dark"></span><p>Calculando balance…</p></div>
+      } @else if (sinTemporada() || !balanceActual()) {
+        <div class="panel__empty">
+          @if (sinTemporada()) {
+            <p>Sin temporada activa para esta parcela.</p>
+            <p class="muted">El balance FAO-56 requiere una siembra vinculada a una temporada activa.</p>
+          } @else {
+            <p>Sin datos de balance para el período.</p>
+            <p class="muted">Descarga el clima histórico de la temporada para calcular la humedad del suelo.</p>
+          }
+        </div>
+      } @else {
+        <div class="gauge">
+          <div class="gauge__top">
+            <div>
+              <p class="gauge__val mono gauge__val--{{ claseHumedad(balanceActual()!.clasificacion) }}">
+                {{ balanceActual()!.humedad_estimada_porcentaje | number:'1.0-0' }}<span>%</span>
+              </p>
+              <p class="gauge__label">Humedad actual del suelo</p>
+            </div>
+            <span class="tag-plano tag-plano--{{ claseHumedad(balanceActual()!.clasificacion) }}">
+              {{ balanceActual()!.clasificacion }}
+            </span>
+          </div>
+          <div class="meter">
+            <div class="meter__fill meter__fill--{{ claseHumedad(balanceActual()!.clasificacion) }}"
+                 [style.width.%]="balanceActual()!.humedad_estimada_porcentaje"></div>
+          </div>
+          <div class="meter__scale"><span>0%</span><span>crítico 20</span><span>óptimo 60</span><span>100%</span></div>
+        </div>
+
+        <!-- sparkline de humedad -->
+        @if (!humChart().empty) {
+          <div class="spark">
+            <svg [attr.viewBox]="'0 0 ' + humChart().w + ' ' + humChart().h"
+                 class="spark__svg" preserveAspectRatio="xMidYMid meet">
+              @for (t of humChart().yTicks; track $index) {
+                <line class="grid" [attr.x1]="humChart().pad.l" [attr.x2]="humChart().w - humChart().pad.r"
+                      [attr.y1]="t.y" [attr.y2]="t.y"/>
+              }
+              @for (ln of humChart().lines; track $index) {
+                <path [attr.class]="'line ' + ln.cls" [attr.d]="ln.d"
+                      fill="none" vector-effect="non-scaling-stroke"/>
+              }
+              @for (d of humChart().endDots; track $index) {
+                <circle [attr.class]="'dot ' + d.cls" [attr.cx]="d.cx" [attr.cy]="d.cy" r="3"/>
+              }
+            </svg>
+            <p class="spark__cap">Evolución de la humedad del suelo durante la temporada</p>
+          </div>
+        }
+
+        <div class="kv-row">
+          <div class="kv"><span class="kv__k">Etapa</span><span class="kv__v">{{ etiquetaFenologia(balanceActual()!.estado_fenologico) }}</span></div>
+          <div class="kv"><span class="kv__k">Días en alerta</span><span class="kv__v mono">{{ totalAlertasBalance() }}</span></div>
+        </div>
+      }
+    </div>
+
+    <!-- Índice de estrés hídrico Ks -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <h3>Estrés hídrico (Ks)</h3>
+          <p>FAO-56 · coeficiente de estrés e impacto en rendimiento</p>
+        </div>
+      </div>
+
+      @if (cargandoBalance()) {
+        <div class="panel__empty"><span class="cli-spin cli-spin--dark"></span><p>Calculando Ks…</p></div>
+      } @else if (!estres()) {
+        <div class="panel__empty">
+          <p>Sin datos de estrés hídrico.</p>
+          <p class="muted">Requiere temporada activa y clima descargado del período.</p>
+        </div>
+      } @else {
+        <div class="gauge">
+          <div class="gauge__top">
+            <div>
+              <p class="gauge__val mono gauge__val--{{ claseKs(estres().ks_promedio) }}">
+                {{ estres().ks_promedio | number:'1.2-2' }}
+              </p>
+              <p class="gauge__label">Ks promedio del período</p>
+            </div>
+            <span class="tag-plano tag-plano--{{ claseKs(estres().ks_promedio) }}">
+              {{ etiquetaEstres(estres().ks_promedio >= 0.95 ? 'sin_estres' :
+                  estres().ks_promedio >= 0.75 ? 'estres_leve' :
+                  estres().ks_promedio >= 0.50 ? 'estres_moderado' : 'estres_severo') }}
+            </span>
+          </div>
+          <div class="meter">
+            <div class="meter__fill meter__fill--{{ claseKs(estres().ks_promedio) }}"
+                 [style.width.%]="ksPorcentaje(estres().ks_promedio)"></div>
+          </div>
+          <div class="meter__scale"><span>0.0</span><span>0.5</span><span>0.75</span><span>1.0</span></div>
+        </div>
+
+        <div class="kv-row kv-row--3">
+          <div class="kv">
+            <span class="kv__k">Días con estrés</span>
+            <span class="kv__v mono">{{ estres().dias_con_estres }}<small>/{{ estres().total_dias }}</small></span>
+          </div>
+          <div class="kv">
+            <span class="kv__k">Impacto rend.</span>
+            <span class="kv__v mono kv__v--{{ estres().impacto_rendimiento_porcentaje > 20 ? 'rojo' : 'verde' }}">
+              −{{ estres().impacto_rendimiento_porcentaje | number:'1.0-1' }}%
+            </span>
+          </div>
+          <div class="kv">
+            <span class="kv__k">Período</span>
+            <span class="kv__v mono">{{ estres().total_dias }}d</span>
+          </div>
+        </div>
+
+        <p class="interpret">{{ estres().interpretacion }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- ===================== GRÁFICOS DE SERIES DE TIEMPO ===================== -->
+  @if (serieClima().length === 0 && !cargandoSerie()) {
+    <div class="panel panel__empty panel__empty--big">
+      <p>No hay datos climáticos para esta parcela.</p>
+      <button class="btn btn--sm cli-btn-crear"
+              [disabled]="!parcelaId()" (click)="descargarDatosHistoricos()">
+        Descargar histórico de Open-Meteo
+      </button>
+    </div>
+  } @else {
+
+    <!-- Precipitación -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <h3>Precipitación diaria</h3>
+          <p>Lluvia registrada por día · milímetros</p>
+        </div>
+        <div class="legend"><span class="legend__dot s-precip"></span><span>Lluvia (mm)</span></div>
+      </div>
+      <div class="chart">
+        <svg [attr.viewBox]="'0 0 ' + precipChart().w + ' ' + precipChart().h"
+             class="chart__svg" preserveAspectRatio="xMidYMid meet"
+             (mouseleave)="hoverPrecip.set(null)">
+          @for (t of precipChart().yTicks; track $index) {
+            <line class="grid" [attr.x1]="precipChart().pad.l" [attr.x2]="precipChart().w - precipChart().pad.r"
+                  [attr.y1]="t.y" [attr.y2]="t.y"/>
+          }
+          @for (b of precipChart().bars; track $index) {
+            <rect class="bar s-precip" [class.bar--on]="hoverPrecip() === $index"
+                  [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="1.5"/>
+          }
+          @if (hoverPrecip() !== null) {
+            <line class="cross" [attr.x1]="precipChart().bands[hoverPrecip()!].cx"
+                  [attr.x2]="precipChart().bands[hoverPrecip()!].cx"
+                  [attr.y1]="precipChart().pad.t" [attr.y2]="precipChart().h - precipChart().pad.b"/>
+          }
+          @for (band of precipChart().bands; track $index) {
+            <rect class="hit" [attr.x]="band.x" [attr.width]="band.w"
+                  [attr.y]="precipChart().pad.t" [attr.height]="precipChart().h - precipChart().pad.t - precipChart().pad.b"
+                  (mouseenter)="hoverPrecip.set($index)"/>
+          }
+        </svg>
+        <div class="ax ax--y">
+          @for (t of precipChart().yTicks; track $index) {
+            <span [style.top.%]="(t.y / precipChart().h) * 100">{{ t.v }}</span>
+          }
+        </div>
+        <div class="ax ax--x">
+          @for (l of precipChart().xLabels; track $index) {
+            <span [style.left.%]="(l.x / precipChart().w) * 100">{{ l.text }}</span>
+          }
+        </div>
+        @if (hoverPrecip() !== null && serieClima()[hoverPrecip()!]) {
+          <div class="tip" [style.left.%]="tipLeft(precipChart(), hoverPrecip()!)">
+            <p class="tip__d">{{ serieClima()[hoverPrecip()!].fecha }}</p>
+            <p class="tip__r"><span class="legend__dot s-precip"></span>Lluvia
+              <b class="mono">{{ serieClima()[hoverPrecip()!].precipitacion_mm | number:'1.1-1' }} mm</b></p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Temperatura -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <h3>Temperatura</h3>
+          <p>Máxima, promedio y mínima diaria · grados Celsius</p>
+        </div>
+        <div class="legend">
+          <span class="legend__item"><span class="legend__line s-tmax"></span>Máx</span>
+          <span class="legend__item"><span class="legend__line s-tmean"></span>Promedio</span>
+          <span class="legend__item"><span class="legend__line s-tmin"></span>Mín</span>
+        </div>
+      </div>
+      <div class="chart">
+        <svg [attr.viewBox]="'0 0 ' + tempChart().w + ' ' + tempChart().h"
+             class="chart__svg" preserveAspectRatio="xMidYMid meet"
+             (mouseleave)="hoverTemp.set(null)">
+          @for (t of tempChart().yTicks; track $index) {
+            <line class="grid" [attr.x1]="tempChart().pad.l" [attr.x2]="tempChart().w - tempChart().pad.r"
+                  [attr.y1]="t.y" [attr.y2]="t.y"/>
+          }
+          @for (ln of tempChart().lines; track $index) {
+            <path [attr.class]="'line ' + ln.cls" [attr.d]="ln.d" fill="none" vector-effect="non-scaling-stroke"/>
+          }
+          @for (d of tempChart().endDots; track $index) {
+            <circle [attr.class]="'dot ' + d.cls" [attr.cx]="d.cx" [attr.cy]="d.cy" r="3.5"/>
+          }
+          @if (hoverTemp() !== null) {
+            <line class="cross" [attr.x1]="tempChart().bands[hoverTemp()!].cx"
+                  [attr.x2]="tempChart().bands[hoverTemp()!].cx"
+                  [attr.y1]="tempChart().pad.t" [attr.y2]="tempChart().h - tempChart().pad.b"/>
+          }
+          @for (band of tempChart().bands; track $index) {
+            <rect class="hit" [attr.x]="band.x" [attr.width]="band.w"
+                  [attr.y]="tempChart().pad.t" [attr.height]="tempChart().h - tempChart().pad.t - tempChart().pad.b"
+                  (mouseenter)="hoverTemp.set($index)"/>
+          }
+        </svg>
+        <div class="ax ax--y">
+          @for (t of tempChart().yTicks; track $index) {
+            <span [style.top.%]="(t.y / tempChart().h) * 100">{{ t.v }}</span>
+          }
+        </div>
+        <div class="ax ax--x">
+          @for (l of tempChart().xLabels; track $index) {
+            <span [style.left.%]="(l.x / tempChart().w) * 100">{{ l.text }}</span>
+          }
+        </div>
+        @if (hoverTemp() !== null && serieClima()[hoverTemp()!]) {
+          <div class="tip" [style.left.%]="tipLeft(tempChart(), hoverTemp()!)">
+            <p class="tip__d">{{ serieClima()[hoverTemp()!].fecha }}</p>
+            <p class="tip__r"><span class="legend__dot s-tmax"></span>Máx
+              <b class="mono">{{ serieClima()[hoverTemp()!].temperatura_max_c | number:'1.1-1' }}°</b></p>
+            <p class="tip__r"><span class="legend__dot s-tmean"></span>Prom
+              <b class="mono">{{ serieClima()[hoverTemp()!].temperatura_promedio_c | number:'1.1-1' }}°</b></p>
+            <p class="tip__r"><span class="legend__dot s-tmin"></span>Mín
+              <b class="mono">{{ serieClima()[hoverTemp()!].temperatura_min_c | number:'1.1-1' }}°</b></p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Evapotranspiración -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <h3>Evapotranspiración {{ usandoEtc() ? '(ETc)' : '(ET₀)' }}</h3>
+          <p>{{ usandoEtc()
+                ? 'Demanda hídrica del cultivo = ET₀ × Kc · FAO-56'
+                : 'Evapotranspiración de referencia · milímetros' }}</p>
+        </div>
+        <div class="legend"><span class="legend__dot s-et"></span><span>{{ usandoEtc() ? 'ETc (mm)' : 'ET₀ (mm)' }}</span></div>
+      </div>
+      <div class="chart">
+        <svg [attr.viewBox]="'0 0 ' + etChart().w + ' ' + etChart().h"
+             class="chart__svg" preserveAspectRatio="xMidYMid meet"
+             (mouseleave)="hoverEt.set(null)">
+          @for (t of etChart().yTicks; track $index) {
+            <line class="grid" [attr.x1]="etChart().pad.l" [attr.x2]="etChart().w - etChart().pad.r"
+                  [attr.y1]="t.y" [attr.y2]="t.y"/>
+          }
+          @if (etChart().area) {
+            <path [attr.class]="'area ' + etChart().areaCls" [attr.d]="etChart().area"/>
+          }
+          @for (ln of etChart().lines; track $index) {
+            <path [attr.class]="'line ' + ln.cls" [attr.d]="ln.d" fill="none" vector-effect="non-scaling-stroke"/>
+          }
+          @for (d of etChart().endDots; track $index) {
+            <circle [attr.class]="'dot ' + d.cls" [attr.cx]="d.cx" [attr.cy]="d.cy" r="3.5"/>
+          }
+          @if (hoverEt() !== null) {
+            <line class="cross" [attr.x1]="etChart().bands[hoverEt()!].cx"
+                  [attr.x2]="etChart().bands[hoverEt()!].cx"
+                  [attr.y1]="etChart().pad.t" [attr.y2]="etChart().h - etChart().pad.b"/>
+          }
+          @for (band of etChart().bands; track $index) {
+            <rect class="hit" [attr.x]="band.x" [attr.width]="band.w"
+                  [attr.y]="etChart().pad.t" [attr.height]="etChart().h - etChart().pad.t - etChart().pad.b"
+                  (mouseenter)="hoverEt.set($index)"/>
+          }
+        </svg>
+        <div class="ax ax--y">
+          @for (t of etChart().yTicks; track $index) {
+            <span [style.top.%]="(t.y / etChart().h) * 100">{{ t.v }}</span>
+          }
+        </div>
+        <div class="ax ax--x">
+          @for (l of etChart().xLabels; track $index) {
+            <span [style.left.%]="(l.x / etChart().w) * 100">{{ l.text }}</span>
+          }
+        </div>
+        @if (hoverEt() !== null && etSource()[hoverEt()!]) {
+          <div class="tip" [style.left.%]="tipLeft(etChart(), hoverEt()!)">
+            <p class="tip__d">{{ etSource()[hoverEt()!].fecha }}</p>
+            <p class="tip__r"><span class="legend__dot s-et"></span>{{ usandoEtc() ? 'ETc' : 'ET₀' }}
+              <b class="mono">{{ etSource()[hoverEt()!].val | number:'1.2-2' }} mm</b></p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===================== PRONÓSTICO 7 DÍAS ===================== -->
+  @if (forecast().length > 0) {
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <h3>Pronóstico 7 días</h3>
+          <p>Open-Meteo Forecast · próximos días</p>
+        </div>
+      </div>
+      <div class="fc">
+        @for (d of forecast().slice(0,7); track d.fecha) {
+          <div class="fc__day" [class.fc__day--lluvia]="(d.precipitacion_mm || 0) > 2">
+            <p class="fc__date mono">{{ d.fecha | slice:5 }}</p>
+            <div class="fc__temp">
+              <span class="mono s-tmax-t">{{ d.temperatura_max_c | number:'1.0-0' }}°</span>
+              <span class="fc__sep">/</span>
+              <span class="mono s-tmin-t">{{ d.temperatura_min_c | number:'1.0-0' }}°</span>
+            </div>
+            <div class="fc__rain">
+              <span class="mono">{{ d.precipitacion_mm | number:'1.1-1' }}</span><small>mm</small>
+            </div>
+            <p class="fc__prob">
+              <span class="mono">{{ d.probabilidad_lluvia_porcentaje | number:'1.0-0' }}%</span> lluvia
+            </p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ===================== HISTORIAL (tabla densa) ===================== -->
+  <div class="panel">
+    <div class="panel__head">
+      <div>
+        <h3>Registro diario</h3>
+        <p>Histórico detallado · fuente API y manual</p>
+      </div>
+      @if (paginacion()) {
+        <span class="panel__meta mono">{{ paginacion().total_registros }} registros</span>
+      }
+    </div>
+
+    @if (historial().length === 0) {
+      <div class="panel__empty"><p>Sin registros para mostrar.</p></div>
+    } @else {
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Fecha</th><th class="num">Lluvia</th><th class="num">T. máx</th>
+              <th class="num">T. mín</th><th class="num">Hum.</th><th class="num">ET₀</th><th>Fuente</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of historial(); track d.fecha) {
+              <tr>
+                <td class="mono">{{ d.fecha }}</td>
+                <td class="num mono s-precip-t">{{ d.precipitacion_mm | number:'1.1-1' }}</td>
+                <td class="num mono s-tmax-t">{{ d.temperatura_max_c | number:'1.1-1' }}</td>
+                <td class="num mono s-tmin-t">{{ d.temperatura_min_c | number:'1.1-1' }}</td>
+                <td class="num mono">{{ d.humedad_relativa_porcentaje | number:'1.0-0' }}</td>
+                <td class="num mono">{{ d.evapotranspiracion_mm | number:'1.2-2' }}</td>
+                <td><span class="tag-plano tag-plano--{{ d.fuente === 'manual' ? 'naranja' : 'gris' }}">{{ d.fuente }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (paginacion()?.total_paginas > 1) {
+        <div class="pager">
+          <button class="btn btn--ghost btn--sm" [disabled]="!paginacion().tiene_anterior"
+                  (click)="cargarHistorial(paginaActual() - 1)">← Anterior</button>
+          <span class="pager__num mono">{{ paginaActual() }} / {{ paginacion().total_paginas }}</span>
+          <button class="btn btn--ghost btn--sm" [disabled]="!paginacion().tiene_siguiente"
+                  (click)="cargarHistorial(paginaActual() + 1)">Siguiente →</button>
+        </div>
+      }
+    }
+  </div>
+
 </div>

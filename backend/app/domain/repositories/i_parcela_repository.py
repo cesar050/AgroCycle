@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from app.domain.entities.parcela import Parcela
 
 
@@ -11,6 +11,15 @@ class IParcelaRepository(ABC):
 
     @abstractmethod
     def buscar_por_id(self, parcela_id: str) -> Optional[Parcela]:
+        pass
+
+    @abstractmethod
+    def obtener_centroide(self, parcela_id: str) -> Optional[Tuple[float, float]]:
+        """
+        Retorna el centroide (latitud, longitud) de la geometria de la
+        parcela usando PostGIS, o None si no existe o no tiene geometria.
+        Usado por el modulo climatico para consultar Open-Meteo.
+        """
         pass
 
     @abstractmethod
