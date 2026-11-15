@@ -1,0 +1,126 @@
+<div class="nf-page">
+
+  <div class="nf-breadcrumb">
+    <a routerLink="/app/temporada">Temporadas</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <a [routerLink]="['/app/temporada', temporadaId]">{{ nombreTemporada() || 'Detalle' }}</a>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <span>Registrar cosecha</span>
+  </div>
+
+  <div class="nf-header">
+    <div>
+      <h1>Registrar cosecha</h1>
+      <p>
+        Producción real de la parcela
+        @if (parcelaRef()) { <strong class="rc-ref">{{ parcelaRef() }}</strong> }
+        — este dato alimenta el comparativo real vs estimado
+      </p>
+    </div>
+    <div class="nf-header__actions">
+      <a [routerLink]="['/app/temporada', temporadaId]" class="btn btn--cancelar">
+        Cancelar
+      </a>
+      <button class="btn btn--guardar"
+              [disabled]="!puedeGuardar || cargando()"
+              (click)="guardar()">
+        @if (cargando()) {
+          <span class="spinner-sm"></span> Guardando...
+        } @else {
+          Guardar cosecha
+        }
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="nf-error">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  <div class="nf-content nf-content--single">
+
+    <!-- Produccion -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">1</span>
+        <h2>Producción cosechada</h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Producción real <span class="required">*</span></label>
+          <div class="rc-input-unit">
+            <input type="number" class="input" min="0" step="0.1"
+                   [(ngModel)]="produccionRealQq" placeholder="Ej. 85.5">
+            <span class="rc-unit">qq</span>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Fecha de cosecha <span class="required">*</span></label>
+          <input type="date" class="input" [(ngModel)]="fechaCosecha">
+        </div>
+        <div class="form-field">
+          <label>Producción autoconsumo</label>
+          <div class="rc-input-unit">
+            <input type="number" class="input" min="0" step="0.1"
+                   [(ngModel)]="produccionAutoconsumoQq" placeholder="Ej. 15.5">
+            <span class="rc-unit">qq</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Venta -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <span class="form-section__num">2</span>
+        <h2>Datos de venta <span class="form-section__opt">— opcional</span></h2>
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Precio de venta por quintal</label>
+          <div class="rc-input-unit rc-input-unit--left">
+            <span class="rc-unit">$</span>
+            <input type="number" class="input" min="0" step="0.01"
+                   [(ngModel)]="precioVentaQq" placeholder="Ej. 18.50">
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Volumen vendido</label>
+          <div class="rc-input-unit">
+            <input type="number" class="input" min="0" step="0.1"
+                   [(ngModel)]="volumenVendidoQq" placeholder="Ej. 70">
+            <span class="rc-unit">qq</span>
+          </div>
+        </div>
+        <div class="form-field form-field--full rc-ingreso">
+          <span class="rc-ingreso__k">Ingreso estimado por venta</span>
+          @if (ingresoEstimado() != null) {
+            <span class="rc-ingreso__v">
+              ${{ ingresoEstimado() | number:'1.2-2' }}
+            </span>
+          } @else {
+            <span class="rc-ingreso__v rc-ingreso__v--empty">
+              Ingresa precio y volumen vendido
+            </span>
+          }
+        </div>
+        <div class="form-field form-field--full">
+          <label>Observaciones</label>
+          <textarea class="input" rows="2" [(ngModel)]="observaciones"
+                    placeholder="Notas sobre la cosecha, calidad del grano, mermas..."></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

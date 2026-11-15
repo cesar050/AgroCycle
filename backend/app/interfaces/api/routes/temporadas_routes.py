@@ -280,34 +280,22 @@ def cancelar_temporada(temporada_id):
     Cancela una temporada activa.
     Body: { "motivo": "Sequia severa" }
     """
-    datos = request.get_json()
-    db = SessionLocal()
+    datos = request.get_json(silent=True) or {}
+    temporada_repo, tp_repo, finca_repo, parcela_repo, db = get_repos()
     try:
         agricultor_id = obtener_agricultor_id()
-        temporada_repo, tp_repo, finca_repo, parcela_repo, db2 = get_repos()
         use_case = GestionarTemporadaUseCase(temporada_repo, tp_repo, parcela_repo)
+        resultado = use_case.cancelar(
+            temporada_id=temporada_id,
+            agricultor_id=agricultor_id,
+            motivo=datos.get('motivo')
+        )
+        return jsonify(resultado), 200
 
-        temporada = temporada_repo.buscar_por_id(temporada_id)
-        if not temporada:
-            return jsonify({"error": "Temporada no encontrada"}), 404
-        if not temporada.es_del_agricultor(agricultor_id):
-            return jsonify({"error": "No tienes permiso"}), 403
-        if temporada.estado != 'activa':
-            return jsonify({"error": f"La temporada ya esta {temporada.estado}"}), 409
-
-        temporada.estado = 'cancelada'
-        if datos and datos.get('motivo'):
-            temporada.observaciones = datos['motivo']
-        temporada_repo.actualizar(temporada)
-
-        return jsonify({
-            "id": temporada.id,
-            "estado": "cancelada",
-            "mensaje": "Temporada cancelada exitosamente"
-        }), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except PermissionError as e:
+        return jsonify({"error": str(e)}), 403
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 409
     finally:
         db.close()
 

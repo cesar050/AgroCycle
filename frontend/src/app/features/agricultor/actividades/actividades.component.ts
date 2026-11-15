@@ -1,64 +1,39 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { ActividadesService } from './services/actividades.service';
 
 @Component({
   selector: 'app-actividades',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, DecimalPipe],
+  imports: [CommonModule, RouterLink, DecimalPipe],
   templateUrl: './actividades.component.html',
   styleUrl: './actividades.component.scss'
 })
 export class ActividadesComponent implements OnInit {
-  protected readonly String = String;
 
-  cargando       = signal(true);
-  guardando      = signal(false);
-  mostrarFormulario = signal(false);
-  error          = signal('');
-  errorForm      = signal('');
+  cargando    = signal(true);
+  error       = signal('');
 
-  temporadas     = signal<any[]>([]);
-  temporadaId    = signal('');
-  actividades    = signal<any[]>([]);
+  temporadas  = signal<any[]>([]);
+  temporadaId = signal('');
+  actividades = signal<any[]>([]);
 
   // Filtros
-  filtroTipo     = signal('');
-  filtroFecha    = signal('');
-
-  // Formulario
-  form = {
-    tipo_actividad_id: '',
-    fecha:             '',
-    descripcion:       '',
-    costo_total:       '',
-    observaciones:     '',
-    // Riego
-    tipo_riego:        '',
-    duracion_horas:    '',
-    // Fertilización
-    producto:          '',
-    cantidad_kg:       '',
-    // Fitosanitario
-    plaga_enfermedad:  '',
-    producto_aplicado: '',
-  };
+  filtroTipo  = signal('');
+  filtroFecha = signal('');
 
   tiposActividad = [
-    { id: 1, nombre: 'Preparación del terreno', icono: 'terrain' },
-    { id: 2, nombre: 'Siembra',                  icono: 'seed' },
-    { id: 3, nombre: 'Fertilización',             icono: 'fertilizer' },
-    { id: 4, nombre: 'Control fitosanitario',     icono: 'pest' },
-    { id: 5, nombre: 'Riego',                     icono: 'water' },
-    { id: 6, nombre: 'Mano de obra',              icono: 'labor' },
-    { id: 7, nombre: 'Cosecha',                   icono: 'harvest' },
-    { id: 8, nombre: 'Monitoreo',                 icono: 'monitor' },
-    { id: 9, nombre: 'Otro',                      icono: 'other' },
+    { id: 1, nombre: 'Preparación del terreno' },
+    { id: 2, nombre: 'Siembra' },
+    { id: 3, nombre: 'Fertilización' },
+    { id: 4, nombre: 'Control fitosanitario' },
+    { id: 5, nombre: 'Riego' },
+    { id: 6, nombre: 'Mano de obra' },
+    { id: 7, nombre: 'Cosecha' },
+    { id: 8, nombre: 'Monitoreo' },
+    { id: 9, nombre: 'Otro' },
   ];
-
-  tiposRiego = ['Goteo', 'Aspersión', 'Gravedad', 'Manual'];
 
   constructor(private svc: ActividadesService) {}
 
@@ -114,81 +89,6 @@ export class ActividadesComponent implements OnInit {
     return this.actividadesFiltradas.reduce(
       (s, a) => s + (parseFloat(a.costo_total) || 0), 0
     );
-  }
-
-  get tipoSeleccionado(): number {
-    return parseInt(this.form.tipo_actividad_id) || 0;
-  }
-
-  abrirFormulario() {
-    this.form = {
-      tipo_actividad_id: '',
-      fecha:             new Date().toISOString().split('T')[0],
-      descripcion:       '',
-      costo_total:       '',
-      observaciones:     '',
-      tipo_riego:        '',
-      duracion_horas:    '',
-      producto:          '',
-      cantidad_kg:       '',
-      plaga_enfermedad:  '',
-      producto_aplicado: '',
-    };
-    this.errorForm.set('');
-    this.mostrarFormulario.set(true);
-  }
-
-  cerrarFormulario() {
-    this.mostrarFormulario.set(false);
-    this.errorForm.set('');
-  }
-
-  guardar() {
-    if (!this.form.tipo_actividad_id || !this.form.fecha) {
-      this.errorForm.set('Tipo de actividad y fecha son requeridos.');
-      return;
-    }
-
-    this.guardando.set(true);
-    this.errorForm.set('');
-
-    const datos: any = {
-      tipo_actividad_id: parseInt(this.form.tipo_actividad_id),
-      fecha:             this.form.fecha,
-      descripcion:       this.form.descripcion || null,
-      costo_total:       parseFloat(this.form.costo_total) || 0,
-      observaciones:     this.form.observaciones || null,
-    };
-
-    // Campos adicionales según tipo
-    if (this.tipoSeleccionado === 5) { // Riego
-      datos.tipo_riego    = this.form.tipo_riego || null;
-      datos.duracion_horas = parseFloat(this.form.duracion_horas) || null;
-    }
-
-    if (this.tipoSeleccionado === 3) { // Fertilización
-      datos.producto    = this.form.producto || null;
-      datos.cantidad_kg = parseFloat(this.form.cantidad_kg) || null;
-    }
-
-    if (this.tipoSeleccionado === 4) { // Fitosanitario
-      datos.plaga_enfermedad  = this.form.plaga_enfermedad || null;
-      datos.producto_aplicado = this.form.producto_aplicado || null;
-    }
-
-    this.svc.registrar(this.temporadaId(), datos).subscribe({
-      next: () => {
-        this.guardando.set(false);
-        this.cerrarFormulario();
-        this.cargarActividades(this.temporadaId());
-      },
-      error: (err) => {
-        this.guardando.set(false);
-        this.errorForm.set(
-          err.error?.error || 'Error al registrar la actividad.'
-        );
-      }
-    });
   }
 
   confirmarEliminar(actividad: any) {

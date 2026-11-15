@@ -116,9 +116,19 @@ export const routes: Routes = [
           import('./features/agricultor/temporada/pages/nueva-temporada/nueva-temporada.component').then(m => m.NuevaTemporadaComponent),
       },
       {
+        path: 'temporada/:id/parcela/:tpId/cosecha',
+        loadComponent: () =>
+          import('./features/agricultor/temporada/pages/registrar-cosecha/registrar-cosecha.component').then(m => m.RegistrarCosechaComponent),
+      },
+      {
         path: 'temporada/:id',
         loadComponent: () =>
           import('./features/agricultor/temporada/pages/detalle-temporada/detalle-temporada.component').then(m => m.DetalleTemporadaComponent),
+      },
+      {
+        path: 'actividades/nueva',
+        loadComponent: () =>
+          import('./features/agricultor/actividades/pages/nueva-actividad/nueva-actividad.component').then(m => m.NuevaActividadComponent),
       },
       {
         path: '',

@@ -6,14 +6,14 @@
       <h1>Actividades de campo</h1>
       <p>Registro de todas las actividades realizadas en la temporada</p>
     </div>
-    <button class="btn btn--primario" (click)="abrirFormulario()">
+    <a class="btn btn--guardar" routerLink="/app/actividades/nueva">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2">
         <line x1="12" y1="5" x2="12" y2="19"/>
         <line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
       Registrar actividad
-    </button>
+    </a>
   </div>
 
   <!-- Filtros y selector de temporada -->
@@ -91,9 +91,9 @@
         <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
       </svg>
       <p>Sin actividades registradas en esta temporada.</p>
-      <button class="btn btn--primario btn--sm" (click)="abrirFormulario()">
+      <a class="btn btn--guardar btn--sm" routerLink="/app/actividades/nueva">
         Registrar primera actividad
-      </button>
+      </a>
     </div>
   }
 
@@ -147,161 +147,6 @@
         </div>
       }
 
-    </div>
-  }
-
-  <!-- Modal formulario -->
-  @if (mostrarFormulario()) {
-    <div class="modal-overlay" (click)="cerrarFormulario()">
-      <div class="modal" (click)="$event.stopPropagation()">
-
-        <div class="modal__header">
-          <h2>Registrar actividad</h2>
-          <button class="modal__close" (click)="cerrarFormulario()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-
-        @if (errorForm()) {
-          <div class="modal__error">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            {{ errorForm() }}
-          </div>
-        }
-
-        <div class="modal__body">
-
-          <!-- Tipo de actividad -->
-          <div class="form-field">
-            <label>Tipo de actividad <span class="required">*</span></label>
-            <div class="tipo-grid">
-              @for (t of tiposActividad; track t.id) {
-                <button
-                  class="tipo-btn"
-                  [class.seleccionado]="form.tipo_actividad_id === String(t.id)"
-                  (click)="form.tipo_actividad_id = String(t.id)">
-                  <span class="tipo-btn__dot"
-                        [style.background]="colorTipo(t.id)"></span>
-                  {{ t.nombre }}
-                </button>
-              }
-            </div>
-          </div>
-
-          <div class="modal__grid">
-
-            <!-- Fecha -->
-            <div class="form-field">
-              <label>Fecha <span class="required">*</span></label>
-              <input type="date" class="input"
-                     [(ngModel)]="form.fecha">
-            </div>
-
-            <!-- Costo -->
-            <div class="form-field">
-              <label>Costo total ($)</label>
-              <input type="number" class="input"
-                     [(ngModel)]="form.costo_total"
-                     placeholder="0.00" min="0" step="0.01">
-            </div>
-
-            <!-- Descripción -->
-            <div class="form-field form-field--full">
-              <label>Descripción</label>
-              <input type="text" class="input"
-                     [(ngModel)]="form.descripcion"
-                     placeholder="Breve descripción de la actividad...">
-            </div>
-
-            <!-- Campos específicos por tipo -->
-            @if (tipoSeleccionado === 5) {
-              <div class="form-field">
-                <label>Tipo de riego</label>
-                <select class="input" [(ngModel)]="form.tipo_riego">
-                  <option value="">Seleccionar...</option>
-                  @for (t of tiposRiego; track t) {
-                    <option [value]="t">{{ t }}</option>
-                  }
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Duración (horas)</label>
-                <input type="number" class="input"
-                       [(ngModel)]="form.duracion_horas"
-                       placeholder="Ej. 2.5" min="0" step="0.5">
-              </div>
-            }
-
-            @if (tipoSeleccionado === 3) {
-              <div class="form-field">
-                <label>Producto</label>
-                <input type="text" class="input"
-                       [(ngModel)]="form.producto"
-                       placeholder="Ej. Urea 46%">
-              </div>
-              <div class="form-field">
-                <label>Cantidad (kg)</label>
-                <input type="number" class="input"
-                       [(ngModel)]="form.cantidad_kg"
-                       placeholder="Ej. 50" min="0">
-              </div>
-            }
-
-            @if (tipoSeleccionado === 4) {
-              <div class="form-field">
-                <label>Plaga / Enfermedad</label>
-                <input type="text" class="input"
-                       [(ngModel)]="form.plaga_enfermedad"
-                       placeholder="Ej. Gusano cogollero">
-              </div>
-              <div class="form-field">
-                <label>Producto aplicado</label>
-                <input type="text" class="input"
-                       [(ngModel)]="form.producto_aplicado"
-                       placeholder="Ej. Cipermetrina">
-              </div>
-            }
-
-            <!-- Observaciones -->
-            <div class="form-field form-field--full">
-              <label>Observaciones (opcional)</label>
-              <textarea class="input"
-                        [(ngModel)]="form.observaciones"
-                        rows="2"
-                        placeholder="Notas adicionales...">
-              </textarea>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="modal__footer">
-          <button class="btn btn--secundario"
-                  (click)="cerrarFormulario()">
-            Cancelar
-          </button>
-          <button class="btn btn--primario"
-                  [disabled]="guardando()"
-                  (click)="guardar()">
-            @if (guardando()) {
-              <span class="spinner-sm"></span>
-              Guardando...
-            } @else {
-              Registrar actividad
-            }
-          </button>
-        </div>
-
-      </div>
     </div>
   }
 
