@@ -1,0 +1,235 @@
+@use '../../../../../../styles' as *;
+
+$mt-bg:     #FFFFFF;
+$mt-app-bg: #F8FAFC;
+$mt-border: #E2E8F0;
+$mt-text:   #0F172A;
+$mt-text-sec: #64748B;
+$mt-text-ter: #94A3B8;
+$mt-rojo:   #DC2626;
+$mt-verde:  #15803D;
+$mt-azul:   #2563EB;
+
+// ================================================================
+// RAÍZ — 100% del área de contenido, sin scroll de página. División
+// estricta 60/40, sin excepción en ningún breakpoint: esta vista es
+// de uso técnico/escritorio, no un layout responsive de consumo.
+// ================================================================
+.mapa-tecnico {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  gap: 12px;
+  overflow: hidden;
+  background: $mt-app-bg;
+}
+
+.estado-vacio {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: $mt-text-sec;
+}
+
+// ================================================================
+// VISOR — 60% fijo (100% en pantalla completa)
+// ================================================================
+.visor {
+  position: relative;
+  flex: 0 0 60%;
+  max-width: 60%;
+  min-width: 0;
+  border: 1px solid $mt-border;
+  border-radius: 4px;
+  overflow: hidden;
+  background: $mt-bg;
+
+  &--completo {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+.leaflet-host {
+  position: absolute;
+  inset: 0;
+}
+
+.etiqueta-tecnica {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1000;
+  background: $mt-bg;
+  border: 1px solid $mt-border;
+  border-radius: 3px;
+  padding: 5px 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: $mt-text;
+}
+
+.btn-pantalla-completa {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: $mt-bg;
+  border: 1px solid $mt-border;
+  border-radius: 3px;
+  padding: 7px 11px;
+  font-family: $font-sans;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: $mt-text;
+  cursor: pointer;
+
+  &:hover { border-color: $mt-verde; color: $mt-verde; }
+}
+
+.leyenda-coropletica {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: $mt-bg;
+  border: 1px solid $mt-border;
+  border-radius: 3px;
+  padding: $s2 $s3;
+  font-size: 10.5px;
+  color: $mt-text-sec;
+
+  &__item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+}
+
+.swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+
+  &--rojo  { background: $mt-rojo; }
+  &--verde { background: $mt-verde; }
+  &--azul  { background: $mt-azul; }
+}
+
+// ================================================================
+// PANEL TÉCNICO — 40% fijo
+// ================================================================
+.panel-tecnico {
+  flex: 0 0 40%;
+  max-width: 40%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: $mt-bg;
+  border: 1px solid $mt-border;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.panel-tecnico__header {
+  padding: $s4;
+  border-bottom: 1px solid $mt-border;
+  flex-shrink: 0;
+
+  h2 { font-size: 15px; font-weight: 700; color: $mt-text; }
+  p  { font-size: 11px; color: $mt-text-sec; margin-top: 2px; }
+}
+
+.panel-tecnico__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: $s4;
+  display: flex;
+  flex-direction: column;
+  gap: $s5;
+}
+
+.bloque {
+  h3 {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $mt-text-ter;
+    margin-bottom: $s2;
+  }
+}
+
+.fila-kv {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $s2;
+  padding: 4px 0;
+  border-bottom: 1px solid $mt-border;
+  font-size: 12px;
+
+  span { color: $mt-text-sec; }
+  strong { color: $mt-text; font-weight: 700; }
+
+  &:last-of-type { border-bottom: none; }
+}
+
+.nota-metodologica {
+  margin-top: $s2;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: $mt-text-ter;
+}
+
+.tabla-wrap { overflow-x: auto; }
+
+.tabla-tecnica {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+
+  th {
+    text-align: left;
+    padding: 6px 8px;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $mt-text-ter;
+    border-bottom: 1px solid $mt-border;
+  }
+
+  td {
+    padding: 7px 8px;
+    border-bottom: 1px solid $mt-border;
+    color: $mt-text;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .vacio { text-align: center; color: $mt-text-ter; padding: $s4 0; }
+}
+
+.chip-clasificacion {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border: 1px solid $mt-border;
+  border-radius: 3px;
+  white-space: nowrap;
+
+  &.chip--rojo  { color: $mt-rojo; }
+  &.chip--verde { color: $mt-verde; }
+  &.chip--azul  { color: $mt-azul; }
+}

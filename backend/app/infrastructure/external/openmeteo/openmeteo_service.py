@@ -194,3 +194,41 @@ def obtener_clima_hoy(latitud: float, longitud: float) -> dict:
     if datos:
         return datos[-1]
     return {}
+
+
+def obtener_humedad_suelo(lat: float, lng: float) -> float | None:
+    """
+    Devuelve soil_moisture_0_to_1cm mas reciente (m3/m3) desde
+    Open-Meteo Forecast API hourly. Retorna None si falla.
+    """
+    try:
+        url = f"{OPENMETEO_FORECAST_URL}/forecast"
+        params = {
+            "latitude": lat,
+            "longitude": lng,
+            "hourly": "soil_moisture_0_to_1cm",
+            "forecast_days": 1,
+            "timezone": "auto",
+        }
+
+        response = requests.get(url, params=params, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+
+        valores = data.get('hourly', {}).get('soil_moisture_0_to_1cm', [])
+        for valor in reversed(valores):
+            if valor is not None:
+                return valor
+
+        logger.warning(
+            f"Open-Meteo no retorno soil_moisture valido para ({lat}, {lng})"
+        )
+
+    except requests.exceptions.Timeout:
+        logger.warning(f"Timeout consultando humedad de suelo para ({lat}, {lng})")
+    except requests.exceptions.ConnectionError:
+        logger.warning(f"Sin conexion a Open-Meteo para humedad de suelo ({lat}, {lng})")
+    except Exception as e:
+        logger.error(f"Error consultando humedad de suelo: {str(e)}")
+
+    return None

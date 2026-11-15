@@ -71,6 +71,7 @@ export class MapaFincaComponent implements OnChanges {
   @Input() alto:  number = 320;
   @Input() topografia: any    = null;
   @Input() vista: 'normal' | 'pendiente' | 'humedad' = 'normal';
+  @Input() mostrarControles: boolean = true;
 
   @ViewChild('svgRef') svgRef!: ElementRef<SVGElement>;
 

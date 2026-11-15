@@ -12,8 +12,8 @@ class Parcela:
     #Geometria se guarda como WKT string en el dominio 
     #La conversion a tipo PostGis ocurre en la capa de infraestructura 
     geometria_wkt: Optional[str]= None
-    superficie_ha: Optional[str]= None 
-    tipo_suelo_id: Optional[str]= None
+    superficie_ha: Optional[float]= None
+    tipo_suelo_id: Optional[int]= None
     pendiente_porcentaje: Optional[float]= None
     altitud_promedio_msnm: Optional[float]= None
     altitud_minima_msnm: Optional[float]= None

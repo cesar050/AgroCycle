@@ -1,0 +1,92 @@
+<div class="panel-form">
+
+  @if (cargandoDatos()) {
+    <p class="hint">Cargando datos del lote…</p>
+  } @else {
+
+    <section class="bloque">
+      <h3>{{ modoCrear() ? 'Datos del lote' : 'Editar lote' }}</h3>
+      <div class="campo">
+        <label for="pgl-nombre">Nombre <span class="req">*</span></label>
+        <input id="pgl-nombre" type="text" class="input-tec" [(ngModel)]="nombre"
+               placeholder="Ej. Lote Norte" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="pgl-descripcion">Descripción</label>
+        <textarea id="pgl-descripcion" class="input-tec" rows="2" [(ngModel)]="descripcion"></textarea>
+      </div>
+    </section>
+
+    @if (modoCrear()) {
+      <section class="bloque">
+        <h3>Perímetro</h3>
+        <p class="hint">Haz clic dentro del límite de la finca para definir los vértices del lote.</p>
+        @if (fueraDeLimite()) {
+          <p class="mensaje-error">El punto está fuera del límite de la finca.</p>
+        }
+        <div class="fila-kv">
+          <span>Vértices definidos</span>
+          <strong class="font-mono">{{ puntosDefinidos }}</strong>
+        </div>
+        <div class="fila-kv">
+          <span>Área aproximada</span>
+          <strong class="font-mono">{{ areaHa() }} ha</strong>
+        </div>
+        <div class="acciones-dibujo">
+          <button type="button" class="btn-tec" (click)="deshacerUltimoPunto()" [disabled]="puntosDefinidos === 0">Deshacer</button>
+          <button type="button" class="btn-tec" (click)="limpiarDibujo()" [disabled]="puntosDefinidos === 0">Limpiar</button>
+        </div>
+      </section>
+    }
+
+    @if (error()) {
+      <p class="mensaje-error">{{ error() }}</p>
+    }
+
+    <button type="button" class="btn-tec btn-tec--primario" [disabled]="!puedeGuardar || cargando()" (click)="guardar()">
+      @if (cargando()) {
+        Guardando…
+      } @else {
+        {{ modoCrear() ? 'Guardar lote' : 'Guardar cambios' }}
+      }
+    </button>
+
+    @if (!modoCrear()) {
+      <section class="bloque bloque--tabla">
+        <div class="bloque__header">
+          <h3>Parcelas de este lote</h3>
+          <button type="button" class="btn-tec btn-tec--sm" (click)="nuevaParcela()">+ Nueva parcela</button>
+        </div>
+        <div class="tabla-wrap">
+          <table class="tabla-tecnica">
+            <thead><tr><th>Parcela</th><th>Superficie</th></tr></thead>
+            <tbody>
+              @if (parcelasDelLote().length === 0) {
+                <tr><td colspan="2" class="vacio">Sin parcelas registradas.</td></tr>
+              } @else {
+                @for (p of parcelasDelLote(); track p.id) {
+                  <tr class="fila-clicable" (click)="seleccionarParcela(p.id)">
+                    <td>{{ p.nombre }}</td>
+                    <td class="font-mono">{{ p.superficie_ha | number:'1.2-2' }} ha</td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bloque">
+        <h3>Zona de riesgo</h3>
+        @if (errorEliminar()) {
+          <p class="mensaje-error">{{ errorEliminar() }}</p>
+        }
+        <button type="button" class="btn-tec btn-tec--peligro" [disabled]="cargando()" (click)="eliminar()">
+          Eliminar lote
+        </button>
+      </section>
+    }
+
+  }
+
+</div>

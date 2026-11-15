@@ -24,3 +24,15 @@ class IFincaRepository(ABC):
     @abstractmethod
     def existe_nombre_para_agricultor(self, nombre: str, agricultor_id: str) -> bool:
         pass
+
+    @abstractmethod
+    def calcular_superficie_ha(self, geometria_wkt: str) -> float:
+        pass
+
+    @abstractmethod
+    def contiene_geometria(self, finca_id: str, geometria_wkt: str) -> bool:
+        pass
+
+    @abstractmethod
+    def contar_lotes_activos(self, finca_id: str) -> int:
+        pass

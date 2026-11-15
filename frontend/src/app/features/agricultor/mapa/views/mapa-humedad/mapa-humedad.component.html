@@ -1,0 +1,166 @@
+<div class="mapa-tecnico">
+
+  @if (state.cargandoFincas() || state.cargando()) {
+    <div class="estado-vacio">
+      <p>Cargando datos de humedad del suelo…</p>
+    </div>
+  } @else if (!state.fincaActiva()) {
+    <div class="estado-vacio">
+      <p>No hay ninguna finca activa. Selecciónala en el menú lateral.</p>
+    </div>
+  } @else {
+
+    <!-- ===================== VISOR (60%, o 100% en pantalla completa) ===================== -->
+    <div class="visor" [class.visor--completo]="pantallaCompleta()">
+      <div #mapaLeaflet id="mapa-humedad-leaflet" class="leaflet-host"></div>
+
+      <div class="etiqueta-tecnica font-mono">FAO-56 · HUMEDAD DEL SUELO</div>
+
+      <button type="button" class="btn-pantalla-completa" (click)="toggleVistaCompleta()">
+        @if (pantallaCompleta()) {
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/>
+          </svg>
+          Restaurar panel
+        } @else {
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9V5a2 2 0 0 1 2-2h4M21 9V5a2 2 0 0 0-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M21 15v4a2 2 0 0 1-2 2h-4"/>
+          </svg>
+          Pantalla completa
+        }
+      </button>
+
+      <div class="leyenda-coropletica">
+        <span class="leyenda-coropletica__item"><i class="swatch swatch--rojo"></i>&lt; 0.30 · Déficit hídrico</span>
+        <span class="leyenda-coropletica__item"><i class="swatch swatch--verde"></i>0.30–0.70 · Óptimo</span>
+        <span class="leyenda-coropletica__item"><i class="swatch swatch--azul"></i>&gt; 0.70 · Exceso / drenaje</span>
+      </div>
+    </div>
+
+    <!-- ===================== PANEL TÉCNICO (40%) ===================== -->
+    @if (!pantallaCompleta()) {
+      <aside class="panel-tecnico">
+        <header class="panel-tecnico__header">
+          <h2>Mapa de Humedad</h2>
+          <p>Simulación de estrés hídrico — FAO-56 / FAO-33</p>
+        </header>
+
+        <div class="panel-tecnico__body">
+
+          <section class="bloque">
+            <h3>Coeficientes de validación</h3>
+            <div class="fila-kv">
+              <span>Humedad normalizada media</span>
+              <strong class="font-mono">
+                @if (humedadMedia() != null) { {{ humedadMedia() | number:'1.2-2' }} } @else { — }
+              </strong>
+            </div>
+            <div class="fila-kv">
+              <span>Umbral déficit hídrico</span>
+              <strong class="font-mono">&lt; 0.30</strong>
+            </div>
+            <div class="fila-kv">
+              <span>Umbral exceso / drenaje</span>
+              <strong class="font-mono">&gt; 0.70</strong>
+            </div>
+            <p class="nota-metodologica">
+              Clasificación de 3 bandas sobre el índice normalizado de humedad del suelo
+              (/fincas/mapa/humedad). El coeficiente Ks_final (FAO-56) bidireccional se
+              calcula en este mismo panel a partir del tipo de suelo real de cada parcela;
+              el rendimiento estimado (FAO-33) sigue siendo exclusivo del módulo Inicio
+              con una temporada activa.
+            </p>
+          </section>
+
+          <section class="bloque">
+            <h3>Datos de humedad por parcela</h3>
+            <div class="tabla-wrap">
+              <table class="tabla-tecnica">
+                <thead>
+                  <tr>
+                    <th>Parcela</th>
+                    <th>Humedad</th>
+                    <th>Normalizado</th>
+                    <th>Clasificación</th>
+                    <th>Ks_final</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (parcelasConHumedad().length === 0) {
+                    <tr><td colspan="5" class="vacio">Sin parcelas georreferenciadas.</td></tr>
+                  } @else {
+                    @for (item of parcelasConHumedad(); track item.parcela.id) {
+                      <tr>
+                        <td>{{ item.parcela.nombre }}</td>
+                        <td class="font-mono">
+                          @if (item.humedad) { {{ item.humedad.humedad_m3m3 | number:'1.2-2' }} m³/m³ } @else { — }
+                        </td>
+                        <td class="font-mono">
+                          @if (item.humedad) { {{ item.humedad.normalizado | number:'1.2-2' }} } @else { — }
+                        </td>
+                        <td>
+                          @if (item.humedad) {
+                            <span class="chip-clasificacion"
+                                  [class.chip--rojo]="item.humedad.normalizado < 0.3"
+                                  [class.chip--verde]="item.humedad.normalizado >= 0.3 && item.humedad.normalizado <= 0.7"
+                                  [class.chip--azul]="item.humedad.normalizado > 0.7">
+                              {{ clasificacionHumedad(item.humedad.normalizado) }}
+                            </span>
+                          } @else {
+                            <span class="dato-pendiente">Sin dato</span>
+                          }
+                        </td>
+                        <td class="font-mono">
+                          @if (item.humedad?.ks_final != null) {
+                            {{ item.humedad!.ks_final | number:'1.2-2' }}
+                          } @else {
+                            —
+                          }
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="bloque">
+            <h3>Modelos FAO</h3>
+            <div class="fila-kv">
+              <span>Ks déficit (media)</span>
+              <strong class="font-mono">
+                @if (ksMedio(); as k) { {{ k.deficit | number:'1.2-2' }} } @else { — }
+              </strong>
+            </div>
+            <div class="fila-kv">
+              <span>Ks exceso (media)</span>
+              <strong class="font-mono">
+                @if (ksMedio(); as k) { {{ k.exceso | number:'1.2-2' }} } @else { — }
+              </strong>
+            </div>
+            <div class="fila-kv">
+              <span>Ks_final = min(déficit, exceso)</span>
+              <strong class="font-mono">
+                @if (ksMedio(); as k) { {{ k.final | number:'1.2-2' }} } @else { — }
+              </strong>
+            </div>
+            <div class="fila-kv">
+              <span>Rendimiento estimado (FAO-33)</span>
+              <strong class="dato-pendiente">No disponible en este panel</strong>
+            </div>
+            <p class="nota-metodologica">
+              Ks_final se calcula por parcela a partir de su tipo de suelo real y la
+              humedad volumétrica actual (Open-Meteo): cae hacia 0 tanto por déficit
+              (suelo seco) como por exceso (encharcamiento). El rendimiento estimado
+              (FAO-33) sigue siendo exclusivo del módulo Inicio con temporada activa.
+            </p>
+          </section>
+
+        </div>
+      </aside>
+    }
+
+  }
+
+</div>

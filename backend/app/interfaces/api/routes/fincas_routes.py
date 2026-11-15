@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.application.use_cases.fincas_parcelas.registrar_finca import RegistrarFincaUseCase
 from app.application.use_cases.fincas_parcelas.gestionar_fincas import GestionarFincasUseCase
+from app.domain.exceptions import ConflictoEliminacionError
 from app.infrastructure.repositories.pg_finca_repository import PgFincaRepository
 from app.infrastructure.security.decorators import requiere_rol
 from app.infrastructure.database import SessionLocal
@@ -147,6 +148,32 @@ def editar_finca(finca_id):
 
     except PermissionError as e:
         return jsonify({"error": str(e)}), 403
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    finally:
+        db.close()
+
+
+@fincas_bp.route('/<finca_id>', methods=['DELETE'])
+@jwt_required()
+@requiere_rol('agricultor', 'administrador')
+def eliminar_finca(finca_id):
+    """
+    DELETE /api/v1/fincas/<uuid>
+    Elimina (soft-delete) una finca. Responde 409 si la finca todavia
+    tiene lotes activos asociados.
+    """
+    finca_repo, db = get_repos()
+    try:
+        agricultor_id = obtener_agricultor_id()
+        use_case = GestionarFincasUseCase(finca_repo)
+        resultado = use_case.eliminar(finca_id, agricultor_id)
+        return jsonify(resultado), 200
+
+    except PermissionError as e:
+        return jsonify({"error": str(e)}), 403
+    except ConflictoEliminacionError as e:
+        return jsonify({"error": str(e)}), 409
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     finally:

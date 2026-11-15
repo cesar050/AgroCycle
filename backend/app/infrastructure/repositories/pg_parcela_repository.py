@@ -67,7 +67,7 @@ class PgParcelaRepository(IParcelaRepository):
         if not modelo:
             raise ValueError(f"Parcela {parcela.id} no encontrada")
 
-        if parcela.geometria_wkt:
+        if parcela.geometria_wkt and parcela.geometria_wkt != 'guardada':
             modelo.geometria = ST_GeomFromText(parcela.geometria_wkt, 4326)
 
         modelo.nombre = parcela.nombre
@@ -82,6 +82,7 @@ class PgParcelaRepository(IParcelaRepository):
         modelo.acceso_riego = parcela.acceso_riego
         modelo.tipo_riego = parcela.tipo_riego
         modelo.observaciones = parcela.observaciones
+        modelo.activo = parcela.activo
         modelo.updated_at = datetime.utcnow()
 
         self.db.commit()
@@ -114,7 +115,7 @@ class PgParcelaRepository(IParcelaRepository):
             id=str(modelo.id),
             lote_id=str(modelo.lote_id),
             nombre=modelo.nombre,
-            geometria_wkt=None,
+            geometria_wkt='guardada' if modelo.geometria is not None else None,
             superficie_ha=modelo.superficie_ha,
             tipo_suelo_id=modelo.tipo_suelo_id,
             pendiente_porcentaje=modelo.pendiente_porcentaje,

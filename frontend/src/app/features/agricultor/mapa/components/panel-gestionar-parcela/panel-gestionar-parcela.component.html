@@ -1,0 +1,102 @@
+<div class="panel-form">
+
+  @if (cargandoDatos()) {
+    <p class="hint">Cargando datos de la parcela…</p>
+  } @else {
+
+    <section class="bloque">
+      <h3>{{ modoCrear() ? 'Datos de la parcela' : 'Editar parcela' }}</h3>
+      <div class="campo">
+        <label for="pgp-nombre">Nombre <span class="req">*</span></label>
+        <input id="pgp-nombre" type="text" class="input-tec" [(ngModel)]="nombre"
+               placeholder="Ej. Parcela 1" autocomplete="off">
+      </div>
+      <div class="campo">
+        <label for="pgp-suelo">Tipo de suelo</label>
+        <select id="pgp-suelo" class="input-tec" [(ngModel)]="tipoSueloId">
+          <option [ngValue]="null">Sin especificar</option>
+          @for (t of tiposSuelo(); track t.id) {
+            <option [ngValue]="t.id">{{ t.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="campo">
+        <label for="pgp-drenaje">Drenaje</label>
+        <select id="pgp-drenaje" class="input-tec" [(ngModel)]="drenaje">
+          @for (d of drenajeOpciones; track d) {
+            <option [value]="d">{{ d }}</option>
+          }
+        </select>
+      </div>
+      <div class="campo campo--checkbox">
+        <label>
+          <input type="checkbox" [(ngModel)]="accesoRiego">
+          Tiene acceso a riego
+        </label>
+      </div>
+      @if (accesoRiego) {
+        <div class="campo">
+          <label for="pgp-riego">Tipo de riego</label>
+          <select id="pgp-riego" class="input-tec" [(ngModel)]="tipoRiego">
+            <option value="">Sin especificar</option>
+            @for (r of tiposRiego; track r) {
+              <option [value]="r">{{ r }}</option>
+            }
+          </select>
+        </div>
+      }
+      <div class="campo">
+        <label for="pgp-observaciones">Observaciones</label>
+        <textarea id="pgp-observaciones" class="input-tec" rows="2" [(ngModel)]="observaciones"></textarea>
+      </div>
+    </section>
+
+    @if (modoCrear()) {
+      <section class="bloque">
+        <h3>Perímetro</h3>
+        <p class="hint">Haz clic dentro del límite del lote para definir los vértices de la parcela.</p>
+        @if (fueraDeLimite()) {
+          <p class="mensaje-error">El punto está fuera del límite del lote.</p>
+        }
+        <div class="fila-kv">
+          <span>Vértices definidos</span>
+          <strong class="font-mono">{{ puntosDefinidos }}</strong>
+        </div>
+        <div class="fila-kv">
+          <span>Área aproximada</span>
+          <strong class="font-mono">{{ areaHa() }} ha</strong>
+        </div>
+        <div class="acciones-dibujo">
+          <button type="button" class="btn-tec" (click)="deshacerUltimoPunto()" [disabled]="puntosDefinidos === 0">Deshacer</button>
+          <button type="button" class="btn-tec" (click)="limpiarDibujo()" [disabled]="puntosDefinidos === 0">Limpiar</button>
+        </div>
+      </section>
+    }
+
+    @if (error()) {
+      <p class="mensaje-error">{{ error() }}</p>
+    }
+
+    <button type="button" class="btn-tec btn-tec--primario" [disabled]="!puedeGuardar || cargando()" (click)="guardar()">
+      @if (cargando()) {
+        Guardando…
+      } @else {
+        {{ modoCrear() ? 'Guardar parcela' : 'Guardar cambios' }}
+      }
+    </button>
+
+    @if (!modoCrear()) {
+      <section class="bloque">
+        <h3>Zona de riesgo</h3>
+        @if (errorEliminar()) {
+          <p class="mensaje-error">{{ errorEliminar() }}</p>
+        }
+        <button type="button" class="btn-tec btn-tec--peligro" [disabled]="cargando()" (click)="eliminar()">
+          Eliminar parcela
+        </button>
+      </section>
+    }
+
+  }
+
+</div>

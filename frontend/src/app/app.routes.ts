@@ -81,6 +81,16 @@ export const routes: Routes = [
           import('./features/agricultor/mapa/mapa.component').then(m => m.MapaComponent),
       },
       {
+        path: 'mapa/topografia',
+        loadComponent: () =>
+          import('./features/agricultor/mapa/views/mapa-pendiente/mapa-pendiente.component').then(m => m.MapaPendienteComponent),
+      },
+      {
+        path: 'mapa/humedad',
+        loadComponent: () =>
+          import('./features/agricultor/mapa/views/mapa-humedad/mapa-humedad.component').then(m => m.MapaHumedadComponent),
+      },
+      {
         path: 'actividades',
         loadComponent: () =>
           import('./features/agricultor/actividades/actividades.component').then(m => m.ActividadesComponent),
@@ -89,31 +99,6 @@ export const routes: Routes = [
         path: 'recomendaciones',
         loadComponent: () =>
           import('./features/agricultor/recomendaciones/recomendaciones.component').then(m => m.RecomendacionesComponent),
-      },
-      {
-        path: 'mapa',
-        loadComponent: () =>
-          import('./features/agricultor/mapa/mapa.component').then(m => m.MapaComponent),
-      },
-      {
-        path: 'mapa/nueva-finca',
-        loadComponent: () =>
-          import('./features/agricultor/mapa/pages/nueva-finca/nueva-finca.component').then(m => m.NuevaFincaComponent),
-      },
-      {
-        path: 'mapa/nuevo-lote/:finca_id',
-        loadComponent: () =>
-          import('./features/agricultor/mapa/pages/nuevo-lote/nuevo-lote.component').then(m => m.NuevoLoteComponent),
-      },
-      {
-        path: 'mapa/nueva-parcela/:lote_id',
-        loadComponent: () =>
-          import('./features/agricultor/mapa/pages/nueva-parcela/nueva-parcela.component').then(m => m.NuevaParcelaComponent),
-      },
-      {
-        path: 'temporada',
-        loadComponent: () =>
-          import('./features/agricultor/temporada/temporada.component').then(m => m.TemporadaComponent),
       },
       {
         path: 'temporada/nueva',
@@ -126,31 +111,6 @@ export const routes: Routes = [
           import('./features/agricultor/temporada/pages/detalle-temporada/detalle-temporada.component').then(m => m.DetalleTemporadaComponent),
       },
       {
-          path: 'actividades',
-          loadComponent: () =>
-            import('./features/agricultor/actividades/actividades.component').then(m => m.ActividadesComponent),
-      },
-      {
-        path: 'climatico',
-        loadComponent: () =>
-          import('./features/agricultor/climatico/climatico.component').then(m => m.ClimaticoComponent),
-      },
-      {
-        path: 'finanzas',
-        loadComponent: () =>
-          import('./features/agricultor/finanzas/finanzas.component').then(m => m.FinanzasComponent),
-      },
-      {
-          path: 'reportes',
-          loadComponent: () =>
-            import('./features/agricultor/reportes/reportes.component').then(m => m.ReportesComponent),
-        },
-        {
-          path: 'recomendaciones',
-          loadComponent: () =>
-            import('./features/agricultor/recomendaciones/recomendaciones.component').then(m => m.RecomendacionesComponent),
-        },
-        {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

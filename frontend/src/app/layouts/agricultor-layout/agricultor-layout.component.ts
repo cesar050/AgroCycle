@@ -1,5 +1,5 @@
 import {
-  Component, signal, HostListener, OnInit
+  Component, signal, effect, HostListener, OnInit, ViewChild, ElementRef
 } from '@angular/core';
 import {
   CommonModule
@@ -10,9 +10,11 @@ import {
 } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../features/auth/services/auth.service';
+import { FincaContextService, Finca } from '../../core/services/finca-context.service';
+import { DarkModeService } from '../../core/services/dark-mode.service';
 
 const RUTAS: Record<string, { titulo: string; sub?: string }> = {
-  '/app/dashboard':       { titulo: 'Inicio',         sub: 'Resumen general de tu actividad agrícola' },
+  '/app/dashboard':       { titulo: 'Resumen de mi finca', sub: 'Consulta el estado actual de tu terreno y cultivos' },
   '/app/mapa':            { titulo: 'Mapa de la Finca', sub: 'Visualiza tus lotes y parcelas' },
   '/app/temporada':       { titulo: 'Temporadas',      sub: 'Gestión de temporadas de siembra' },
   '/app/actividades':     { titulo: 'Actividades',     sub: 'Registro de actividades de campo' },
@@ -30,19 +32,38 @@ const RUTAS: Record<string, { titulo: string; sub?: string }> = {
   styleUrl: './agricultor-layout.component.scss'
 })
 export class AgricultorLayoutComponent implements OnInit {
-  sidebarAbierto = signal(false);
-  darkMode       = signal(false);
-  mapaAbierto    = signal(false);
-  esMobile       = signal(window.innerWidth < 1024);
+  sidebarAbierto       = signal(false);
+  mapaAbierto          = signal(false);
+  esMobile             = signal(window.innerWidth < 1024);
+  selectorFincaAbierto = signal(false);
+  menuPerfilAbierto    = signal(false);
 
   tituloActual    = 'Inicio';
   subtituloActual = '';
   fechaHoy        = '';
 
+  @ViewChild('selectorFincaRef') selectorFincaRef!: ElementRef;
+  @ViewChild('perfilMenuRef') perfilMenuRef!: ElementRef;
+
   constructor(
     public authService: AuthService,
+    public fincaContext: FincaContextService,
+    public darkModeService: DarkModeService,
     private router: Router,
-  ) {}
+  ) {
+    // Cualquier vista (p. ej. el dashboard) puede pedir abrir el dropdown
+    // de finca sin duplicar su lógica, a través de un signal compartido.
+    effect(() => {
+      if (this.fincaContext.selectorAbierto()) {
+        this.selectorFincaAbierto.set(true);
+        this.fincaContext.selectorAbierto.set(false);
+      }
+    });
+  }
+
+  get enDashboard(): boolean {
+    return this.router.url.startsWith('/app/dashboard');
+  }
 
   ngOnInit() {
     this.actualizarFecha();
@@ -68,12 +89,45 @@ export class AgricultorLayoutComponent implements OnInit {
     this.esMobile.set(window.innerWidth < 1024);
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (
+      this.selectorFincaAbierto() &&
+      this.selectorFincaRef &&
+      !this.selectorFincaRef.nativeElement.contains(event.target)
+    ) {
+      this.selectorFincaAbierto.set(false);
+    }
+
+    if (
+      this.menuPerfilAbierto() &&
+      this.perfilMenuRef &&
+      !this.perfilMenuRef.nativeElement.contains(event.target)
+    ) {
+      this.menuPerfilAbierto.set(false);
+    }
+  }
+
+  toggleSelectorFinca() {
+    if (this.fincaContext.fincas().length <= 1) return;
+    this.selectorFincaAbierto.update(v => !v);
+  }
+
+  toggleMenuPerfil() {
+    this.menuPerfilAbierto.update(v => !v);
+  }
+
+  seleccionarFinca(finca: Finca) {
+    this.fincaContext.seleccionarFinca(finca);
+    this.selectorFincaAbierto.set(false);
+  }
+
   private actualizarFecha() {
+    const dias  = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const ahora = new Date();
-    const opciones: Intl.DateTimeFormatOptions = {
-      day: 'numeric', month: 'short', year: 'numeric'
-    };
-    this.fechaHoy = ahora.toLocaleDateString('es-EC', opciones);
+    this.fechaHoy =
+      `${dias[ahora.getDay()]}, ${ahora.getDate()} de ${meses[ahora.getMonth()]}. de ${ahora.getFullYear()}`;
   }
 
   toggleSidebar()    { this.sidebarAbierto.update(v => !v); }
@@ -88,11 +142,6 @@ export class AgricultorLayoutComponent implements OnInit {
 
   mapaActivo(): boolean {
     return this.router.url.startsWith('/app/mapa');
-  }
-
-  toggleDark() {
-    this.darkMode.update(v => !v);
-    document.body.classList.toggle('dark');
   }
 
   cerrarSesion() {

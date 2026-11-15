@@ -113,6 +113,13 @@ class PgFincaRepository(IFincaRepository):
         ).fetchone()
         return bool(resultado.contenido) if resultado else True
 
+    def contar_lotes_activos(self, finca_id: str) -> int:
+        from app.infrastructure.models.lote_model import LoteModel
+        return self.db.query(LoteModel).filter(
+            LoteModel.finca_id == uuid.UUID(finca_id),
+            LoteModel.activo == True
+        ).count()
+
     def _modelo_a_entidad(self, modelo: FincaModel) -> Finca:
         return Finca(
             id=str(modelo.id),

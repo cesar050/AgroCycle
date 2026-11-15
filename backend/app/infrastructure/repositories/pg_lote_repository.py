@@ -51,7 +51,7 @@ class PgLoteRepository(ILoteRepository):
         ).first()
         if not modelo:
             raise ValueError(f"Lote {lote.id} no encontrado")
-        if lote.geometria_wkt:
+        if lote.geometria_wkt and lote.geometria_wkt != 'guardada':
             modelo.geometria = ST_GeomFromText(lote.geometria_wkt, 4326)
         modelo.superficie_ha = lote.superficie_ha
         modelo.nombre = lote.nombre
@@ -115,3 +115,10 @@ class PgLoteRepository(ILoteRepository):
             {"wkt": geometria_wkt, "lote_id": lote_id}
         ).fetchone()
         return bool(resultado.contenido) if resultado else True
+
+    def contar_parcelas_activas(self, lote_id: str) -> int:
+        from app.infrastructure.models.parcela_model import ParcelaModel
+        return self.db.query(ParcelaModel).filter(
+            ParcelaModel.lote_id == uuid.UUID(lote_id),
+            ParcelaModel.activo == True
+        ).count()

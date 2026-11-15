@@ -2,6 +2,7 @@ from app.domain.entities.lote import Lote
 from app.infrastructure.external.topografia_service import coordenadas_a_wkt
 from app.domain.repositories.i_lote_repository import ILoteRepository
 from app.domain.repositories.i_finca_repository import IFincaRepository
+from app.domain.exceptions import ConflictoEliminacionError
 from app.infrastructure.logging.logger import log_caso_de_uso
 
 class GestionarLotesUseCase:
@@ -94,3 +95,69 @@ class GestionarLotesUseCase:
             }
             for l in lotes
         ]
+
+    def _verificar_propiedad(self, lote_id: str, agricultor_id: str):
+        """Resuelve el lote y verifica, via su finca, que pertenece al agricultor."""
+        lote = self.lote_repository.buscar_por_id(lote_id)
+        if not lote:
+            raise ValueError("Lote no encontrado")
+        finca = self.finca_repository.buscar_por_id(lote.finca_id)
+        if not finca or not finca.es_del_agricultor(agricultor_id):
+            raise PermissionError("No tienes permiso sobre este lote")
+        return lote
+
+    @log_caso_de_uso('obtener_lote')
+    def obtener(self, lote_id: str, agricultor_id: str) -> dict:
+        """Retorna el detalle de un lote especifico del agricultor."""
+        lote = self._verificar_propiedad(lote_id, agricultor_id)
+        return {
+            "id": lote.id,
+            "finca_id": lote.finca_id,
+            "nombre": lote.nombre,
+            "descripcion": lote.descripcion,
+            "superficie_ha": lote.superficie_ha,
+            "tiene_geometria": lote.tiene_geometria(),
+            "activo": lote.activo,
+            "created_at": lote.created_at.isoformat() if lote.created_at else None
+        }
+
+    @log_caso_de_uso('editar_lote')
+    def editar(self, lote_id: str, agricultor_id: str, datos: dict) -> dict:
+        """
+        Edita los metadatos de un lote existente (nombre/descripcion).
+        Nunca redibuja la geometria — igual que GestionarFincasUseCase.editar.
+        """
+        lote = self._verificar_propiedad(lote_id, agricultor_id)
+        lote.nombre = datos.get('nombre', lote.nombre).strip()
+        lote.descripcion = datos.get('descripcion', lote.descripcion)
+
+        lote_actualizado = self.lote_repository.actualizar(lote)
+
+        return {
+            "id": lote_actualizado.id,
+            "finca_id": lote_actualizado.finca_id,
+            "nombre": lote_actualizado.nombre,
+            "descripcion": lote_actualizado.descripcion,
+            "activo": lote_actualizado.activo
+        }
+
+    @log_caso_de_uso('eliminar_lote')
+    def eliminar(self, lote_id: str, agricultor_id: str) -> dict:
+        """
+        Elimina (soft-delete) un lote. Bloquea si tiene parcelas activas.
+        """
+        lote = self._verificar_propiedad(lote_id, agricultor_id)
+
+        if self.lote_repository.contar_parcelas_activas(lote_id) > 0:
+            raise ConflictoEliminacionError(
+                "No se puede eliminar el lote: tiene parcelas activas asociadas"
+            )
+
+        lote.activo = False
+        lote_eliminado = self.lote_repository.actualizar(lote)
+
+        return {
+            "id": lote_eliminado.id,
+            "activo": lote_eliminado.activo,
+            "mensaje": "Lote eliminado correctamente"
+        }

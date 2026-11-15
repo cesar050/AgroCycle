@@ -1,0 +1,120 @@
+<div class="mapa-tecnico">
+
+  @if (state.cargandoFincas() || state.cargando()) {
+    <div class="estado-vacio">
+      <p>Cargando datos topográficos…</p>
+    </div>
+  } @else if (!state.fincaActiva()) {
+    <div class="estado-vacio">
+      <p>No hay ninguna finca activa. Selecciónala en el menú lateral.</p>
+    </div>
+  } @else {
+
+    <!-- ===================== VISOR (60%, o 100% en pantalla completa) ===================== -->
+    <div class="visor" [class.visor--completo]="pantallaCompleta()">
+      <div #mapaLeaflet id="mapa-pendiente-leaflet" class="leaflet-host"></div>
+
+      <div class="etiqueta-tecnica font-mono">NASA SRTM · PENDIENTE</div>
+
+      <button type="button" class="btn-pantalla-completa" (click)="toggleVistaCompleta()">
+        @if (pantallaCompleta()) {
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/>
+          </svg>
+          Restaurar panel
+        } @else {
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9V5a2 2 0 0 1 2-2h4M21 9V5a2 2 0 0 0-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M21 15v4a2 2 0 0 1-2 2h-4"/>
+          </svg>
+          Pantalla completa
+        }
+      </button>
+
+      <div class="leyenda-coropletica">
+        <span class="leyenda-coropletica__item"><i class="swatch swatch--azul"></i>&lt;5% · Drenaje pobre</span>
+        <span class="leyenda-coropletica__item"><i class="swatch swatch--verde"></i>5–25% · Óptima</span>
+        <span class="leyenda-coropletica__item"><i class="swatch swatch--rojo"></i>&gt;25% · Erosión</span>
+      </div>
+    </div>
+
+    <!-- ===================== PANEL TÉCNICO (40%) ===================== -->
+    @if (!pantallaCompleta()) {
+      <aside class="panel-tecnico">
+        <header class="panel-tecnico__header">
+          <h2>Mapa de Pendiente</h2>
+          <p>Pendiente y elevación real — OpenTopoData (NASA SRTM, resolución 30 m)</p>
+        </header>
+
+        <div class="panel-tecnico__body">
+
+          <section class="bloque">
+            <h3>Coeficientes de validación</h3>
+            <div class="fila-kv">
+              <span>Pendiente media de la finca</span>
+              <strong class="font-mono">
+                @if (pendienteMedia() != null) { {{ pendienteMedia() | number:'1.1-1' }}% } @else { — }
+              </strong>
+            </div>
+            <div class="fila-kv">
+              <span>Umbral riesgo de drenaje</span>
+              <strong class="font-mono">&lt; 5%</strong>
+            </div>
+            <div class="fila-kv">
+              <span>Umbral riesgo de erosión</span>
+              <strong class="font-mono">&gt; 25%</strong>
+            </div>
+            <p class="nota-metodologica">
+              Clasificación de 3 bandas aplicada sobre pendiente_porcentaje, calculada con
+              el algoritmo de Horn (1981) sobre elevaciones reales de OpenTopoData / NASA
+              SRTM (resolución 30 m). No se generan curvas de nivel; se reporta pendiente
+              media y elevación real por parcela. Terreno muy plano concentra riesgo de
+              drenaje pobre; pendiente pronunciada concentra riesgo de erosión/escorrentía.
+            </p>
+          </section>
+
+          <section class="bloque">
+            <h3>Datos NASA SRTM (OpenTopoData) por parcela</h3>
+            <div class="tabla-wrap">
+              <table class="tabla-tecnica">
+                <thead>
+                  <tr>
+                    <th>Parcela</th>
+                    <th>Altitud</th>
+                    <th>Pendiente</th>
+                    <th>Clasificación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (parcelasConTopo().length === 0) {
+                    <tr><td colspan="4" class="vacio">Sin parcelas georreferenciadas.</td></tr>
+                  } @else {
+                    @for (item of parcelasConTopo(); track item.parcela.id) {
+                      <tr>
+                        <td>{{ item.parcela.nombre }}</td>
+                        <td class="font-mono">
+                          {{ (item.topo?.altitud_prom ?? item.parcela.altitud_msnm) | number:'1.0-0' }} m
+                        </td>
+                        <td class="font-mono">{{ item.pendiente | number:'1.1-1' }}%</td>
+                        <td>
+                          <span class="chip-clasificacion"
+                                [class.chip--azul]="item.pendiente < 5"
+                                [class.chip--rojo]="item.pendiente > 25"
+                                [class.chip--verde]="item.pendiente >= 5 && item.pendiente <= 25">
+                            {{ clasificacionPendiente(item.pendiente) }}
+                          </span>
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </div>
+      </aside>
+    }
+
+  }
+
+</div>

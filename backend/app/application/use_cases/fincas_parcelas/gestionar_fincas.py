@@ -1,11 +1,12 @@
 from app.domain.repositories.i_finca_repository import IFincaRepository
+from app.domain.exceptions import ConflictoEliminacionError
 from app.infrastructure.logging.logger import log_caso_de_uso
 
 
 class GestionarFincasUseCase:
     """
     CU-GFP-001 y CU-GFP-006: Gestionar y visualizar fincas.
-    Permite al agricultor listar, obtener detalle y editar sus fincas.
+    Permite al agricultor listar, obtener detalle, editar y eliminar sus fincas.
     """
 
     def __init__(self, finca_repository: IFincaRepository):
@@ -92,4 +93,34 @@ class GestionarFincasUseCase:
             "nombre": finca_actualizada.nombre,
             "ubicacion": finca_actualizada.nombre_completo_ubicacion(),
             "activo": finca_actualizada.activo
+        }
+
+    @log_caso_de_uso('eliminar_finca')
+    def eliminar(self, finca_id: str, agricultor_id: str) -> dict:
+        """
+        Elimina (soft-delete) una finca del agricultor.
+        Bloquea la eliminacion si la finca tiene lotes activos: el
+        agricultor debe eliminar primero los lotes para evitar dejar
+        geometria activa huerfana.
+        """
+        finca = self.finca_repository.buscar_por_id(finca_id)
+        if not finca:
+            raise ValueError("Finca no encontrada")
+
+        if not finca.es_del_agricultor(agricultor_id):
+            raise PermissionError("No tienes permiso para eliminar esta finca")
+
+        if self.finca_repository.contar_lotes_activos(finca_id) > 0:
+            raise ConflictoEliminacionError(
+                "No se puede eliminar la finca: tiene lotes activos asociados"
+            )
+
+        finca.activo = False
+        finca_eliminada = self.finca_repository.actualizar(finca)
+
+        return {
+            "id": finca_eliminada.id,
+            "nombre": finca_eliminada.nombre,
+            "activo": finca_eliminada.activo,
+            "mensaje": "Finca eliminada correctamente"
         }

@@ -1,138 +1,227 @@
 import {
-  Component, OnInit, OnDestroy, signal,
-  AfterViewInit, ElementRef, ViewChild
+  Component, OnDestroy, signal, computed, effect, viewChild, ElementRef, inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { MapaFincaComponent } from '../../../shared/components/mapa-finca/mapa-finca.component';
-import { MapaService } from './services/mapa.service';
-import { AuthService } from '../../auth/services/auth.service';
+import { CommonModule, DecimalPipe } from '@angular/common';
+import * as L from 'leaflet';
 
+import { MapaService } from './services/mapa.service';
+import { LeafletMapaService } from './services/leaflet-mapa.service';
+import { MapaStateService, MapaBase, Parcela } from './services/mapa-state.service';
+import { PanelGestionarFincaComponent } from './components/panel-gestionar-finca/panel-gestionar-finca.component';
+import { PanelGestionarLoteComponent } from './components/panel-gestionar-lote/panel-gestionar-lote.component';
+import { PanelGestionarParcelaComponent } from './components/panel-gestionar-parcela/panel-gestionar-parcela.component';
+import { construirGeoJSONParcelas, calcularCentro } from './mapa.utils';
+import { ETAPAS_FENOLOGICAS, EtapaFenologicaPipe } from './pipes/etapa-fenologica.pipe';
+
+const TILES_BASE: Record<MapaBase, string> = {
+  satelite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  relieve:  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+  claro:    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+};
+
+const BASES_MAPA: { key: MapaBase; label: string }[] = [
+  { key: 'satelite', label: 'Satélite' },
+  { key: 'relieve',  label: 'Relieve' },
+  { key: 'claro',    label: 'Claro' },
+];
+
+// Centro por defecto (zona agrícola de Loja, Ecuador) usado únicamente
+// cuando el agricultor todavía no tiene ninguna finca y abre el panel
+// "Registrar primera finca": necesita un mapa en blanco sobre el que
+// dibujar el primer polígono.
+const CENTRO_DEFECTO: [number, number] = [-4.0876, -79.8193];
+
+// Vista general — "Mapa normal". Las capas especializadas (pendiente,
+// elevación, humedad FAO-56/FAO-33) viven en sus propias subrutinas
+// dedicadas (/app/mapa/topografia, /app/mapa/humedad); aquí solo se
+// pinta el estado fenológico, que es el control básico de la finca.
+// El panel técnico del 20% también es, mientras `panelMode()` no es
+// 'visor', el flujo transaccional de alta/edición/baja de Fincas,
+// Lotes y Parcelas (ver components/panel-gestionar-*).
 @Component({
   selector: 'app-mapa',
   standalone: true,
-  imports: [CommonModule, RouterLink, MapaFincaComponent],
+  imports: [
+    CommonModule, DecimalPipe, EtapaFenologicaPipe,
+    PanelGestionarFincaComponent, PanelGestionarLoteComponent, PanelGestionarParcelaComponent,
+  ],
+  providers: [MapaStateService],
   templateUrl: './mapa.component.html',
-  styleUrl: './mapa.component.scss'
+  styleUrl: './mapa.component.scss',
 })
-export class MapaComponent implements OnInit {
+export class MapaComponent implements OnDestroy {
 
-  cargando    = signal(true);
-  fincas      = signal<any[]>([]);
-  fincaActiva = signal<any>(null);
-  datosMapa   = signal<any>(null);
-  vistaActiva = signal<'normal' | 'pendiente' | 'humedad'>('normal');
-  datosTopografia = signal<any>(null);
-  cargandoTopo    = signal(false);
+  state = inject(MapaStateService);
 
-  constructor(
-    private mapaService: MapaService,
-    public authService: AuthService,
-  ) {}
+  private mapaService = inject(MapaService);
+  private leafletMapaService = inject(LeafletMapaService);
 
-  ngOnInit() {
-    this.cargarFincas();
-  }
+  mapaElRef = viewChild<ElementRef>('mapaLeaflet');
 
-  cargarFincas() {
-    this.cargando.set(true);
-    this.mapaService.listarFincas().subscribe({
-      next: (res) => {
-        const lista = Array.isArray(res) ? res : (res.fincas || []);
-        this.fincas.set(lista);
-        if (lista.length > 0) {
-          this.seleccionarFinca(lista[0]);
-        } else {
-          this.cargando.set(false);
-        }
-      },
-      error: () => this.cargando.set(false),
+  // Única variable de UI: colapsa el panel del 20% para que el mapa
+  // ocupe el 100% del contenedor, y viceversa.
+  pantallaCompleta = signal(false);
+
+  basesMapa = BASES_MAPA;
+
+  private capaParcelas: L.Layer | null = null;
+
+  private readonly coloresEtapas: Record<string, string> = Object.fromEntries(
+    ETAPAS_FENOLOGICAS.map(e => [e.key, e.color])
+  );
+
+  private readonly titulosPanel: Record<string, string> = {
+    'crear-finca': 'Registrar finca',
+    'editar-finca': 'Gestionar finca',
+    'crear-lote': 'Nuevo lote',
+    'editar-lote': 'Gestionar lote',
+    'crear-parcela': 'Nueva parcela',
+    'editar-parcela': 'Gestionar parcela',
+  };
+
+  tituloPanel = computed(() => this.titulosPanel[this.state.panelMode()] ?? '');
+
+  constructor() {
+    // 1) Cargar los datos del mapa cada vez que cambia la finca activa.
+    effect(() => {
+      const finca = this.state.fincaActiva();
+      const cargandoFincas = this.state.cargandoFincas();
+      this.state.resetSeleccionFinca();
+
+      if (cargandoFincas) return;
+
+      if (!finca) {
+        this.state.datosMapa.set(null);
+        this.state.cargando.set(false);
+        return;
+      }
+
+      this.state.cargando.set(true);
+      this.mapaService.obtenerMapaFinca(finca.id).subscribe({
+        next: (res) => { this.state.datosMapa.set(res); this.state.cargando.set(false); },
+        error: () => this.state.cargando.set(false),
+      });
+    });
+
+    // 2) Ciclo de vida del mapa Leaflet. Normalmente centra en la
+    // finca activa; si todavía no hay ninguna finca pero se abrió el
+    // panel "Registrar primera finca", inicializa un mapa en blanco
+    // para poder dibujar el primer polígono.
+    effect(() => {
+      const el = this.mapaElRef()?.nativeElement;
+      if (!el) return;
+
+      const datos = this.state.datosMapa();
+      const creandoPrimeraFinca = !datos?.finca && this.state.panelMode() === 'crear-finca';
+      if (!datos?.finca && !creandoPrimeraFinca) return;
+
+      const centro = datos?.finca ? calcularCentro(datos.finca.geojson) : null;
+
+      this.leafletMapaService.destroy();
+      const mapa = this.leafletMapaService.initMap(el.id, centro ?? CENTRO_DEFECTO, 15);
+
+      if (datos?.finca?.geojson) {
+        this.leafletMapaService.agregarLimiteFinca(mapa, datos.finca.geojson);
+        this.leafletMapaService.fitBounds(mapa, datos.finca.geojson);
+      }
+
+      mapa.on('mousemove', (e: L.LeafletMouseEvent) => {
+        this.state.cursorLatLng.set({ lat: e.latlng.lat, lng: e.latlng.lng });
+      });
+
+      this.state.mapaLeaflet.set(mapa);
+    });
+
+    // 3) Mapa base (satélite / relieve / claro).
+    effect(() => {
+      const base = this.state.mapaBase();
+      const mapa = this.state.mapaLeaflet();
+      if (!mapa) return;
+
+      mapa.eachLayer(layer => {
+        if (layer instanceof L.TileLayer) mapa.removeLayer(layer);
+      });
+      L.tileLayer(TILES_BASE[base], {
+        attribution: 'Esri', maxZoom: 19, maxNativeZoom: 17,
+      }).addTo(mapa);
+    });
+
+    // 4) Parcelas coloreadas por etapa fenológica — única capa temática
+    // de esta vista general.
+    effect(() => {
+      const datos = this.state.datosMapa();
+      const mapa  = this.state.mapaLeaflet();
+      if (!mapa || !datos?.finca) return;
+
+      if (this.capaParcelas) {
+        mapa.removeLayer(this.capaParcelas);
+        this.capaParcelas = null;
+      }
+
+      const geojsonParcelas = construirGeoJSONParcelas(datos.finca);
+      const capa = this.leafletMapaService.agregarCapaParcelas(mapa, geojsonParcelas, this.coloresEtapas);
+      this.engancharSeleccion(capa);
+      this.capaParcelas = capa;
+      this.aplicarResaltadoSeleccion();
+    });
+
+    // 5) Resaltado de la parcela seleccionada.
+    effect(() => {
+      this.state.parcelaSeleccionadaId();
+      this.aplicarResaltadoSeleccion();
     });
   }
 
-  seleccionarFinca(finca: any) {
-    this.fincaActiva.set(finca);
-    this.datosMapa.set(null);
-    this.mapaService.obtenerMapaFinca(finca.id).subscribe({
-      next: (res) => {
-        this.datosMapa.set(res);
-        this.cargando.set(false);
-      },
-      error: () => this.cargando.set(false),
+  ngOnDestroy(): void {
+    this.leafletMapaService.destroy();
+  }
+
+  onParcelaElegida(parcela: Parcela): void {
+    this.state.seleccionarParcela(parcela.id);
+    const mapa = this.state.mapaLeaflet();
+    if (!mapa || !parcela?.geojson) return;
+    const layer = L.geoJSON(parcela.geojson);
+    mapa.fitBounds(layer.getBounds(), { maxZoom: 16 });
+  }
+
+  editarParcela(parcela: Parcela, evento: Event): void {
+    evento.stopPropagation();
+    this.state.parcelaSeleccionadaId.set(parcela.id);
+    this.state.panelMode.set('editar-parcela');
+  }
+
+  gestionarFinca(): void {
+    this.state.panelMode.set(this.state.fincaActiva() ? 'editar-finca' : 'crear-finca');
+  }
+
+  elegirBase(base: MapaBase): void {
+    this.state.mapaBase.set(base);
+  }
+
+  toggleVistaCompleta(): void {
+    this.pantallaCompleta.update(v => !v);
+    setTimeout(() => this.state.mapaLeaflet()?.invalidateSize(), 220);
+  }
+
+  private engancharSeleccion(capa: L.Layer): void {
+    if (!(capa instanceof L.GeoJSON)) return;
+    capa.eachLayer(layer => {
+      const feature = (layer as any).feature;
+      const id = feature?.properties?.id;
+      if (!id) return;
+      layer.on('click', () => this.state.seleccionarParcela(id));
     });
   }
 
-  cambiarVista(v: 'normal' | 'pendiente' | 'humedad') {
-    this.vistaActiva.set(v);
-    if (v === 'pendiente' && !this.datosTopografia() && this.fincaActiva()) {
-      this.cargarTopografia(this.fincaActiva().id);
-    }
-  }
-
-  cargarTopografia(fincaId: string) {
-    this.cargandoTopo.set(true);
-    this.mapaService.obtenerTopografiaFinca(fincaId).subscribe({
-      next:  (r) => { this.datosTopografia.set(r); this.cargandoTopo.set(false); },
-      error: ()  => this.cargandoTopo.set(false),
+  private aplicarResaltadoSeleccion(): void {
+    const selId = this.state.parcelaSeleccionadaId();
+    if (!this.capaParcelas || !(this.capaParcelas instanceof L.GeoJSON)) return;
+    this.capaParcelas.eachLayer(layer => {
+      const path = layer as L.Path;
+      if (!path.setStyle) return;
+      const esSeleccionada = (layer as any).feature?.properties?.id === selId;
+      path.setStyle({ weight: esSeleccionada ? 4 : 1.5 });
+      if (esSeleccionada) path.bringToFront?.();
     });
-  }
-
-  colorPendiente(p: number): string {
-  if (p < 5)  return '#2E7D32';
-  if (p < 10) return '#8BC34A';
-  if (p < 20) return '#FFC107';
-  if (p < 35) return '#FF5722';
-  return '#D32F2F';
-  }
-
-  etiquetaPendiente(p: number): string {
-    if (p < 5)  return 'Plano';
-    if (p < 10) return 'Suave';
-    if (p < 20) return 'Moderado';
-    if (p < 35) return 'Pronunciado';
-    return 'Muy pronunciado';
-  }
-
-  
-    // Agrega dentro de la clase MapaComponent:
-
-  leyendaEtapas = [
-    { etapa: 'pre_siembra',           label: 'Sin preparar',  color: '#5E3B1E' },
-    { etapa: 'emergencia',            label: 'Emergencia',    color: '#7FBF3F' },
-    { etapa: 'crecimiento_vegetativo',label: 'Crecimiento',   color: '#4E9F3D' },
-    { etapa: 'floracion',             label: 'Floración',     color: '#2E7D32' },
-    { etapa: 'llenado_grano',         label: 'Llenado',       color: '#E8C547' },
-    { etapa: 'maduracion',            label: 'Maduración',    color: '#D4A017' },
-    { etapa: 'cosecha',               label: 'Cosecha',       color: '#D4A017' },
-  ];
-
-  colorEtapa(etapa: string): string {
-    return this.leyendaEtapas.find(e => e.etapa === etapa)?.color || '#5E3B1E';
-  }
-
-  etiquetaEtapa(etapa: string): string {
-    const etiquetas: Record<string,string> = {
-      pre_siembra: 'Pre-siembra',
-      emergencia: 'Emergencia',
-      crecimiento_vegetativo: 'Crecimiento',
-      floracion: 'Floración',
-      llenado_grano: 'Llenado',
-      maduracion: 'Maduración',
-      cosecha: 'Cosecha',
-    };
-    return etiquetas[etapa] || etapa;
-  }
-
-  get totalLotes(): number {
-    return this.datosMapa()?.finca?.lotes?.length || 0;
-  }
-
-  get totalParcelas(): number {
-    return (this.datosMapa()?.finca?.lotes || [])
-      .reduce((s: number, l: any) => s + (l.parcelas?.length || 0), 0);
-  }
-
-  get superficieTotal(): number {
-    return this.fincaActiva()?.superficie_ha || 0;
   }
 }

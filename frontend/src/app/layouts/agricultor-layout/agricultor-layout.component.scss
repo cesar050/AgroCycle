@@ -30,11 +30,17 @@
 // SIDEBAR
 // ================================================================
 .sidebar {
+  // sticky (no fixed): en desktop el sidebar sigue siendo hijo flex de
+  // .layout — con fixed perdería su espacio reservado y .main quedaría
+  // debajo. sticky lo deja pegado al tope sin sacarlo del flujo.
+  position: sticky;
+  top: 0;
+  left: 0;
   width: 220px;
   min-width: 220px;
   height: 100vh;
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
+  background: #1B5E20;
+  color: rgba(255, 255, 255, 0.85);
   display: flex;
   flex-direction: column;
   z-index: 200;
@@ -65,7 +71,7 @@
     align-items: center;
     gap: $s3;
     padding: $s4 $s5;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     min-height: 56px;
     flex-shrink: 0;
 
@@ -74,7 +80,7 @@
     span {
       font-size: 15px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #fff;
       letter-spacing: -0.3px;
     }
   }
@@ -85,12 +91,12 @@
     align-items: center;
     gap: $s3;
     padding: $s3 $s5;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     flex-shrink: 0;
     cursor: pointer;
     transition: $t-fast;
 
-    &:hover { background: var(--bg-app); }
+    &:hover { background: rgba(255, 255, 255, 0.08); }
   }
 
   &__avatar {
@@ -119,7 +125,7 @@
   &__nombre {
     font-size: 12px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #fff;
     truncate: true;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -128,10 +134,97 @@
 
   &__rol {
     font-size: 10px;
-    color: var(--text-sec);
+    color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-weight: 500;
+  }
+
+  // ---- Selector de finca ----
+  &__finca {
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    flex-shrink: 0;
+  }
+
+  &__finca-trigger {
+    display: flex;
+    align-items: center;
+    gap: $s2;
+    width: 100%;
+    padding: $s3 $s5;
+    background: none;
+    border: none;
+    font-family: $font-sans;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    text-align: left;
+    transition: $t-fast;
+
+    &:hover { background: rgba(255, 255, 255, 0.08); }
+
+    &--static {
+      cursor: default;
+      &:hover { background: none; }
+    }
+
+    svg:first-child { color: #81C784; flex-shrink: 0; }
+  }
+
+  &__finca-nombre {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__finca-chevron {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.5);
+    transition: transform 0.2s ease;
+    &.rotado { transform: rotate(180deg); }
+  }
+
+  &__finca-dropdown {
+    position: absolute;
+    top: 100%;
+    left: $s3;
+    right: $s3;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    box-shadow: $shadow-md;
+    padding: $s1;
+    z-index: 210;
+    max-height: 220px;
+    overflow-y: auto;
+    animation: fadeIn 0.12s ease;
+  }
+
+  &__finca-opcion {
+    display: block;
+    width: 100%;
+    padding: $s2 $s3;
+    background: none;
+    border: none;
+    border-radius: $radius-sm;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-sec);
+    text-align: left;
+    cursor: pointer;
+    transition: $t-fast;
+
+    &:hover { background: var(--bg-app); color: var(--text-primary); }
+
+    &.activo {
+      background: var(--verde-soft);
+      color: var(--verde);
+      font-weight: 700;
+    }
   }
 
   // ---- Navegación ----
@@ -149,7 +242,7 @@
     padding: $s2 $s5 $s1;
     font-size: 10px;
     font-weight: 600;
-    color: var(--text-ter);
+    color: rgba(255, 255, 255, 0.45);
     text-transform: uppercase;
     letter-spacing: 0.8px;
   }
@@ -161,7 +254,7 @@
     padding: $s2 $s5;
     font-size: 13px;
     font-weight: 400;
-    color: var(--text-sec);
+    color: rgba(255, 255, 255, 0.75);
     cursor: pointer;
     transition: $t-fast;
     border-radius: 0;
@@ -170,13 +263,13 @@
     user-select: none;
 
     &:hover {
-      background: var(--bg-app);
-      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
     }
 
     &.activo {
-      background: var(--verde-soft);
-      color: var(--verde);
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
       font-weight: 600;
 
       &::before {
@@ -186,16 +279,16 @@
         top: 4px;
         bottom: 4px;
         width: 3px;
-        background: var(--verde);
+        background: #81C784;
         border-radius: 0 $radius-xs $radius-xs 0;
       }
 
-      svg { color: var(--verde); }
+      svg { color: #81C784; }
     }
 
     svg {
       flex-shrink: 0;
-      color: var(--text-ter);
+      color: rgba(255, 255, 255, 0.65);
       transition: $t-fast;
     }
 
@@ -221,56 +314,51 @@
     gap: $s3;
     padding: $s2 $s5 $s2 44px;
     font-size: 12px;
-    color: var(--text-sec);
+    color: rgba(255, 255, 255, 0.65);
     cursor: pointer;
     transition: $t-fast;
     min-height: 32px;
 
     &:hover {
-      background: var(--bg-app);
-      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
     }
 
     &.activo {
-      color: var(--verde);
+      color: #81C784;
       font-weight: 600;
     }
   }
 
-  // ---- Footer ----
-  &__footer {
-    border-top: 1px solid var(--border);
-    padding: $s2 0;
+  // ---- Footer decorativo (imagen) ----
+  &__footer-img {
     flex-shrink: 0;
-  }
-
-  &__footer-item {
-    display: flex;
-    align-items: center;
-    gap: $s3;
-    padding: $s2 $s5;
-    font-size: 13px;
-    color: var(--text-sec);
-    cursor: pointer;
-    transition: $t-fast;
-    min-height: 36px;
-    background: none;
-    border: none;
+    flex: 0 0 220px;
     width: 100%;
-    text-align: left;
-
-    &:hover {
-      background: var(--bg-app);
-      color: var(--text-primary);
-    }
-
-    &.danger:hover {
-      background: $rojo-suave;
-      color: $rojo-danger;
-    }
-
-    svg { color: var(--text-ter); flex-shrink: 0; }
+    overflow: hidden;
+    position: relative;
+    background-image:
+      linear-gradient(
+        to bottom,
+        rgba(27, 94, 32, 0.95) 0%,
+        rgba(27, 94, 32, 0.4) 30%,
+        rgba(27, 94, 32, 0) 55%
+      ),
+      url('/images/sidebar.png');
+    background-size: cover;
+    background-position: center;
   }
+
+  &__footer-img-texto {
+    position: absolute;
+    bottom: 8px;
+    left: 12px;
+    color: #fff;
+    font-size: 11px;
+    line-height: 1.3;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  }
+
 }
 
 // ================================================================
@@ -324,6 +412,11 @@
   &__titulo {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: $s2;
+
+    &-icono { color: var(--verde); flex-shrink: 0; }
 
     h1 {
       font-size: 15px;
@@ -416,6 +509,57 @@
     flex-shrink: 0;
 
     &:hover { border-color: $verde-acento; }
+  }
+
+  &__perfil {
+    position: relative;
+    cursor: pointer;
+  }
+
+  &__perfil-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #fff;
+    border: 1px solid #E0E0E0;
+    border-radius: $radius-md;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    min-width: 180px;
+    z-index: 1000;
+    padding: $s2 0;
+    animation: fadeIn 0.12s ease;
+
+    .perfil-menu__info {
+      padding: 10px $s4;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      strong { color: $texto-primario; }
+      span   { color: $texto-secundario; font-size: 11px; }
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #F0F0F0;
+      margin: $s1 0;
+    }
+
+    button {
+      width: 100%;
+      padding: $s2 $s4;
+      text-align: left;
+      background: none;
+      border: none;
+      font-family: $font-sans;
+      font-size: 13px;
+      color: $rojo-danger;
+      cursor: pointer;
+      transition: $t-fast;
+
+      &:hover { background: #FFF5F5; }
+    }
   }
 }
 

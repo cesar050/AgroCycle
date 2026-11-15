@@ -1,0 +1,131 @@
+<div class="panel-form">
+
+  @if (modoCrear()) {
+    <section class="bloque">
+      <h3>Datos de la finca</h3>
+      <div class="campo">
+        <label for="pgf-nombre">Nombre <span class="req">*</span></label>
+        <input id="pgf-nombre" type="text" class="input-tec" [(ngModel)]="nombre"
+               placeholder="Ej. Finca La Esperanza" autocomplete="off">
+      </div>
+      <div class="campo-grid">
+        <div class="campo">
+          <label for="pgf-provincia">Provincia</label>
+          <input id="pgf-provincia" type="text" class="input-tec" [(ngModel)]="provincia">
+        </div>
+        <div class="campo">
+          <label for="pgf-canton">Cantón</label>
+          <input id="pgf-canton" type="text" class="input-tec" [(ngModel)]="canton">
+        </div>
+        <div class="campo">
+          <label for="pgf-parroquia">Parroquia</label>
+          <input id="pgf-parroquia" type="text" class="input-tec" [(ngModel)]="parroquia">
+        </div>
+        <div class="campo">
+          <label for="pgf-sector">Sector</label>
+          <input id="pgf-sector" type="text" class="input-tec" [(ngModel)]="sector">
+        </div>
+      </div>
+      <div class="campo">
+        <label for="pgf-descripcion">Descripción</label>
+        <textarea id="pgf-descripcion" class="input-tec" rows="2" [(ngModel)]="descripcion"></textarea>
+      </div>
+    </section>
+
+    <section class="bloque">
+      <h3>Perímetro</h3>
+      <p class="hint">Haz clic en el mapa para definir los vértices del polígono.</p>
+      <div class="fila-kv">
+        <span>Vértices definidos</span>
+        <strong class="font-mono">{{ puntosDefinidos }}</strong>
+      </div>
+      <div class="fila-kv">
+        <span>Área aproximada</span>
+        <strong class="font-mono">{{ areaHa() }} ha</strong>
+      </div>
+      <div class="acciones-dibujo">
+        <button type="button" class="btn-tec" (click)="deshacerUltimoPunto()" [disabled]="puntosDefinidos === 0">Deshacer</button>
+        <button type="button" class="btn-tec" (click)="limpiarDibujo()" [disabled]="puntosDefinidos === 0">Limpiar</button>
+      </div>
+    </section>
+  } @else {
+    <section class="bloque">
+      <h3>Editar finca</h3>
+      <div class="campo">
+        <label for="pgf-nombre-e">Nombre <span class="req">*</span></label>
+        <input id="pgf-nombre-e" type="text" class="input-tec" [(ngModel)]="nombre">
+      </div>
+      <div class="campo-grid">
+        <div class="campo">
+          <label for="pgf-provincia-e">Provincia</label>
+          <input id="pgf-provincia-e" type="text" class="input-tec" [(ngModel)]="provincia">
+        </div>
+        <div class="campo">
+          <label for="pgf-canton-e">Cantón</label>
+          <input id="pgf-canton-e" type="text" class="input-tec" [(ngModel)]="canton">
+        </div>
+        <div class="campo">
+          <label for="pgf-parroquia-e">Parroquia</label>
+          <input id="pgf-parroquia-e" type="text" class="input-tec" [(ngModel)]="parroquia">
+        </div>
+        <div class="campo">
+          <label for="pgf-sector-e">Sector</label>
+          <input id="pgf-sector-e" type="text" class="input-tec" [(ngModel)]="sector">
+        </div>
+      </div>
+      <div class="campo">
+        <label for="pgf-descripcion-e">Descripción</label>
+        <textarea id="pgf-descripcion-e" class="input-tec" rows="2" [(ngModel)]="descripcion"></textarea>
+      </div>
+    </section>
+  }
+
+  @if (error()) {
+    <p class="mensaje-error">{{ error() }}</p>
+  }
+
+  <button type="button" class="btn-tec btn-tec--primario" [disabled]="!puedeGuardar || cargando()" (click)="guardar()">
+    @if (cargando()) {
+      Guardando…
+    } @else {
+      {{ modoCrear() ? 'Guardar finca' : 'Guardar cambios' }}
+    }
+  </button>
+
+  @if (!modoCrear()) {
+    <section class="bloque bloque--tabla">
+      <div class="bloque__header">
+        <h3>Lotes de esta finca</h3>
+        <button type="button" class="btn-tec btn-tec--sm" (click)="nuevoLote()">+ Nuevo lote</button>
+      </div>
+      <div class="tabla-wrap">
+        <table class="tabla-tecnica">
+          <thead><tr><th>Lote</th><th>Superficie</th></tr></thead>
+          <tbody>
+            @if (state.lotes().length === 0) {
+              <tr><td colspan="2" class="vacio">Sin lotes registrados.</td></tr>
+            } @else {
+              @for (l of state.lotes(); track l.id) {
+                <tr class="fila-clicable" (click)="seleccionarLote(l.id)">
+                  <td>{{ l.nombre }}</td>
+                  <td class="font-mono">{{ l.superficie_ha | number:'1.2-2' }} ha</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bloque">
+      <h3>Zona de riesgo</h3>
+      @if (errorEliminar()) {
+        <p class="mensaje-error">{{ errorEliminar() }}</p>
+      }
+      <button type="button" class="btn-tec btn-tec--peligro" [disabled]="cargando()" (click)="eliminar()">
+        Eliminar finca
+      </button>
+    </section>
+  }
+
+</div>

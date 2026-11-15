@@ -86,6 +86,7 @@ def create_app():
     from app.interfaces.api.routes.financiero_routes import financiero_bp
     from app.interfaces.api.routes.agronomo_routes import agronomo_bp
     from app.interfaces.api.routes.reportes_routes import reportes_bp
+    from app.interfaces.api.routes.catalogos_routes import catalogos_bp
 
     app.register_blueprint(auth_bp,           url_prefix='/api/v1/auth')
     app.register_blueprint(admin_bp,          url_prefix='/api/v1/admin')
@@ -98,6 +99,7 @@ def create_app():
     app.register_blueprint(financiero_bp,     url_prefix='/api/v1/financiero')
     app.register_blueprint(agronomo_bp,       url_prefix='/api/v1/agronomo')
     app.register_blueprint(reportes_bp,       url_prefix='/api/v1/reportes')
+    app.register_blueprint(catalogos_bp,      url_prefix='/api/v1')
 
     # ----------------------------------------------------------------
     # Health check — sin autenticación ni rate limit

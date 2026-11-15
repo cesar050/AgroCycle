@@ -24,3 +24,15 @@ class ILoteRepository(ABC):
     @abstractmethod
     def existe_nombre_en_finca(self, nombre: str, finca_id: str) -> bool:
         pass
+
+    @abstractmethod
+    def calcular_superficie_ha(self, geometria_wkt: str) -> float:
+        pass
+
+    @abstractmethod
+    def contiene_geometria(self, lote_id: str, geometria_wkt: str) -> bool:
+        pass
+
+    @abstractmethod
+    def contar_parcelas_activas(self, lote_id: str) -> int:
+        pass
