@@ -1,6 +1,6 @@
 @use 'sass:color';
 @use '../../../../../../styles' as *;
-@use '../../../../agricultor/mapa/pages/nueva-finca/nueva-finca.component.scss';
+@use '../../../../../shared/styles/pagina-formulario';
 
 .nf-content--single {
   grid-template-columns: 1fr !important;
