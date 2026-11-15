@@ -1,12 +1,13 @@
-<div class="rep-page">
+<div class="rep">
 
-  <div class="rep-header">
+  <!-- Encabezado -->
+  <header class="rep__head">
     <div>
-      <h1>Reportes y documentos</h1>
-      <p>Descarga la ficha técnica de tu temporada en PDF</p>
+      <h1>Reportes y validación</h1>
+      <p>Precisión del modelo de estimación frente a la cosecha real y resumen por temporada</p>
     </div>
     @if (temporadas().length > 1) {
-      <select class="input rep-select"
+      <select class="rep__select"
               [value]="temporadaId()"
               (change)="cambiarTemporada($any($event.target).value)">
         @for (t of temporadas(); track t.id) {
@@ -14,117 +15,260 @@
         }
       </select>
     }
-  </div>
+  </header>
 
   @if (error()) {
-    <div class="rep-error">{{ error() }}</div>
+    <div class="rep__alerta rep__alerta--rojo">{{ error() }}</div>
   }
 
-  @if (cargando()) {
-    <div class="skeleton" style="height:200px;border-radius:8px"></div>
-  }
-
-  @if (!cargando()) {
-
-    <div class="rep-grid">
-
-      <!-- Ficha técnica -->
-      <div class="rep-card">
-        <div class="rep-card__icono">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
-          </svg>
-        </div>
-        <div class="rep-card__info">
-          <h3>Ficha técnica de la temporada</h3>
-          <p>
-            Documento PDF completo con datos agroclimáticos,
-            estimación de producción FAO-33, balance hídrico FAO-56
-            y resumen financiero de la temporada.
-          </p>
-          <ul class="rep-card__lista">
-            <li>Datos de la finca y parcela</li>
-            <li>Balance hídrico Ks por etapa fenológica</li>
-            <li>Estimación de producción</li>
-            <li>Resumen de actividades</li>
-            <li>Estado financiero de la temporada</li>
-          </ul>
-        </div>
-        <div class="rep-card__accion">
-          <p class="rep-card__temporada">
-            {{ temporadaActual?.nombre || '—' }}
-          </p>
-          <button
-            class="btn btn--primario"
-            [disabled]="descargando() === 'ficha' || !tpId()"
-            (click)="descargarFicha()">
-            @if (descargando() === 'ficha') {
-              <span class="spinner-sm"></span>
-              Generando PDF...
-            } @else {
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Descargar PDF
-            }
-          </button>
-          @if (!tpId()) {
-            <p class="rep-card__aviso">
-              Vincula una parcela a la temporada para generar el reporte.
-            </p>
-          }
-        </div>
-      </div>
-
-      <!-- Próximos reportes (v2) -->
-      <div class="rep-card rep-card--pronto">
-        <div class="rep-card__icono">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="1.5">
-            <line x1="18" y1="20" x2="18" y2="10"/>
-            <line x1="12" y1="20" x2="12" y2="4"/>
-            <line x1="6" y1="20" x2="6" y2="14"/>
-          </svg>
-        </div>
-        <div class="rep-card__info">
-          <h3>Comparativo de temporadas</h3>
-          <p>
-            Análisis comparativo entre temporadas con
-            evolución de rendimiento y rentabilidad.
-          </p>
-        </div>
-        <div class="rep-card__accion">
-          <span class="tag tag--gris">Próximamente</span>
-        </div>
-      </div>
-
-      <div class="rep-card rep-card--pronto">
-        <div class="rep-card__icono">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="1.5">
-            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
-          </svg>
-        </div>
-        <div class="rep-card__info">
-          <h3>Reporte climático de la parcela</h3>
-          <p>
-            Resumen climático histórico con precipitaciones,
-            temperaturas y balance hídrico mensual.
-          </p>
-        </div>
-        <div class="rep-card__accion">
-          <span class="tag tag--gris">Próximamente</span>
-        </div>
-      </div>
-
+  <!-- ============================================================ -->
+  <!-- VALIDACIÓN CIENTÍFICA — CU-EST-006                            -->
+  <!-- ============================================================ -->
+  <section class="panel">
+    <div class="panel__head">
+      <h2>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>
+        </svg>
+        Validación FAO-33 vs cosecha real
+      </h2>
+      @if (comparacion()) {
+        <span class="panel__meta">{{ comparacion()?.n_pares }} par(es)</span>
+      }
     </div>
-  }
+
+    <div class="panel__body">
+
+      @if (cargandoComp()) {
+        <div class="loading-bar"></div>
+      } @else if (!suficiente()) {
+        <!-- Estado honesto: datos insuficientes, NO un gráfico vacío disfrazado -->
+        <div class="rep__insuficiente">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <h3>Datos insuficientes para calcular métricas</h3>
+          <p>{{ comparacion()?.mensaje }}</p>
+          <p class="rep__insuficiente-nota">
+            La validación científica requiere cosechas reales registradas junto a su
+            estimación previa. A medida que cierres temporadas, MAPE y R² se calcularán
+            con datos reales — nunca con valores inventados.
+          </p>
+        </div>
+      } @else {
+
+        <!-- Tiles de precisión en tipografía monoespaciada -->
+        <div class="precision-grid">
+          <div class="precision-tile"
+               [class.precision-tile--rojo]="alerta()?.color === 'rojo'"
+               [class.precision-tile--naranja]="alerta()?.color === 'naranja'"
+               [class.precision-tile--verde]="alerta()?.color === 'verde'">
+            <span class="precision-tile__label">Error Medio Absoluto Porcentual (MAPE)</span>
+            <span class="precision-tile__valor">{{ metricas()?.mape }}<small>%</small></span>
+          </div>
+
+          <div class="precision-tile">
+            <span class="precision-tile__label">Coeficiente de Determinación (R²)</span>
+            @if (metricas()?.r2 !== null && metricas()?.r2 !== undefined) {
+              <span class="precision-tile__valor">{{ metricas()?.r2 }}</span>
+            } @else {
+              <span class="precision-tile__valor precision-tile__valor--nd">N/D</span>
+            }
+            @if (metricas()?.nota_r2) {
+              <span class="precision-tile__nota">{{ metricas()?.nota_r2 }}</span>
+            }
+          </div>
+
+          <div class="precision-tile">
+            <span class="precision-tile__label">Raíz del Error Cuadrático Medio (RMSE)</span>
+            <span class="precision-tile__valor">{{ metricas()?.rmse }}<small>qq</small></span>
+          </div>
+
+          <div class="precision-tile">
+            <span class="precision-tile__label">Parcelas en la validación</span>
+            <span class="precision-tile__valor">{{ comparacion()?.n_pares }}</span>
+          </div>
+        </div>
+
+        <!-- Alerta agronómica (semáforo) -->
+        @if (alerta()) {
+          <div class="rep__semaforo"
+               [class.rep__semaforo--rojo]="alerta()?.color === 'rojo'"
+               [class.rep__semaforo--naranja]="alerta()?.color === 'naranja'"
+               [class.rep__semaforo--verde]="alerta()?.color === 'verde'">
+            <span class="rep__semaforo-dot"></span>
+            <span>{{ alerta()?.mensaje }}</span>
+          </div>
+        }
+
+        <!-- Scatter -->
+        <div class="scatter-wrap">
+          <canvas #scatter></canvas>
+        </div>
+        <p class="scatter-cap">
+          Cada punto es una parcela cosechada. La línea punteada marca la predicción
+          perfecta (y = x); la línea verde es el ajuste lineal de los datos.
+          @if (comparacion()?.algoritmo_predominante) {
+            Algoritmo: {{ comparacion()?.algoritmo_predominante | uppercase }}.
+          }
+        </p>
+      }
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- RESUMEN DE LA TEMPORADA — CU-REP-004                          -->
+  <!-- ============================================================ -->
+  <section class="panel">
+    <div class="panel__head">
+      <h2>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+        </svg>
+        Resumen de temporada
+      </h2>
+      <span class="panel__meta">{{ temporadaActual?.nombre || '—' }}</span>
+    </div>
+
+    <div class="panel__body">
+      @if (cargandoDash()) {
+        <div class="loading-bar"></div>
+      } @else if (dashboard()) {
+        <div class="kpis">
+          <div class="kpi">
+            <span class="kpi__label">Producción estimada</span>
+            <span class="kpi__valor">{{ dashboard()?.produccion?.estimada_qq ?? '—' }}<small>qq</small></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__label">Producción real</span>
+            <span class="kpi__valor">{{ dashboard()?.produccion?.real_qq ?? '—' }}<small>qq</small></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__label">Ganancia neta</span>
+            <span class="kpi__valor"
+                  [class.neg]="dashboard()?.financiero?.hay_perdida">
+              {{ dashboard()?.financiero?.ganancia_neta ?? '—' }}<small>USD</small>
+            </span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__label">Costo por quintal</span>
+            <span class="kpi__valor">{{ dashboard()?.financiero?.costo_por_quintal ?? '—' }}<small>USD/qq</small></span>
+          </div>
+        </div>
+
+        @if (dashboard()?.produccion?.desviacion_pct !== null && dashboard()?.produccion?.desviacion_pct !== undefined) {
+          <p class="rep__nota">
+            Desviación estimado vs real de la temporada:
+            <strong>{{ dashboard()?.produccion?.desviacion_pct }}%</strong>.
+            {{ dashboard()?.financiero?.interpretacion }}
+          </p>
+        }
+      } @else {
+        <p class="texto-vacio">Sin datos financieros para esta temporada.</p>
+      }
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- COMPARATIVO ENTRE TEMPORADAS — CU-REP-005                     -->
+  <!-- ============================================================ -->
+  <section class="panel">
+    <div class="panel__head">
+      <h2>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        Comparativo entre temporadas
+      </h2>
+      @if (comparativo()) {
+        <span class="panel__meta">{{ comparativo()?.total_temporadas }} temporada(s)</span>
+      }
+    </div>
+
+    <div class="panel__body panel__body--flush">
+      @if (cargandoComparativo()) {
+        <div class="loading-bar" style="margin:16px"></div>
+      } @else if ((comparativo()?.temporadas?.length || 0) > 0) {
+        <div class="tabla-wrap">
+          <table class="tabla">
+            <thead>
+              <tr>
+                <th>Temporada</th>
+                <th>Estado</th>
+                <th class="num">Estimado (qq)</th>
+                <th class="num">Real (qq)</th>
+                <th class="num">Ganancia (USD)</th>
+                <th class="num">Costo/qq</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of comparativo()?.temporadas; track t.temporada_id) {
+                <tr>
+                  <td class="celda-nombre">{{ t.nombre }}</td>
+                  <td>
+                    <span class="tag-plano"
+                          [class.tag-plano--verde]="t.estado === 'activa'">
+                      {{ t.estado }}
+                    </span>
+                  </td>
+                  <td class="num mono">{{ t.produccion_estimada_qq || '—' }}</td>
+                  <td class="num mono">{{ t.produccion_real_qq ?? '—' }}</td>
+                  <td class="num mono" [class.neg]="t.hay_perdida">{{ t.ganancia_neta ?? '—' }}</td>
+                  <td class="num mono">{{ t.costo_por_quintal ?? '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (comparativo()?.mejor_temporada) {
+          <p class="rep__nota rep__nota--pad">
+            Mejor temporada por ganancia:
+            <strong>{{ comparativo()?.mejor_temporada?.nombre }}</strong>
+            ({{ comparativo()?.mejor_temporada?.ganancia_neta }} USD).
+            Ganancia acumulada: <strong>{{ comparativo()?.ganancia_acumulada }} USD</strong>.
+          </p>
+        }
+      } @else {
+        <p class="texto-vacio" style="padding:16px">Sin temporadas registradas.</p>
+      }
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- FICHA TÉCNICA PDF — CU-REP-001                                -->
+  <!-- ============================================================ -->
+  <section class="panel">
+    <div class="panel__head">
+      <h2>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Ficha técnica (PDF)
+      </h2>
+    </div>
+    <div class="panel__body rep__ficha">
+      <div>
+        <p class="rep__ficha-desc">
+          Documento completo con datos agroclimáticos, estimación FAO-33, balance
+          hídrico FAO-56 por etapa fenológica y resumen financiero de la temporada.
+        </p>
+        @if (!tpId()) {
+          <p class="rep__ficha-aviso">Vincula una parcela a la temporada para generar el reporte.</p>
+        }
+      </div>
+      <button class="btn-accion"
+              [disabled]="descargando() === 'ficha' || !tpId()"
+              (click)="descargarFicha()">
+        @if (descargando() === 'ficha') {
+          <span class="spinner"></span> Generando PDF…
+        } @else {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Descargar PDF
+        }
+      </button>
+    </div>
+  </section>
+
 </div>

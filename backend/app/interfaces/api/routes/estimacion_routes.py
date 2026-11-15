@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt
 from app.application.use_cases.estimacion.generar_estimacion import GenerarEstimacionUseCase
+from app.application.use_cases.estimacion.comparar_estimacion_real import CompararEstimacionRealUseCase
 from app.infrastructure.repositories.pg_estimacion_repository import PgEstimacionRepository
 from app.infrastructure.repositories.pg_temporada_parcela_repository import PgTemporadaParcelaRepository
 from app.infrastructure.database import get_db
@@ -91,3 +92,32 @@ def estimaciones_por_temporada(temporada_id):
             for e in estimaciones
         ]
     }), 200
+
+
+@estimacion_bp.route('/comparacion-real', methods=['GET'])
+@jwt_required()
+@requiere_rol('agricultor', 'administrador')
+def comparar_estimacion_real():
+    """
+    CU-EST-006 — Validación científica: compara la estimación FAO-33/56
+    contra la cosecha real y devuelve MAPE, R² y RMSE.
+
+    Query params:
+        temporada_id (opcional): restringe la comparación a una temporada.
+    """
+    claims = get_jwt()
+    agricultor_id = claims.get('sub')
+    temporada_id = request.args.get('temporada_id') or None
+
+    db = next(get_db())
+    use_case = CompararEstimacionRealUseCase(
+        db=db,
+        estimacion_repo=PgEstimacionRepository(db),
+        temporada_parcela_repo=PgTemporadaParcelaRepository(db),
+    )
+
+    resultado, status = use_case.ejecutar(
+        agricultor_id=agricultor_id,
+        temporada_id=temporada_id,
+    )
+    return jsonify(resultado), status
