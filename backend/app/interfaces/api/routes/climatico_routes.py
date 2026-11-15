@@ -302,7 +302,7 @@ def registrar_evento_manual(parcela_id):
             'error': 'Formato de fecha inválido. Use YYYY-MM-DD'
         }), 400
 
-        db = get_db()
+    db = get_db()
     try:
         use_case = RegistrarEventoManualUseCase(db=db)
         resultado, status = use_case.ejecutar(
