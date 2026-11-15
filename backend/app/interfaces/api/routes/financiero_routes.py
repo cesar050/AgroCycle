@@ -11,6 +11,7 @@ from app.application.use_cases.financiero.listar_gastos import ListarGastosUseCa
 from app.application.use_cases.financiero.calcular_rentabilidad import CalcularRentabilidadUseCase
 from app.application.use_cases.financiero.eliminar_compra import EliminarCompraUseCase
 from app.application.use_cases.financiero.registrar_venta import RegistrarVentaUseCase
+from app.application.use_cases.financiero.comparar_finanzas_temporadas import CompararFinanzasTemporadasUseCase
 from app.infrastructure.repositories.pg_compra_repository import PgCompraRepository
 from app.infrastructure.repositories.pg_resultado_financiero_repository import PgResultadoFinancieroRepository
 from app.infrastructure.database import get_db
@@ -24,7 +25,7 @@ financiero_bp = Blueprint('financiero', __name__)
 @requiere_rol('agricultor', 'administrador')
 def registrar_compra(temporada_id):
     """
-    CU-FIN-001 — Registra una compra o gasto en la temporada.
+    CU-FIN-002 — Registra una compra o gasto en la temporada.
 
     Body JSON esperado:
     {
@@ -118,7 +119,8 @@ def listar_gastos(temporada_id):
 @requiere_rol('agricultor', 'administrador')
 def calcular_rentabilidad(temporada_id):
     """
-    CU-FIN-004 — Calcula y retorna la rentabilidad de la temporada.
+    CU-FIN-005 / CU-FIN-006 — Calcula y retorna la rentabilidad de
+    la temporada y el costo por quintal producido.
 
     Puede llamarse en cualquier momento — si la temporada está
     activa muestra la situación financiera parcial. Si está
@@ -173,7 +175,8 @@ def eliminar_compra(compra_id):
 @requiere_rol('agricultor', 'administrador')
 def registrar_venta(tp_id):
     """
-    CU-FIN-002 — Registra la venta de cosecha de una parcela.
+    CU-FIN-004 — Registra el precio y volumen de venta de la cosecha
+    de una parcela.
 
     Body JSON:
     {
@@ -220,4 +223,30 @@ def registrar_venta(tp_id):
         volumen_vendido_qq=float(data['volumen_vendido_qq']),
         produccion_autoconsumo_qq=data.get('produccion_autoconsumo_qq'),
     )
+    return jsonify(resultado), status
+
+
+@financiero_bp.route('/comparativo', methods=['GET'])
+@jwt_required()
+@requiere_rol('agricultor', 'administrador')
+def comparar_temporadas():
+    """
+    CU-FIN-007 — Compara los resultados financieros entre todas las
+    temporadas del agricultor.
+
+    Consolida ingresos, costos, ganancia neta, margen y costo por
+    quintal de cada temporada y calcula estadísticas comparativas
+    (mejor y peor temporada, promedio, cuántas fueron rentables y
+    la tendencia de la última temporada frente a la anterior).
+    """
+    claims = get_jwt()
+    agricultor_id = claims.get('sub')
+
+    db = next(get_db())
+    use_case = CompararFinanzasTemporadasUseCase(
+        db=db,
+        resultado_repo=PgResultadoFinancieroRepository(db),
+    )
+
+    resultado, status = use_case.ejecutar(agricultor_id=agricultor_id)
     return jsonify(resultado), status

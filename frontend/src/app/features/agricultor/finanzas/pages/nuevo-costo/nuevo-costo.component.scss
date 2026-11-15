@@ -1,0 +1,80 @@
+@use 'sass:color';
+@use '../../../../../../styles' as *;
+@use '../../../../../shared/styles/pagina-formulario';
+
+.nf-form--amplio { max-width: 760px; }
+
+.nf-aviso {
+  display: flex;
+  align-items: center;
+  gap: $s2;
+  padding: $s3 $s4;
+  background: $naranja-suave;
+  border: 1px solid color.adjust($naranja-suave, $lightness: -6%);
+  border-radius: $radius-md;
+  font-size: 12px;
+  color: $naranja-warning;
+
+  svg { flex-shrink: 0; }
+  strong { font-weight: 700; }
+}
+
+// Selector de categoría — botones planos, sin iconos decorativos
+.cat-selector {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: $s2;
+  padding: $s4;
+
+  @include mobile { grid-template-columns: repeat(2, 1fr); }
+  @include tablet { grid-template-columns: repeat(3, 1fr); }
+}
+
+.cat-opt {
+  padding: $s3 $s2;
+  background: var(--bg-app);
+  border: 1.5px solid var(--border);
+  border-radius: $radius-xs;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-sec);
+  font-family: $font-sans;
+  cursor: pointer;
+  transition: $t-fast;
+
+  &:hover { border-color: $verde-acento; color: var(--text-primary); }
+
+  &.activo {
+    border-color: $verde-primario;
+    background: $verde-suave;
+    color: $verde-primario;
+  }
+}
+
+// Costo total — cifra viva en mono
+.costo-field { justify-content: flex-end; }
+
+.costo-total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px $s3;
+  border: 1px dashed var(--border);
+  border-radius: $radius-xs;
+  background: var(--bg-app);
+
+  &__val {
+    font-family: $font-mono;
+    font-size: 18px;
+    font-weight: 700;
+    color: $verde-primario;
+    line-height: 1.1;
+  }
+
+  &__hint {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-ter);
+  }
+}

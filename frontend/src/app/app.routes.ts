@@ -71,6 +71,16 @@ export const routes: Routes = [
           import('./features/agricultor/finanzas/finanzas.component').then(m => m.FinanzasComponent),
       },
       {
+        path: 'finanzas/nuevo-costo',
+        loadComponent: () =>
+          import('./features/agricultor/finanzas/pages/nuevo-costo/nuevo-costo.component').then(m => m.NuevoCostoComponent),
+      },
+      {
+        path: 'finanzas/nueva-venta',
+        loadComponent: () =>
+          import('./features/agricultor/finanzas/pages/nueva-venta/nueva-venta.component').then(m => m.NuevaVentaComponent),
+      },
+      {
         path: 'reportes',
         loadComponent: () =>
           import('./features/agricultor/reportes/reportes.component').then(m => m.ReportesComponent),

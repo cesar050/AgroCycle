@@ -33,8 +33,16 @@ export class FinanzasService {
     );
   }
 
+  compararTemporadas(): Observable<any> {
+    return this.api.get('/financiero/comparativo');
+  }
+
   listarTemporadas(): Observable<any> {
     return this.api.get('/temporadas/historial');
+  }
+
+  obtenerTemporada(temporadaId: string): Observable<any> {
+    return this.api.get(`/temporadas/${temporadaId}`);
   }
 
   listarParcelas(loteId: string): Observable<any> {

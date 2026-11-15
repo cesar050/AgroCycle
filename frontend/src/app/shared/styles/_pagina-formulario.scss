@@ -1,9 +1,11 @@
 // ================================================================
 // Layout genérico de "página de formulario con breadcrumb + header
 // + grid de 2 columnas" — usado por páginas de alta de un solo
-// registro (ej. Nueva Temporada). Extraído del antiguo componente
-// pages/nueva-finca (ya migrado al panel embebido de Mapa General)
-// porque Nueva Temporada reutiliza estas mismas clases.
+// registro (ej. Nueva Temporada, Nuevo Costo, Nueva Venta). Extraído
+// del antiguo componente pages/nueva-finca (ya migrado al panel
+// embebido de Mapa General) porque varias paginas reutilizan estas
+// mismas clases: .nf-page / .nf-breadcrumb / .nf-header /
+// .form-section / .form-grid / .form-field / .required
 // ================================================================
 @use 'sass:color';
 @use '../../../styles' as *;
