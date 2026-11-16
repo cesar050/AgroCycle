@@ -1,3 +1,4 @@
+from app.domain.entities.parcela import Parcela
 from app.domain.repositories.i_parcela_repository import IParcelaRepository
 from app.domain.repositories.i_lote_repository import ILoteRepository
 from app.domain.repositories.i_finca_repository import IFincaRepository
@@ -83,9 +84,11 @@ class GestionarParcelasUseCase:
 
         parcela.nombre = datos.get('nombre', parcela.nombre).strip()
         parcela.tipo_suelo_id = datos.get('tipo_suelo_id', parcela.tipo_suelo_id)
-        parcela.drenaje = datos.get('drenaje', parcela.drenaje)
+        if 'drenaje' in datos:
+            parcela.drenaje = Parcela.normalizar_drenaje(datos['drenaje'])
         parcela.acceso_riego = datos.get('acceso_riego', parcela.acceso_riego)
-        parcela.tipo_riego = datos.get('tipo_riego', parcela.tipo_riego)
+        if 'tipo_riego' in datos:
+            parcela.tipo_riego = Parcela.normalizar_tipo_riego(datos['tipo_riego'])
         parcela.observaciones = datos.get('observaciones', parcela.observaciones)
 
         parcela_actualizada = self.parcela_repository.actualizar(parcela)

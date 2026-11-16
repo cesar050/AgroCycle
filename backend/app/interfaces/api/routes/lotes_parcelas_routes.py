@@ -16,7 +16,7 @@ from app.application.use_cases.mapa.obtener_parcelas_geojson import ObtenerParce
 from app.application.use_cases.mapa.obtener_grilla_topografica import ObtenerGrillaTopograficaUseCase
 from app.application.use_cases.mapa.obtener_humedad_finca import ObtenerHumedadFincaUseCase
 from app.application.use_cases.mapa.obtener_ndvi_finca import ObtenerNdviFincaUseCase
-from app.domain.exceptions import ConflictoEliminacionError
+from app.domain.exceptions import ConflictoEliminacionError, ValorInvalidoError
 from app.infrastructure.repositories.pg_lote_repository import PgLoteRepository
 from app.infrastructure.repositories.pg_parcela_repository import PgParcelaRepository
 from app.infrastructure.repositories.pg_finca_repository import PgFincaRepository
@@ -218,6 +218,8 @@ def registrar_parcela(lote_id):
         )
         return jsonify(resultado), 201
 
+    except ValorInvalidoError as e:
+        return jsonify({"error": str(e)}), 400
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -287,6 +289,8 @@ def editar_parcela(parcela_id):
 
     except PermissionError as e:
         return jsonify({"error": str(e)}), 403
+    except ValorInvalidoError as e:
+        return jsonify({"error": str(e)}), 400
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     finally:

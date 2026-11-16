@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ActividadesService } from './services/actividades.service';
+import { NotificacionService } from '../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-actividades',
@@ -35,7 +36,10 @@ export class ActividadesComponent implements OnInit {
     { id: 9, nombre: 'Otro' },
   ];
 
-  constructor(private svc: ActividadesService) {}
+  constructor(
+    private svc: ActividadesService,
+    private notificacion: NotificacionService,
+  ) {}
 
   ngOnInit() { this.cargarTemporadas(); }
 
@@ -92,13 +96,15 @@ export class ActividadesComponent implements OnInit {
   }
 
   confirmarEliminar(actividad: any) {
-    if (!confirm(
-      `¿Eliminar la actividad "${this.nombreTipo(actividad.tipo_actividad_id)}" del ${actividad.fecha}?`
-    )) return;
+    const nombreTipo = this.nombreTipo(actividad.tipo_actividad_id);
+    if (!confirm(`¿Eliminar la actividad "${nombreTipo}" del ${actividad.fecha}?`)) return;
 
     this.svc.eliminar(actividad.id).subscribe({
-      next: () => this.cargarActividades(this.temporadaId()),
-      error: () => {},
+      next: () => {
+        this.notificacion.exito(`Actividad "${nombreTipo}" eliminada correctamente.`);
+        this.cargarActividades(this.temporadaId());
+      },
+      error: (err) => this.notificacion.errorHttp(err, 'No se pudo eliminar la actividad.'),
     });
   }
 

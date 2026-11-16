@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { TemporadaService } from '../../services/temporada.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 
 interface FenoEtapa { key: string; label: string; }
 
@@ -41,6 +42,7 @@ export class DetalleTemporadaComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private svc: TemporadaService,
+    private notificacion: NotificacionService,
   ) {}
 
   ngOnInit() {
@@ -138,8 +140,15 @@ export class DetalleTemporadaComponent implements OnInit {
   actualizarFenologia() {
     this.actualizandoFenologia.set(true);
     this.svc.actualizarFenologia(this.id).subscribe({
-      next: () => { this.actualizandoFenologia.set(false); this.cargar(); },
-      error: () => { this.actualizandoFenologia.set(false); }
+      next: () => {
+        this.actualizandoFenologia.set(false);
+        this.notificacion.exito('Fenología actualizada correctamente.');
+        this.cargar();
+      },
+      error: (err) => {
+        this.actualizandoFenologia.set(false);
+        this.notificacion.errorHttp(err, 'No se pudo actualizar la fenología.');
+      }
     });
   }
 
@@ -148,10 +157,12 @@ export class DetalleTemporadaComponent implements OnInit {
     this.svc.generarEstimacion(tpId).subscribe({
       next: () => {
         this.generando.update(s => { const n = new Set(s); n.delete(tpId); return n; });
+        this.notificacion.exito('Estimación de producción generada correctamente.');
         this.cargarEstimaciones();
       },
-      error: () => {
+      error: (err) => {
         this.generando.update(s => { const n = new Set(s); n.delete(tpId); return n; });
+        this.notificacion.errorHttp(err, 'No se pudo generar la estimación.');
       }
     });
   }

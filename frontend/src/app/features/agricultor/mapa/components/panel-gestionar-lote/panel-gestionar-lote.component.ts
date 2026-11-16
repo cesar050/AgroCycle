@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
 import { MapaService } from '../../services/mapa.service';
 import { MapaStateService } from '../../services/mapa-state.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 import { calcularAreaHaAprox, puntoDentroDePoligono } from '../../mapa.utils';
 
 // Panel embebido en el 20% de MapaComponent — reemplaza la antigua
@@ -20,6 +21,7 @@ import { calcularAreaHaAprox, puntoDentroDePoligono } from '../../mapa.utils';
 export class PanelGestionarLoteComponent implements OnDestroy {
   state = inject(MapaStateService);
   private mapaService = inject(MapaService);
+  private notificacion = inject(NotificacionService);
 
   modoCrear = computed(() => this.state.panelMode() === 'crear-lote');
 
@@ -195,10 +197,16 @@ export class PanelGestionarLoteComponent implements OnDestroy {
         coordenadas: this.coordenadas(),
       };
       this.mapaService.registrarLote(finca.id, datos).subscribe({
-        next: () => { this.cargando.set(false); this.refrescarMapaYVolver(); },
+        next: () => {
+          this.cargando.set(false);
+          this.notificacion.exito(`Lote "${datos.nombre}" registrado correctamente.`);
+          this.refrescarMapaYVolver();
+        },
         error: (err) => {
           this.cargando.set(false);
-          this.error.set(err.error?.error || 'Error al guardar el lote.');
+          const mensaje = err.error?.error || 'Error al guardar el lote.';
+          this.error.set(mensaje);
+          this.notificacion.error(mensaje);
         },
       });
       return;
@@ -206,14 +214,21 @@ export class PanelGestionarLoteComponent implements OnDestroy {
 
     const loteId = this.state.loteEnContexto();
     if (!loteId) return;
+    const nombreEditado = this.nombre.trim();
     this.mapaService.editarLote(loteId, {
-      nombre: this.nombre.trim(),
+      nombre: nombreEditado,
       descripcion: this.descripcion.trim(),
     }).subscribe({
-      next: () => { this.cargando.set(false); this.refrescarMapaYVolver(); },
+      next: () => {
+        this.cargando.set(false);
+        this.notificacion.exito(`Lote "${nombreEditado}" actualizado correctamente.`);
+        this.refrescarMapaYVolver();
+      },
       error: (err) => {
         this.cargando.set(false);
-        this.error.set(err.error?.error || 'Error al editar el lote.');
+        const mensaje = err.error?.error || 'Error al editar el lote.';
+        this.error.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }
@@ -221,14 +236,21 @@ export class PanelGestionarLoteComponent implements OnDestroy {
   eliminar(): void {
     const loteId = this.state.loteEnContexto();
     if (!loteId) return;
+    const nombreLote = this.nombre.trim();
     this.errorEliminar.set('');
     this.cargando.set(true);
 
     this.mapaService.eliminarLote(loteId).subscribe({
-      next: () => { this.cargando.set(false); this.refrescarMapaYVolver(); },
+      next: () => {
+        this.cargando.set(false);
+        this.notificacion.exito(`Lote "${nombreLote}" eliminado correctamente.`);
+        this.refrescarMapaYVolver();
+      },
       error: (err) => {
         this.cargando.set(false);
-        this.errorEliminar.set(err.error?.error || 'No se pudo eliminar el lote.');
+        const mensaje = err.error?.error || 'No se pudo eliminar el lote.';
+        this.errorEliminar.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }

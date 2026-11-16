@@ -5,6 +5,7 @@ import * as L from 'leaflet';
 import { MapaService } from '../../services/mapa.service';
 import { MapaStateService } from '../../services/mapa-state.service';
 import { FincaContextService } from '../../../../../core/services/finca-context.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 import { calcularAreaHaAprox } from '../../mapa.utils';
 
 // Panel embebido en el 20% de MapaComponent — reemplaza las antiguas
@@ -22,6 +23,7 @@ export class PanelGestionarFincaComponent implements OnDestroy {
   state = inject(MapaStateService);
   private mapaService = inject(MapaService);
   private fincaContext = inject(FincaContextService);
+  private notificacion = inject(NotificacionService);
 
   modoCrear = computed(() => this.state.panelMode() === 'crear-finca');
 
@@ -159,11 +161,14 @@ export class PanelGestionarFincaComponent implements OnDestroy {
         next: (res) => {
           this.cargando.set(false);
           this.fincaContext.agregarFincaYSeleccionar(res);
+          this.notificacion.exito(`Finca "${res.nombre}" registrada correctamente.`);
           this.state.volverAlVisor();
         },
         error: (err) => {
           this.cargando.set(false);
-          this.error.set(err.error?.error || 'Error al guardar la finca. Intenta de nuevo.');
+          const mensaje = err.error?.error || 'Error al guardar la finca. Intenta de nuevo.';
+          this.error.set(mensaje);
+          this.notificacion.error(mensaje);
         },
       });
       return;
@@ -178,11 +183,14 @@ export class PanelGestionarFincaComponent implements OnDestroy {
         // El caso de uso de edición no devuelve todos los campos editables;
         // se refleja localmente lo que sí se envió y se confirmó con éxito.
         this.fincaContext.actualizarFincaEnLista({ ...finca, ...datos });
+        this.notificacion.exito(`Finca "${datos.nombre}" actualizada correctamente.`);
         this.state.volverAlVisor();
       },
       error: (err) => {
         this.cargando.set(false);
-        this.error.set(err.error?.error || 'Error al editar la finca.');
+        const mensaje = err.error?.error || 'Error al editar la finca.';
+        this.error.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }
@@ -197,11 +205,14 @@ export class PanelGestionarFincaComponent implements OnDestroy {
       next: () => {
         this.cargando.set(false);
         this.fincaContext.eliminarFincaDeLista(finca.id);
+        this.notificacion.exito(`Finca "${finca.nombre}" eliminada correctamente.`);
         this.state.volverAlVisor();
       },
       error: (err) => {
         this.cargando.set(false);
-        this.errorEliminar.set(err.error?.error || 'No se pudo eliminar la finca.');
+        const mensaje = err.error?.error || 'No se pudo eliminar la finca.';
+        this.errorEliminar.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }

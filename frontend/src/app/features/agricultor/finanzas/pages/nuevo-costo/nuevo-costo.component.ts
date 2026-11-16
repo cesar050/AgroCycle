@@ -3,6 +3,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FinanzasService } from '../../services/finanzas.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 
 /**
  * CU-FIN-002 — Registrar Compra e Insumo.
@@ -53,6 +54,7 @@ export class NuevoCostoComponent implements OnInit {
     private svc: FinanzasService,
     private router: Router,
     private route: ActivatedRoute,
+    private notificacion: NotificacionService,
   ) {}
 
   ngOnInit() {
@@ -137,13 +139,16 @@ export class NuevoCostoComponent implements OnInit {
     this.svc.registrarCompra(this.temporadaId(), datos).subscribe({
       next: () => {
         this.guardando.set(false);
+        this.notificacion.exito('Gasto registrado correctamente.');
         this.router.navigate(['/app/finanzas'], {
           queryParams: { temporada: this.temporadaId() },
         });
       },
       error: (err) => {
         this.guardando.set(false);
-        this.error.set(err.error?.error || 'No se pudo registrar el gasto.');
+        const mensaje = err.error?.error || 'No se pudo registrar el gasto.';
+        this.error.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }

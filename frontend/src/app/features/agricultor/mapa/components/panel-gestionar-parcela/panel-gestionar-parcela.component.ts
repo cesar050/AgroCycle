@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
 import { MapaService } from '../../services/mapa.service';
 import { MapaStateService } from '../../services/mapa-state.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 import { calcularAreaHaAprox, puntoDentroDePoligono } from '../../mapa.utils';
 
 // Panel embebido en el 20% de MapaComponent — reemplaza la antigua
@@ -20,6 +21,7 @@ import { calcularAreaHaAprox, puntoDentroDePoligono } from '../../mapa.utils';
 export class PanelGestionarParcelaComponent implements OnInit, OnDestroy {
   state = inject(MapaStateService);
   private mapaService = inject(MapaService);
+  private notificacion = inject(NotificacionService);
 
   modoCrear = computed(() => this.state.panelMode() === 'crear-parcela');
 
@@ -30,8 +32,21 @@ export class PanelGestionarParcelaComponent implements OnInit, OnDestroy {
   tipoRiego = '';
   observaciones = '';
 
-  drenajeOpciones = ['bueno', 'moderado', 'deficiente'];
-  tiposRiego = ['Goteo', 'Aspersión', 'Gravedad', 'Manual'];
+  // value = exactamente lo que acepta el CHECK constraint de la BD
+  // (parcelas_drenaje_check / parcelas_tipo_riego_check — minusculas,
+  // sin tilde; no estan declarados en ningun modelo/migracion, solo
+  // existen en el esquema real). label = lo que ve el agricultor.
+  drenajeOpciones: { value: string; label: string }[] = [
+    { value: 'rapido',    label: 'Rápido' },
+    { value: 'moderado',  label: 'Moderado' },
+    { value: 'lento',     label: 'Lento' },
+    { value: 'muy_lento', label: 'Muy lento' },
+  ];
+  tiposRiego: { value: string; label: string }[] = [
+    { value: 'goteo',     label: 'Goteo' },
+    { value: 'aspersion', label: 'Aspersión' },
+    { value: 'perdido',   label: 'A pérdida (gravedad)' },
+  ];
   tiposSuelo = signal<{ id: number; nombre: string }[]>([]);
 
   cargando = signal(false);
@@ -213,14 +228,20 @@ export class PanelGestionarParcelaComponent implements OnInit, OnDestroy {
         tipo_suelo_id: this.tipoSueloId,
         drenaje: this.drenaje,
         acceso_riego: this.accesoRiego,
-        tipo_riego: this.accesoRiego ? this.tipoRiego : null,
+        tipo_riego: this.accesoRiego && this.tipoRiego ? this.tipoRiego : null,
         observaciones: this.observaciones.trim(),
       };
       this.mapaService.registrarParcela(loteId, datos).subscribe({
-        next: () => { this.cargando.set(false); this.refrescarMapaYVolver(); },
+        next: () => {
+          this.cargando.set(false);
+          this.notificacion.exito(`Parcela "${datos.nombre}" registrada correctamente.`);
+          this.refrescarMapaYVolver();
+        },
         error: (err) => {
           this.cargando.set(false);
-          this.error.set(err.error?.error || 'Error al guardar la parcela.');
+          const mensaje = err.error?.error || 'Error al guardar la parcela.';
+          this.error.set(mensaje);
+          this.notificacion.error(mensaje);
         },
       });
       return;
@@ -228,18 +249,25 @@ export class PanelGestionarParcelaComponent implements OnInit, OnDestroy {
 
     const parcelaId = this.state.parcelaSeleccionadaId();
     if (!parcelaId) return;
+    const nombreEditado = this.nombre.trim();
     this.mapaService.editarParcela(parcelaId, {
-      nombre: this.nombre.trim(),
+      nombre: nombreEditado,
       tipo_suelo_id: this.tipoSueloId,
       drenaje: this.drenaje,
       acceso_riego: this.accesoRiego,
-      tipo_riego: this.accesoRiego ? this.tipoRiego : null,
+      tipo_riego: this.accesoRiego && this.tipoRiego ? this.tipoRiego : null,
       observaciones: this.observaciones.trim(),
     }).subscribe({
-      next: () => { this.cargando.set(false); this.refrescarMapaYVolver(); },
+      next: () => {
+        this.cargando.set(false);
+        this.notificacion.exito(`Parcela "${nombreEditado}" actualizada correctamente.`);
+        this.refrescarMapaYVolver();
+      },
       error: (err) => {
         this.cargando.set(false);
-        this.error.set(err.error?.error || 'Error al editar la parcela.');
+        const mensaje = err.error?.error || 'Error al editar la parcela.';
+        this.error.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }
@@ -247,14 +275,21 @@ export class PanelGestionarParcelaComponent implements OnInit, OnDestroy {
   eliminar(): void {
     const parcelaId = this.state.parcelaSeleccionadaId();
     if (!parcelaId) return;
+    const nombreParcela = this.nombre.trim();
     this.errorEliminar.set('');
     this.cargando.set(true);
 
     this.mapaService.eliminarParcela(parcelaId).subscribe({
-      next: () => { this.cargando.set(false); this.refrescarMapaYVolver(); },
+      next: () => {
+        this.cargando.set(false);
+        this.notificacion.exito(`Parcela "${nombreParcela}" eliminada correctamente.`);
+        this.refrescarMapaYVolver();
+      },
       error: (err) => {
         this.cargando.set(false);
-        this.errorEliminar.set(err.error?.error || 'No se pudo eliminar la parcela.');
+        const mensaje = err.error?.error || 'No se pudo eliminar la parcela.';
+        this.errorEliminar.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }

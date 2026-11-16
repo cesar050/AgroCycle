@@ -1,0 +1,58 @@
+@use '../../../../styles' as *;
+
+.notificaciones-host {
+  position: fixed;
+  top: $s4;
+  right: $s4;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: $s2;
+  width: 340px;
+  max-width: calc(100vw - #{$s4} * 2);
+  pointer-events: none;
+}
+
+.notificacion {
+  display: flex;
+  align-items: flex-start;
+  gap: $s3;
+  padding: $s3 $s4;
+  border-radius: $radius-md;
+  font-family: $font-sans;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  pointer-events: auto;
+  animation: notificacion-entrada 0.18s ease;
+
+  &--exito        { background: #15803D; }
+  &--error        { background: #DC2626; }
+  &--advertencia  { background: #D97706; }
+}
+
+.notificacion__mensaje {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.notificacion__cerrar {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  margin-top: -1px;
+
+  &:hover { color: #fff; }
+}
+
+@keyframes notificacion-entrada {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

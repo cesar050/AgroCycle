@@ -7,6 +7,7 @@ import * as L from 'leaflet';
 
 import { MapaService } from './services/mapa.service';
 import { LeafletMapaService } from './services/leaflet-mapa.service';
+import { NotificacionService } from '../../../core/services/notificacion.service';
 import { MapaStateService, MapaBase, Parcela, Lote } from './services/mapa-state.service';
 import { PanelGestionarFincaComponent } from './components/panel-gestionar-finca/panel-gestionar-finca.component';
 import { PanelGestionarLoteComponent } from './components/panel-gestionar-lote/panel-gestionar-lote.component';
@@ -57,6 +58,7 @@ export class MapaComponent implements OnDestroy {
   private mapaService = inject(MapaService);
   private leafletMapaService = inject(LeafletMapaService);
   private router = inject(Router);
+  private notificacion = inject(NotificacionService);
 
   mapaElRef = viewChild<ElementRef>('mapaLeaflet');
 
@@ -289,12 +291,15 @@ export class MapaComponent implements OnDestroy {
     this.mapaService.eliminarLote(lote.id).subscribe({
       next: () => {
         this.eliminandoId.set(null);
+        this.notificacion.exito(`Lote "${lote.nombre}" eliminado correctamente.`);
         if (this.state.loteSeleccionadoId() === lote.id) this.state.volverALotes();
         this.refrescarMapaSilencioso();
       },
       error: (err) => {
         this.eliminandoId.set(null);
-        this.errorAccion.set(err.error?.error || 'No se pudo eliminar el lote.');
+        const mensaje = err.error?.error || 'No se pudo eliminar el lote.';
+        this.errorAccion.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }
@@ -313,12 +318,15 @@ export class MapaComponent implements OnDestroy {
     this.mapaService.eliminarParcela(parcela.id).subscribe({
       next: () => {
         this.eliminandoId.set(null);
+        this.notificacion.exito(`Parcela "${parcela.nombre}" eliminada correctamente.`);
         if (this.state.parcelaSeleccionadaId() === parcela.id) this.state.cerrarPanelDerecho();
         this.refrescarMapaSilencioso();
       },
       error: (err) => {
         this.eliminandoId.set(null);
-        this.errorAccion.set(err.error?.error || 'No se pudo eliminar la parcela.');
+        const mensaje = err.error?.error || 'No se pudo eliminar la parcela.';
+        this.errorAccion.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }

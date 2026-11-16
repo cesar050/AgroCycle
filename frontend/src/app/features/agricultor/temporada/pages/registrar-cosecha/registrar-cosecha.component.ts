@@ -3,6 +3,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TemporadaService } from '../../services/temporada.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-registrar-cosecha',
@@ -41,6 +42,7 @@ export class RegistrarCosechaComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private svc: TemporadaService,
+    private notificacion: NotificacionService,
   ) {}
 
   ngOnInit() {
@@ -90,11 +92,14 @@ export class RegistrarCosechaComponent implements OnInit {
     this.svc.registrarCosecha(this.temporadaId, this.tpId, datos).subscribe({
       next: () => {
         this.cargando.set(false);
+        this.notificacion.exito('Cosecha registrada correctamente.');
         this.router.navigate(['/app/temporada', this.temporadaId]);
       },
       error: (err) => {
         this.cargando.set(false);
-        this.error.set(err.error?.error || 'No se pudo registrar la cosecha.');
+        const mensaje = err.error?.error || 'No se pudo registrar la cosecha.';
+        this.error.set(mensaje);
+        this.notificacion.error(mensaje);
       }
     });
   }

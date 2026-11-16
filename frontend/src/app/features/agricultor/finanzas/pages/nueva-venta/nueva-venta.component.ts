@@ -3,6 +3,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FinanzasService } from '../../services/finanzas.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 
 /**
  * CU-FIN-004 — Registrar Precio y Volumen de Venta.
@@ -44,6 +45,7 @@ export class NuevaVentaComponent implements OnInit {
     private svc: FinanzasService,
     private router: Router,
     private route: ActivatedRoute,
+    private notificacion: NotificacionService,
   ) {}
 
   ngOnInit() {
@@ -194,13 +196,16 @@ export class NuevaVentaComponent implements OnInit {
     this.svc.registrarVenta(this.tpId(), datos).subscribe({
       next: () => {
         this.guardando.set(false);
+        this.notificacion.exito('Venta registrada correctamente.');
         this.router.navigate(['/app/finanzas'], {
           queryParams: { temporada: this.temporadaId() },
         });
       },
       error: (err) => {
         this.guardando.set(false);
-        this.error.set(err.error?.error || 'No se pudo registrar la venta.');
+        const mensaje = err.error?.error || 'No se pudo registrar la venta.';
+        this.error.set(mensaje);
+        this.notificacion.error(mensaje);
       },
     });
   }

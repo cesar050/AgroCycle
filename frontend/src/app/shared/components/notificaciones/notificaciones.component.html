@@ -1,0 +1,8 @@
+<div class="notificaciones-host">
+  @for (n of servicio.notificaciones(); track n.id) {
+    <div class="notificacion notificacion--{{ n.tipo }}" role="status">
+      <span class="notificacion__mensaje">{{ n.mensaje }}</span>
+      <button type="button" class="notificacion__cerrar" (click)="servicio.cerrar(n.id)" aria-label="Cerrar notificación">×</button>
+    </div>
+  }
+</div>

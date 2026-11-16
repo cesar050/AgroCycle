@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ActividadesService } from '../../services/actividades.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-nueva-actividad',
@@ -80,6 +81,7 @@ export class NuevaActividadComponent implements OnInit {
     private svc: ActividadesService,
     private router: Router,
     private route: ActivatedRoute,
+    private notificacion: NotificacionService,
   ) {}
 
   ngOnInit() {
@@ -205,11 +207,14 @@ export class NuevaActividadComponent implements OnInit {
     this.svc.registrar(this.temporadaId, datos).subscribe({
       next: () => {
         this.cargando.set(false);
+        this.notificacion.exito('Actividad registrada correctamente.');
         this.router.navigate(['/app/actividades']);
       },
       error: (err) => {
         this.cargando.set(false);
-        this.error.set(err.error?.error || 'No se pudo registrar la actividad.');
+        const mensaje = err.error?.error || 'No se pudo registrar la actividad.';
+        this.error.set(mensaje);
+        this.notificacion.error(mensaje);
       }
     });
   }

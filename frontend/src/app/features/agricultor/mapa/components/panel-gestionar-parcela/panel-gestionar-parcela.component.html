@@ -23,8 +23,8 @@
       <div class="campo">
         <label for="pgp-drenaje">Drenaje</label>
         <select id="pgp-drenaje" class="input-tec" [(ngModel)]="drenaje">
-          @for (d of drenajeOpciones; track d) {
-            <option [value]="d">{{ d }}</option>
+          @for (d of drenajeOpciones; track d.value) {
+            <option [value]="d.value">{{ d.label }}</option>
           }
         </select>
       </div>
@@ -39,8 +39,8 @@
           <label for="pgp-riego">Tipo de riego</label>
           <select id="pgp-riego" class="input-tec" [(ngModel)]="tipoRiego">
             <option value="">Sin especificar</option>
-            @for (r of tiposRiego; track r) {
-              <option [value]="r">{{ r }}</option>
+            @for (r of tiposRiego; track r.value) {
+              <option [value]="r.value">{{ r.label }}</option>
             }
           </select>
         </div>

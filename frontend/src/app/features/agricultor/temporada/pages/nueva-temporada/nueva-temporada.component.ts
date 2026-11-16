@@ -4,6 +4,7 @@ import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TemporadaService } from '../../services/temporada.service';
 import { ApiService } from '../../../../../core/services/api.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-nueva-temporada',
@@ -59,6 +60,7 @@ export class NuevaTemporadaComponent implements OnInit {
   constructor(
     private svc: TemporadaService,
     private router: Router,
+    private notificacion: NotificacionService,
   ) {}
 
   ngOnInit() { this.cargarFincas(); }
@@ -155,7 +157,9 @@ export class NuevaTemporadaComponent implements OnInit {
       },
       error: (err) => {
         this.cargando.set(false);
-        this.error.set(err.error?.error || 'Error al crear la temporada.');
+        const mensaje = err.error?.error || 'Error al crear la temporada.';
+        this.error.set(mensaje);
+        this.notificacion.error(mensaje);
       }
     });
   }
@@ -174,6 +178,7 @@ export class NuevaTemporadaComponent implements OnInit {
 
     Promise.allSettled(promesas).then(() => {
       this.cargando.set(false);
+      this.notificacion.exito(`Temporada "${this.nombre.trim()}" registrada correctamente.`);
       this.router.navigate(['/app/temporada']);
     });
   }

@@ -3,6 +3,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { FinanzasService } from './services/finanzas.service';
+import { NotificacionService } from '../../../core/services/notificacion.service';
 
 /**
  * Vista principal del módulo Financiero (AC-FIN).
@@ -47,6 +48,7 @@ export class FinanzasComponent implements OnInit {
   constructor(
     private svc: FinanzasService,
     private route: ActivatedRoute,
+    private notificacion: NotificacionService,
   ) {}
 
   ngOnInit() {
@@ -109,10 +111,11 @@ export class FinanzasComponent implements OnInit {
     if (!confirm(`¿Eliminar el gasto de $${compra.costo_total}?`)) return;
     this.svc.eliminarCompra(compra.id).subscribe({
       next: () => {
+        this.notificacion.exito('Gasto eliminado correctamente.');
         this.cargarDatos(this.temporadaId());
         this.cargarComparativo();
       },
-      error: () => {},
+      error: (err) => this.notificacion.errorHttp(err, 'No se pudo eliminar el gasto.'),
     });
   }
 
