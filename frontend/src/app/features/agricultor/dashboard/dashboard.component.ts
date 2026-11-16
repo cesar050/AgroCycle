@@ -5,6 +5,7 @@ import {
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
 import * as L from 'leaflet';
 import { ApiService } from '../../../core/services/api.service';
 import { FincaContextService } from '../../../core/services/finca-context.service';
@@ -445,6 +446,12 @@ export class DashboardComponent implements OnDestroy {
     stream: ({ params }) => this.api.post<any>(
       `/climatico/temporada-parcelas/${params.tpId}/estres-hidrico`,
       { parcela_id: params.parcelaId, fecha_inicio: haceDiasISO(7), fecha_fin: hoyISO() }
+    ).pipe(
+      // El backend responde 404 cuando aun no hay datos climaticos
+      // descargados para el periodo (estado vacio legitimo, no un
+      // error) — sin este catch, rxResource queda en estado 'error'
+      // y cualquier lectura de .value() lanza ResourceValueError.
+      catchError(() => of({ datos: [], ks_promedio: null, impacto_rendimiento_porcentaje: null })),
     ),
   });
 

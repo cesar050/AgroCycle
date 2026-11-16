@@ -98,8 +98,17 @@ export class MapaComponent implements OnDestroy {
 
       this.state.cargando.set(true);
       this.mapaService.obtenerMapaFinca(finca.id).subscribe({
-        next: (res) => { this.state.datosMapa.set(res); this.state.cargando.set(false); },
-        error: () => this.state.cargando.set(false),
+        next: (res) => {
+          this.state.datosMapa.set(res);
+          this.state.errorRefresco.set(null);
+          this.state.cargando.set(false);
+        },
+        error: () => {
+          this.state.cargando.set(false);
+          this.state.errorRefresco.set(
+            'No se pudo cargar el mapa de esta finca. Verifica tu conexión e intenta de nuevo.'
+          );
+        },
       });
     });
 
@@ -192,6 +201,25 @@ export class MapaComponent implements OnDestroy {
 
   gestionarFinca(): void {
     this.state.panelMode.set(this.state.fincaActiva() ? 'editar-finca' : 'crear-finca');
+  }
+
+  reintentarCargaMapa(): void {
+    const finca = this.state.fincaActiva();
+    if (!finca) return;
+    this.state.cargando.set(true);
+    this.mapaService.obtenerMapaFinca(finca.id).subscribe({
+      next: (res) => {
+        this.state.datosMapa.set(res);
+        this.state.errorRefresco.set(null);
+        this.state.cargando.set(false);
+      },
+      error: () => {
+        this.state.cargando.set(false);
+        this.state.errorRefresco.set(
+          'No se pudo cargar el mapa de esta finca. Verifica tu conexión e intenta de nuevo.'
+        );
+      },
+    });
   }
 
   elegirBase(base: MapaBase): void {

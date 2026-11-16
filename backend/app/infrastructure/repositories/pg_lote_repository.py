@@ -97,8 +97,12 @@ class PgLoteRepository(ILoteRepository):
     def contiene_geometria(self, lote_id: str, geometria_wkt: str) -> bool:
         """
         Verifica que una geometria este contenida dentro del lote.
-        Si el lote no tiene geometria retorna True para no bloquear.
+        Si el lote no tiene geometria, o no hay geometria que validar,
+        retorna True para no bloquear.
         """
+        if not geometria_wkt:
+            return True
+
         resultado = self.db.execute(
             text("""
                 SELECT 

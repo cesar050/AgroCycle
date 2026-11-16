@@ -7,6 +7,7 @@ $mt-text:   #0F172A;
 $mt-text-sec: #64748B;
 $mt-text-ter: #94A3B8;
 $mt-verde:  #15803D;
+$mt-rojo:   #B91C1C;
 
 // ================================================================
 // RAÍZ — 100% del área de contenido, sin scroll de página. División
@@ -244,6 +245,31 @@ $mt-verde:  #15803D;
   }
 
   &--tabla { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+}
+
+.mensaje-error {
+  font-size: 11.5px;
+  color: $mt-rojo;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 3px;
+  padding: 7px 9px;
+  margin-bottom: $s2;
+}
+
+.btn-tec {
+  padding: 7px 11px;
+  border: 1px solid $mt-border;
+  border-radius: 3px;
+  background: $mt-bg;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: $mt-text;
+  cursor: pointer;
+  transition: border-color 0.1s ease, color 0.1s ease;
+
+  &:hover:not(:disabled) { border-color: $mt-verde; color: $mt-verde; }
+  &--sm { padding: 5px 9px; font-size: 11px; }
 }
 
 .fila-kv {

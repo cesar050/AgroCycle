@@ -89,6 +89,13 @@
 
             <div class="panel-tecnico__body">
 
+              @if (state.errorRefresco(); as errorMapa) {
+                <section class="bloque">
+                  <p class="mensaje-error">{{ errorMapa }}</p>
+                  <button type="button" class="btn-tec btn-tec--sm" (click)="reintentarCargaMapa()">Reintentar</button>
+                </section>
+              }
+
               <section class="bloque">
                 <h3>Coeficientes de validación</h3>
                 <div class="fila-kv">

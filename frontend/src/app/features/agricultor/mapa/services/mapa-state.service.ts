@@ -49,6 +49,11 @@ export class MapaStateService {
   datosTopografia = signal<{ parcelas: TopografiaParcela[] } | null>(null);
   datosHumedad    = signal<{ parcelas: HumedadParcela[] } | null>(null);
   ndviUrl         = signal<string | null>(null);
+  // Error al (re)cargar el mapa de la finca activa — ej. el guardado de
+  // un lote/parcela tuvo éxito pero la petición GET posterior para
+  // refrescar la vista falló (token vencido, red). Se muestra en el
+  // visor hasta que un refresco posterior tenga éxito o se cambie de finca.
+  errorRefresco   = signal<string | null>(null);
 
   // ---------------- Filtros panel izquierdo ----------------
   busqueda    = signal('');
@@ -202,6 +207,7 @@ export class MapaStateService {
     this.datosHumedad.set(null);
     this.busqueda.set('');
     this.filtroEtapa.set('todas');
+    this.errorRefresco.set(null);
     this.volverAlVisor();
     const urlAnterior = this.ndviUrl();
     if (urlAnterior) URL.revokeObjectURL(urlAnterior);

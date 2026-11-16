@@ -179,9 +179,15 @@ export class PanelGestionarParcelaComponent implements OnInit, OnDestroy {
     this.mapaService.obtenerMapaFinca(finca.id).subscribe({
       next: (res) => {
         this.state.datosMapa.set(res);
+        this.state.errorRefresco.set(null);
         this.state.volverAlVisor();
       },
-      error: () => this.state.volverAlVisor(),
+      error: () => {
+        this.state.errorRefresco.set(
+          'La parcela se guardó, pero no se pudo actualizar la vista del mapa. Recarga la página para ver los datos actualizados.'
+        );
+        this.state.volverAlVisor();
+      },
     });
   }
 

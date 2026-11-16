@@ -94,8 +94,12 @@ class PgFincaRepository(IFincaRepository):
     def contiene_geometria(self, finca_id: str, geometria_wkt: str) -> bool:
         """
         Verifica que una geometria este contenida dentro de la finca.
-        Si la finca no tiene geometria retorna True para no bloquear.
+        Si la finca no tiene geometria, o no hay geometria que validar,
+        retorna True para no bloquear.
         """
+        if not geometria_wkt:
+            return True
+
         resultado = self.db.execute(
             text("""
                 SELECT
