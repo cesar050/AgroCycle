@@ -72,7 +72,12 @@ export class MapaStateService {
   mapaBase     = signal<MapaBase>('satelite');
   cursorLatLng = signal<{ lat: number; lng: number } | null>(null);
 
-  // ---------------- Selección ----------------
+  // ---------------- Selección / navegación jerárquica ----------------
+  // Finca > Lote > Parcela. loteSeleccionadoId es el nivel de "drill-down"
+  // de navegación (lista de lotes -> parcelas de ese lote); es distinto
+  // de loteEnContexto, que solo vive mientras un panel CRUD (crear/editar
+  // lote o parcela) está abierto.
+  loteSeleccionadoId    = signal<string | null>(null);
   parcelaSeleccionadaId = signal<string | null>(null);
 
   // ---------------- Panel de gestión (CRUD inline) ----------------
@@ -91,6 +96,14 @@ export class MapaStateService {
   lotes = computed<Lote[]>(() => this.datosMapa()?.finca?.lotes ?? []);
 
   parcelas = computed<Parcela[]>(() => this.lotes().flatMap(l => l.parcelas ?? []));
+
+  loteSeleccionado = computed<Lote | null>(() => {
+    const id = this.loteSeleccionadoId();
+    if (!id) return null;
+    return this.lotes().find(l => l.id === id) ?? null;
+  });
+
+  parcelasDelLoteSeleccionado = computed<Parcela[]>(() => this.loteSeleccionado()?.parcelas ?? []);
 
   totalParcelas = computed(() => this.parcelas().length);
 
@@ -172,11 +185,31 @@ export class MapaStateService {
   // ================================================================
   // Mutadores
   // ================================================================
+  // Selecciona una parcela y, si pertenece a un lote distinto al que
+  // está en navegación, alinea loteSeleccionadoId — así un clic directo
+  // sobre el polígono de una parcela en el mapa (sin pasar por la lista
+  // de lotes) deja el breadcrumb Finca > Lote > Parcela consistente.
   seleccionarParcela(id: string | null): void {
     this.parcelaSeleccionadaId.set(id);
+    if (!id) return;
+    const lote = this.lotes().find(l => (l.parcelas ?? []).some(p => p.id === id));
+    if (lote) this.loteSeleccionadoId.set(lote.id);
   }
 
   cerrarPanelDerecho(): void {
+    this.parcelaSeleccionadaId.set(null);
+  }
+
+  // Entra al nivel "parcelas de este lote" de la navegación (clic en la
+  // lista de lotes o en el polígono del lote sobre el mapa).
+  seleccionarLote(id: string): void {
+    this.loteSeleccionadoId.set(id);
+    this.parcelaSeleccionadaId.set(null);
+  }
+
+  // Breadcrumb "Finca": vuelve al listado de lotes de la finca activa.
+  volverALotes(): void {
+    this.loteSeleccionadoId.set(null);
     this.parcelaSeleccionadaId.set(null);
   }
 
@@ -202,6 +235,7 @@ export class MapaStateService {
   // Se llama cuando fincaActiva() cambia: limpia todo lo que dependía
   // de la finca anterior (selección, capas cargadas bajo demanda, filtros).
   resetSeleccionFinca(): void {
+    this.loteSeleccionadoId.set(null);
     this.parcelaSeleccionadaId.set(null);
     this.datosTopografia.set(null);
     this.datosHumedad.set(null);

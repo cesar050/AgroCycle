@@ -2,15 +2,16 @@ import {
   Component, OnDestroy, signal, computed, effect, viewChild, ElementRef, inject,
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 
 import { MapaService } from './services/mapa.service';
 import { LeafletMapaService } from './services/leaflet-mapa.service';
-import { MapaStateService, MapaBase, Parcela } from './services/mapa-state.service';
+import { MapaStateService, MapaBase, Parcela, Lote } from './services/mapa-state.service';
 import { PanelGestionarFincaComponent } from './components/panel-gestionar-finca/panel-gestionar-finca.component';
 import { PanelGestionarLoteComponent } from './components/panel-gestionar-lote/panel-gestionar-lote.component';
 import { PanelGestionarParcelaComponent } from './components/panel-gestionar-parcela/panel-gestionar-parcela.component';
-import { construirGeoJSONParcelas, calcularCentro } from './mapa.utils';
+import { construirGeoJSONParcelas, construirGeoJSONLotes, calcularCentro } from './mapa.utils';
 import { ETAPAS_FENOLOGICAS, EtapaFenologicaPipe } from './pipes/etapa-fenologica.pipe';
 
 const TILES_BASE: Record<MapaBase, string> = {
@@ -55,16 +56,27 @@ export class MapaComponent implements OnDestroy {
 
   private mapaService = inject(MapaService);
   private leafletMapaService = inject(LeafletMapaService);
+  private router = inject(Router);
 
   mapaElRef = viewChild<ElementRef>('mapaLeaflet');
 
-  // Única variable de UI: colapsa el panel del 20% para que el mapa
+  // Única variable de UI: colapsa el panel lateral para que el mapa
   // ocupe el 100% del contenedor, y viceversa.
   pantallaCompleta = signal(false);
+
+  // Acciones inline de la navegación jerárquica (eliminar lote/parcela
+  // desde la lista, sin pasar por el panel CRUD completo).
+  eliminandoId = signal<string | null>(null);
+  errorAccion  = signal<string | null>(null);
+
+  // Expande el bloque de detalle técnico extendido (avance de ciclo,
+  // producción real, estimación) de la parcela seleccionada.
+  detalleTecnicoAbierto = signal(false);
 
   basesMapa = BASES_MAPA;
 
   private capaParcelas: L.Layer | null = null;
+  private capaLotes: L.Layer | null = null;
 
   private readonly coloresEtapas: Record<string, string> = Object.fromEntries(
     ETAPAS_FENOLOGICAS.map(e => [e.key, e.color])
@@ -81,6 +93,11 @@ export class MapaComponent implements OnDestroy {
 
   tituloPanel = computed(() => this.titulosPanel[this.state.panelMode()] ?? '');
 
+  // Panel lateral: 30% en navegación (visor), 40% mientras hay un
+  // formulario de Crear/Editar Finca/Lote/Parcela abierto — evita los
+  // formularios estrechos e ilegibles del 20% original.
+  panelFormularioActivo = computed(() => this.state.panelMode() !== 'visor');
+
   constructor() {
     // 1) Cargar los datos del mapa cada vez que cambia la finca activa.
     effect(() => {
@@ -96,20 +113,7 @@ export class MapaComponent implements OnDestroy {
         return;
       }
 
-      this.state.cargando.set(true);
-      this.mapaService.obtenerMapaFinca(finca.id).subscribe({
-        next: (res) => {
-          this.state.datosMapa.set(res);
-          this.state.errorRefresco.set(null);
-          this.state.cargando.set(false);
-        },
-        error: () => {
-          this.state.cargando.set(false);
-          this.state.errorRefresco.set(
-            'No se pudo cargar el mapa de esta finca. Verifica tu conexión e intenta de nuevo.'
-          );
-        },
-      });
+      this.cargarMapaFinca(finca.id, { marcarCargando: true });
     });
 
     // 2) Ciclo de vida del mapa Leaflet. Normalmente centra en la
@@ -155,7 +159,28 @@ export class MapaComponent implements OnDestroy {
       }).addTo(mapa);
     });
 
-    // 4) Parcelas coloreadas por etapa fenológica — única capa temática
+    // 4) Lotes (borde azul, con tooltip nombre + hectáreas). Se dibujan
+    // antes que las parcelas para que, al superponerse visualmente, el
+    // polígono de una parcela (añadido después, por lo tanto encima en
+    // el SVG) capture el clic primero que el de su lote contenedor.
+    effect(() => {
+      const datos = this.state.datosMapa();
+      const mapa  = this.state.mapaLeaflet();
+      if (!mapa || !datos?.finca) return;
+
+      if (this.capaLotes) {
+        mapa.removeLayer(this.capaLotes);
+        this.capaLotes = null;
+      }
+
+      const geojsonLotes = construirGeoJSONLotes(datos.finca);
+      const capa = this.leafletMapaService.agregarCapaLotes(mapa, geojsonLotes);
+      this.engancharSeleccionLote(capa);
+      this.capaLotes = capa;
+      this.aplicarResaltadoLote();
+    });
+
+    // 5) Parcelas coloreadas por etapa fenológica — única capa temática
     // de esta vista general.
     effect(() => {
       const datos = this.state.datosMapa();
@@ -174,10 +199,29 @@ export class MapaComponent implements OnDestroy {
       this.aplicarResaltadoSeleccion();
     });
 
-    // 5) Resaltado de la parcela seleccionada.
+    // 6) Resaltado de la parcela y el lote seleccionados.
     effect(() => {
       this.state.parcelaSeleccionadaId();
       this.aplicarResaltadoSeleccion();
+    });
+    effect(() => {
+      this.state.loteSeleccionadoId();
+      this.aplicarResaltadoLote();
+    });
+
+    // 7) Zoom automático: al entrar a un lote (nivel 2 de la
+    // navegación) encuadra su polígono; al volver al nivel de finca
+    // (ningún lote seleccionado) vuelve a encuadrar la finca completa.
+    effect(() => {
+      const mapa = this.state.mapaLeaflet();
+      const lote = this.state.loteSeleccionado();
+      const datos = this.state.datosMapa();
+      if (!mapa) return;
+      if (lote?.geojson) {
+        this.leafletMapaService.fitBounds(mapa, lote.geojson);
+      } else if (datos?.finca?.geojson) {
+        this.leafletMapaService.fitBounds(mapa, datos.finca.geojson);
+      }
     });
   }
 
@@ -206,20 +250,7 @@ export class MapaComponent implements OnDestroy {
   reintentarCargaMapa(): void {
     const finca = this.state.fincaActiva();
     if (!finca) return;
-    this.state.cargando.set(true);
-    this.mapaService.obtenerMapaFinca(finca.id).subscribe({
-      next: (res) => {
-        this.state.datosMapa.set(res);
-        this.state.errorRefresco.set(null);
-        this.state.cargando.set(false);
-      },
-      error: () => {
-        this.state.cargando.set(false);
-        this.state.errorRefresco.set(
-          'No se pudo cargar el mapa de esta finca. Verifica tu conexión e intenta de nuevo.'
-        );
-      },
-    });
+    this.cargarMapaFinca(finca.id, { marcarCargando: true });
   }
 
   elegirBase(base: MapaBase): void {
@@ -229,6 +260,105 @@ export class MapaComponent implements OnDestroy {
   toggleVistaCompleta(): void {
     this.pantallaCompleta.update(v => !v);
     setTimeout(() => this.state.mapaLeaflet()?.invalidateSize(), 220);
+  }
+
+  // ================================================================
+  // Navegación jerárquica Finca > Lote > Parcela (panel lateral)
+  // ================================================================
+
+  nuevoLote(): void {
+    this.state.panelMode.set('crear-lote');
+  }
+
+  verParcelasDeLote(lote: Lote): void {
+    this.state.seleccionarLote(lote.id);
+  }
+
+  editarLoteDesdeLista(lote: Lote, evento: Event): void {
+    evento.stopPropagation();
+    this.state.loteEnContexto.set(lote.id);
+    this.state.panelMode.set('editar-lote');
+  }
+
+  eliminarLoteDesdeLista(lote: Lote, evento: Event): void {
+    evento.stopPropagation();
+    if (!confirm(`¿Eliminar el lote "${lote.nombre}"? Esta acción no se puede deshacer.`)) return;
+
+    this.errorAccion.set(null);
+    this.eliminandoId.set(lote.id);
+    this.mapaService.eliminarLote(lote.id).subscribe({
+      next: () => {
+        this.eliminandoId.set(null);
+        if (this.state.loteSeleccionadoId() === lote.id) this.state.volverALotes();
+        this.refrescarMapaSilencioso();
+      },
+      error: (err) => {
+        this.eliminandoId.set(null);
+        this.errorAccion.set(err.error?.error || 'No se pudo eliminar el lote.');
+      },
+    });
+  }
+
+  nuevaParcelaEnLote(lote: Lote): void {
+    this.state.loteEnContexto.set(lote.id);
+    this.state.panelMode.set('crear-parcela');
+  }
+
+  eliminarParcelaDesdeLista(parcela: Parcela, evento: Event): void {
+    evento.stopPropagation();
+    if (!confirm(`¿Eliminar la parcela "${parcela.nombre}"? Esta acción no se puede deshacer.`)) return;
+
+    this.errorAccion.set(null);
+    this.eliminandoId.set(parcela.id);
+    this.mapaService.eliminarParcela(parcela.id).subscribe({
+      next: () => {
+        this.eliminandoId.set(null);
+        if (this.state.parcelaSeleccionadaId() === parcela.id) this.state.cerrarPanelDerecho();
+        this.refrescarMapaSilencioso();
+      },
+      error: (err) => {
+        this.eliminandoId.set(null);
+        this.errorAccion.set(err.error?.error || 'No se pudo eliminar la parcela.');
+      },
+    });
+  }
+
+  irARegistrarActividad(parcelaId: string): void {
+    this.router.navigate(['/app/actividades/nueva'], { queryParams: { parcela: parcelaId } });
+  }
+
+  toggleDetalleTecnico(): void {
+    this.detalleTecnicoAbierto.update(v => !v);
+  }
+
+  // ================================================================
+  // Helpers privados
+  // ================================================================
+
+  private cargarMapaFinca(fincaId: string, opts: { marcarCargando?: boolean } = {}): void {
+    if (opts.marcarCargando) this.state.cargando.set(true);
+    this.mapaService.obtenerMapaFinca(fincaId).subscribe({
+      next: (res) => {
+        this.state.datosMapa.set(res);
+        this.state.errorRefresco.set(null);
+        if (opts.marcarCargando) this.state.cargando.set(false);
+      },
+      error: () => {
+        if (opts.marcarCargando) this.state.cargando.set(false);
+        this.state.errorRefresco.set(
+          'No se pudo actualizar el mapa de esta finca. Verifica tu conexión e intenta de nuevo.'
+        );
+      },
+    });
+  }
+
+  // Igual que cargarMapaFinca pero sin tocar el signal `cargando` — se
+  // usa tras eliminar un lote/parcela desde la lista, donde ya hay un
+  // indicador de carga propio por fila (eliminandoId).
+  private refrescarMapaSilencioso(): void {
+    const finca = this.state.fincaActiva();
+    if (!finca) return;
+    this.cargarMapaFinca(finca.id);
   }
 
   private engancharSeleccion(capa: L.Layer): void {
@@ -241,6 +371,16 @@ export class MapaComponent implements OnDestroy {
     });
   }
 
+  private engancharSeleccionLote(capa: L.Layer): void {
+    if (!(capa instanceof L.GeoJSON)) return;
+    capa.eachLayer(layer => {
+      const feature = (layer as any).feature;
+      const id = feature?.properties?.id;
+      if (!id) return;
+      layer.on('click', () => this.state.seleccionarLote(id));
+    });
+  }
+
   private aplicarResaltadoSeleccion(): void {
     const selId = this.state.parcelaSeleccionadaId();
     if (!this.capaParcelas || !(this.capaParcelas instanceof L.GeoJSON)) return;
@@ -250,6 +390,21 @@ export class MapaComponent implements OnDestroy {
       const esSeleccionada = (layer as any).feature?.properties?.id === selId;
       path.setStyle({ weight: esSeleccionada ? 4 : 1.5 });
       if (esSeleccionada) path.bringToFront?.();
+    });
+  }
+
+  private aplicarResaltadoLote(): void {
+    const selId = this.state.loteSeleccionadoId();
+    if (!this.capaLotes || !(this.capaLotes instanceof L.GeoJSON)) return;
+    this.capaLotes.eachLayer(layer => {
+      const path = layer as L.Path;
+      if (!path.setStyle) return;
+      const esSeleccionado = (layer as any).feature?.properties?.id === selId;
+      path.setStyle({
+        weight: esSeleccionado ? 4 : 2.5,
+        fillOpacity: esSeleccionado ? 0.12 : 0.04,
+      });
+      if (esSeleccionado) path.bringToFront?.();
     });
   }
 }

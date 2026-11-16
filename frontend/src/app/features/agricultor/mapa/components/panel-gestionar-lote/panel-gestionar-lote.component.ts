@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
 import { MapaService } from '../../services/mapa.service';
-import { MapaStateService, Parcela } from '../../services/mapa-state.service';
+import { MapaStateService } from '../../services/mapa-state.service';
 import { calcularAreaHaAprox, puntoDentroDePoligono } from '../../mapa.utils';
 
 // Panel embebido en el 20% de MapaComponent — reemplaza la antigua
@@ -33,13 +33,6 @@ export class PanelGestionarLoteComponent implements OnDestroy {
   fueraDeLimite = signal(false);
   coordenadas = signal<[number, number][]>([]);
   areaHa = signal(0);
-
-  loteActual = computed(() => {
-    const id = this.state.loteEnContexto();
-    return this.state.lotes().find(l => l.id === id) ?? null;
-  });
-
-  parcelasDelLote = computed<Parcela[]>(() => this.loteActual()?.parcelas ?? []);
 
   private puntosLatLng: L.LatLng[] = [];
   private marcadores: L.CircleMarker[] = [];
@@ -240,12 +233,4 @@ export class PanelGestionarLoteComponent implements OnDestroy {
     });
   }
 
-  seleccionarParcela(parcelaId: string): void {
-    this.state.parcelaSeleccionadaId.set(parcelaId);
-    this.state.panelMode.set('editar-parcela');
-  }
-
-  nuevaParcela(): void {
-    this.state.panelMode.set('crear-parcela');
-  }
 }

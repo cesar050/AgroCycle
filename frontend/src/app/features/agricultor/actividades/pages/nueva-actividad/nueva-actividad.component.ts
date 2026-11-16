@@ -111,7 +111,13 @@ export class NuevaActividadComponent implements OnInit {
       next: (res) => {
         const ps = res.parcelas || [];
         this.parcelas.set(ps);
-        if (ps.length === 1) this.form.temporada_parcela_id = ps[0].id;
+        // Llegada desde Mapa General (?parcela=<parcela_id>, no el id de
+        // temporada_parcelas): preseleccionar la fila cuyo parcela_id
+        // coincida con la parcela elegida en el mapa.
+        const parcelaIdPre = this.route.snapshot.queryParamMap.get('parcela');
+        const match = parcelaIdPre ? ps.find((p: any) => p.parcela_id === parcelaIdPre) : null;
+        if (match) this.form.temporada_parcela_id = match.id;
+        else if (ps.length === 1) this.form.temporada_parcela_id = ps[0].id;
       },
       error: () => {}
     });

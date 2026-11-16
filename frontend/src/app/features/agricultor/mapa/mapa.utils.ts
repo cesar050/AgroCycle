@@ -238,6 +238,17 @@ export function construirGeoJSONParcelas(finca: any): any {
   return { type: 'FeatureCollection', features };
 }
 
+export function construirGeoJSONLotes(finca: any): any {
+  const features = (finca?.lotes || [])
+    .filter((l: any) => l.geojson)
+    .map((l: any) => ({
+      type: 'Feature',
+      properties: { id: l.id, nombre: l.nombre, superficie_ha: l.superficie_ha },
+      geometry: l.geojson,
+    }));
+  return { type: 'FeatureCollection', features };
+}
+
 export function calcularCentro(geojson: any): [number, number] | null {
   const anillo = geojson?.coordinates?.[0];
   if (!anillo?.length) return null;

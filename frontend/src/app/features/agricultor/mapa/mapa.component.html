@@ -36,8 +36,8 @@
 
   @else {
 
-    <!-- ===================== VISOR (60%, o 100% en pantalla completa) ===================== -->
-    <div class="visor" [class.visor--completo]="pantallaCompleta()">
+    <!-- ===================== VISOR (70%, 60% con formulario abierto, o 100% en pantalla completa) ===================== -->
+    <div class="visor" [class.visor--completo]="pantallaCompleta()" [class.visor--form]="panelFormularioActivo()">
       <div #mapaLeaflet id="mapa-normal-leaflet" class="leaflet-host"></div>
 
       <div class="etiqueta-tecnica font-mono">{{ state.fincaActiva()?.nombre }}</div>
@@ -71,9 +71,9 @@
       </div>
     </div>
 
-    <!-- ===================== PANEL TÉCNICO (20%) ===================== -->
+    <!-- ===================== PANEL TÉCNICO (30%, 40% con formulario abierto) ===================== -->
     @if (!pantallaCompleta()) {
-      <aside class="panel-tecnico">
+      <aside class="panel-tecnico" [class.panel-tecnico--form]="panelFormularioActivo()">
         @switch (state.panelMode()) {
 
           @case ('visor') {
@@ -96,6 +96,28 @@
                 </section>
               }
 
+              @if (errorAccion(); as errAcc) {
+                <section class="bloque">
+                  <p class="mensaje-error">{{ errAcc }}</p>
+                </section>
+              }
+
+              <nav class="breadcrumb-nav">
+                <button type="button" class="breadcrumb-nav__item" [class.activo]="!state.loteSeleccionado()" (click)="state.volverALotes()">
+                  {{ state.fincaActiva()?.nombre }}
+                </button>
+                @if (state.loteSeleccionado(); as loteCrumb) {
+                  <span class="breadcrumb-nav__sep">›</span>
+                  <button type="button" class="breadcrumb-nav__item" [class.activo]="!state.parcelaSeleccionada()" (click)="state.seleccionarLote(loteCrumb.id)">
+                    {{ loteCrumb.nombre }}
+                  </button>
+                }
+                @if (state.parcelaSeleccionada(); as parcelaCrumb) {
+                  <span class="breadcrumb-nav__sep">›</span>
+                  <span class="breadcrumb-nav__item activo">{{ parcelaCrumb.nombre }}</span>
+                }
+              </nav>
+
               <section class="bloque">
                 <h3>Coeficientes de validación</h3>
                 <div class="fila-kv">
@@ -112,65 +134,109 @@
                 </div>
               </section>
 
-              @if (state.parcelaSeleccionada(); as p) {
-                <section class="bloque">
-                  <h3>Parcela seleccionada</h3>
-                  <div class="fila-kv">
-                    <span>Nombre</span>
-                    <strong>{{ p.nombre }}</strong>
+              @if (state.loteSeleccionado(); as loteActivo) {
+
+                <!-- ===== NIVEL 2/3: parcelas del lote seleccionado ===== -->
+                <section class="bloque bloque--tabla">
+                  <div class="bloque__header">
+                    <h3>Parcelas de "{{ loteActivo.nombre }}"</h3>
+                    <button type="button" class="btn-tec btn-tec--sm" (click)="nuevaParcelaEnLote(loteActivo)">+ Nueva parcela</button>
                   </div>
-                  <div class="fila-kv">
-                    <span>Superficie</span>
-                    <strong class="font-mono">{{ p.superficie_ha | number:'1.2-2' }} ha</strong>
-                  </div>
-                  <div class="fila-kv">
-                    <span>Etapa fenológica</span>
-                    <strong>{{ p.estado_fenologico | etapaFenologica }}</strong>
-                  </div>
-                  <div class="fila-kv">
-                    <span>Pendiente</span>
-                    <strong class="font-mono">{{ p.pendiente | number:'1.1-1' }}%</strong>
+                  <div class="tabla-wrap">
+                    <table class="tabla-tecnica">
+                      <thead>
+                        <tr><th>Parcela</th><th>Superficie</th><th>Etapa</th><th></th></tr>
+                      </thead>
+                      <tbody>
+                        @if (state.parcelasDelLoteSeleccionado().length === 0) {
+                          <tr><td colspan="4" class="vacio">Este lote aún no tiene parcelas registradas.</td></tr>
+                        } @else {
+                          @for (p of state.parcelasDelLoteSeleccionado(); track p.id) {
+                            <tr class="fila-clicable"
+                                [class.seleccionada]="state.parcelaSeleccionadaId() === p.id"
+                                (click)="onParcelaElegida(p)">
+                              <td>{{ p.nombre }}</td>
+                              <td class="font-mono">{{ p.superficie_ha | number:'1.2-2' }} ha</td>
+                              <td>
+                                <span class="chip-etapa" [style.color]="p.estado_fenologico | etapaFenologica:'color'">
+                                  {{ p.estado_fenologico | etapaFenologica }}
+                                </span>
+                              </td>
+                              <td class="acciones-fila">
+                                <button type="button" class="btn-editar-fila" (click)="editarParcela(p, $event)" title="Editar parcela">✎</button>
+                                <button type="button" class="btn-editar-fila btn-editar-fila--peligro" [disabled]="eliminandoId() === p.id" (click)="eliminarParcelaDesdeLista(p, $event)" title="Eliminar parcela">🗑</button>
+                              </td>
+                            </tr>
+                          }
+                        }
+                      </tbody>
+                    </table>
                   </div>
                 </section>
-              }
 
-              <section class="bloque bloque--tabla">
-                <h3>Parcelas de la finca</h3>
-                <div class="tabla-wrap">
-                  <table class="tabla-tecnica">
-                    <thead>
-                      <tr>
-                        <th>Parcela</th>
-                        <th>Superficie</th>
-                        <th>Etapa</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @if (state.parcelas().length === 0) {
-                        <tr><td colspan="4" class="vacio">Esta finca aún no tiene parcelas registradas.</td></tr>
-                      } @else {
-                        @for (p of state.parcelas(); track p.id) {
-                          <tr class="fila-clicable"
-                              [class.seleccionada]="state.parcelaSeleccionadaId() === p.id"
-                              (click)="onParcelaElegida(p)">
-                            <td>{{ p.nombre }}</td>
-                            <td class="font-mono">{{ p.superficie_ha | number:'1.2-2' }} ha</td>
-                            <td>
-                              <span class="chip-etapa" [style.color]="p.estado_fenologico | etapaFenologica:'color'">
-                                {{ p.estado_fenologico | etapaFenologica }}
-                              </span>
-                            </td>
-                            <td>
-                              <button type="button" class="btn-editar-fila" (click)="editarParcela(p, $event)" title="Editar parcela">✎</button>
-                            </td>
-                          </tr>
+                @if (state.parcelaSeleccionada(); as p) {
+                  <section class="bloque">
+                    <h3>Parcela seleccionada</h3>
+                    <div class="fila-kv"><span>Nombre</span><strong>{{ p.nombre }}</strong></div>
+                    <div class="fila-kv"><span>Superficie</span><strong class="font-mono">{{ p.superficie_ha | number:'1.2-2' }} ha</strong></div>
+                    <div class="fila-kv"><span>Etapa fenológica</span><strong>{{ p.estado_fenologico | etapaFenologica }}</strong></div>
+                    <div class="fila-kv"><span>Pendiente</span><strong class="font-mono">{{ p.pendiente | number:'1.1-1' }}%</strong></div>
+
+                    @if (detalleTecnicoAbierto()) {
+                      <div class="fila-kv"><span>Altitud</span><strong class="font-mono">{{ p.altitud_msnm | number:'1.0-0' }} msnm</strong></div>
+                      <div class="fila-kv"><span>Orientación</span><strong>{{ p.orientacion ?? '—' }}</strong></div>
+                      <div class="fila-kv"><span>Avance de ciclo</span><strong class="font-mono">{{ p.avance_ciclo | number:'1.0-0' }}%</strong></div>
+                      <div class="fila-kv"><span>Producción real</span><strong class="font-mono">{{ p.produccion_real | number:'1.1-1' }} qq</strong></div>
+                      <div class="fila-kv"><span>Estimación FAO-33</span><strong class="font-mono">{{ p.estimacion_qq_ha | number:'1.1-1' }} qq/ha</strong></div>
+                    }
+
+                    <div class="acciones-parcela">
+                      <button type="button" class="btn-tec btn-tec--sm" (click)="toggleDetalleTecnico()">
+                        {{ detalleTecnicoAbierto() ? 'Ocultar detalle técnico' : 'Ver detalle técnico' }}
+                      </button>
+                      <button type="button" class="btn-tec btn-tec--sm" (click)="editarParcela(p, $event)">Editar</button>
+                      <button type="button" class="btn-tec btn-tec--sm btn-tec--peligro-outline" [disabled]="eliminandoId() === p.id" (click)="eliminarParcelaDesdeLista(p, $event)">Eliminar</button>
+                      <button type="button" class="btn-tec btn-tec--sm btn-tec--primario" (click)="irARegistrarActividad(p.id)">Registrar actividad</button>
+                    </div>
+                  </section>
+                }
+
+              } @else {
+
+                <!-- ===== NIVEL 1: lotes de la finca ===== -->
+                <section class="bloque bloque--tabla">
+                  <div class="bloque__header">
+                    <h3>Lotes de la finca</h3>
+                    <button type="button" class="btn-tec btn-tec--sm" (click)="nuevoLote()">+ Nuevo lote</button>
+                  </div>
+                  <div class="tabla-wrap">
+                    <table class="tabla-tecnica">
+                      <thead>
+                        <tr><th>Lote</th><th>Superficie</th><th>Parcelas</th><th></th></tr>
+                      </thead>
+                      <tbody>
+                        @if (state.lotes().length === 0) {
+                          <tr><td colspan="4" class="vacio">Esta finca aún no tiene lotes registrados.</td></tr>
+                        } @else {
+                          @for (l of state.lotes(); track l.id) {
+                            <tr class="fila-clicable" (click)="verParcelasDeLote(l)">
+                              <td>{{ l.nombre }}</td>
+                              <td class="font-mono">{{ l.superficie_ha | number:'1.2-2' }} ha</td>
+                              <td class="font-mono">{{ l.parcelas.length }}</td>
+                              <td class="acciones-fila">
+                                <button type="button" class="btn-editar-fila" (click)="verParcelasDeLote(l); $event.stopPropagation()" title="Ver parcelas">👁</button>
+                                <button type="button" class="btn-editar-fila" (click)="editarLoteDesdeLista(l, $event)" title="Editar lote">✎</button>
+                                <button type="button" class="btn-editar-fila btn-editar-fila--peligro" [disabled]="eliminandoId() === l.id" (click)="eliminarLoteDesdeLista(l, $event)" title="Eliminar lote">🗑</button>
+                              </td>
+                            </tr>
+                          }
                         }
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+              }
 
             </div>
           }

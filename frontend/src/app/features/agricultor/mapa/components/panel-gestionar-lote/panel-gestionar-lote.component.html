@@ -52,30 +52,6 @@
     </button>
 
     @if (!modoCrear()) {
-      <section class="bloque bloque--tabla">
-        <div class="bloque__header">
-          <h3>Parcelas de este lote</h3>
-          <button type="button" class="btn-tec btn-tec--sm" (click)="nuevaParcela()">+ Nueva parcela</button>
-        </div>
-        <div class="tabla-wrap">
-          <table class="tabla-tecnica">
-            <thead><tr><th>Parcela</th><th>Superficie</th></tr></thead>
-            <tbody>
-              @if (parcelasDelLote().length === 0) {
-                <tr><td colspan="2" class="vacio">Sin parcelas registradas.</td></tr>
-              } @else {
-                @for (p of parcelasDelLote(); track p.id) {
-                  <tr class="fila-clicable" (click)="seleccionarParcela(p.id)">
-                    <td>{{ p.nombre }}</td>
-                    <td class="font-mono">{{ p.superficie_ha | number:'1.2-2' }} ha</td>
-                  </tr>
-                }
-              }
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       <section class="bloque">
         <h3>Zona de riesgo</h3>
         @if (errorEliminar()) {

@@ -45,6 +45,26 @@ export class LeafletMapaService {
     }).addTo(map);
   }
 
+  agregarCapaLotes(map: L.Map, geojson: any): L.Layer {
+    return L.geoJSON(geojson, {
+      style: {
+        color: '#1976D2',
+        weight: 2.5,
+        opacity: 0.9,
+        fillColor: '#1976D2',
+        fillOpacity: 0.04,
+      },
+      onEachFeature: (feature, layer) => {
+        const p = feature?.properties ?? {};
+        const ha = typeof p['superficie_ha'] === 'number' ? p['superficie_ha'].toFixed(2) : '—';
+        layer.bindTooltip(
+          `<strong>${p['nombre'] ?? 'Lote'}</strong><br>${ha} ha`,
+          { sticky: true }
+        );
+      },
+    }).addTo(map);
+  }
+
   agregarLimiteFinca(map: L.Map, geojson: any): L.Layer {
     return L.geoJSON(geojson, {
       style: {
