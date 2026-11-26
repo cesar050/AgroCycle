@@ -69,3 +69,4 @@ backend/reportes_generados/
 # Logs
 *.log
 logs/
+/docs/
